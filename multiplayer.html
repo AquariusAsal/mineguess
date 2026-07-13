@@ -10,91 +10,54 @@
     @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --green:  #4ade80; --green-d: #16a34a; --green-dim: #14532d;
-      --yellow: #fbbf24; --red:     #f87171; --blue:      #60a5fa;
-      --bg:     #050a05; --bg2:     #0c140c;
-      --card:   rgba(255,255,255,0.035); --card-hover: rgba(255,255,255,0.06);
-      --border: rgba(255,255,255,0.08);  --border-g:   rgba(74,222,128,0.25);
+      --green:  #4ade80; --green-d: #16a34a;
+      --yellow: #fbbf24; --red:     #f87171; --blue: #60a5fa;
+      --bg:     #050a05; --card:    rgba(255,255,255,0.035);
+      --border: rgba(255,255,255,0.08); --border-g: rgba(74,222,128,0.25);
       --text:   #f0fdf4; --muted:   #6b7280; --muted2: #9ca3af;
     }
-    body {
-      background: var(--bg);
-      background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,222,128,0.08) 0%, transparent 60%);
-      color: var(--text); font-family: 'Space Grotesk', sans-serif;
-      min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-    }
+    body { background:var(--bg); background-image:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(74,222,128,0.08) 0%,transparent 60%); color:var(--text); font-family:'Space Grotesk',sans-serif; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
 
     /* Header */
-    header {
-      width: 100%; background: rgba(5,10,5,0.85); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border-g); padding: 14px 28px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 50;
-    }
-    header h1 { font-family: 'Space Mono', monospace; font-size: 1.3rem; color: var(--green); display: flex; align-items: center; gap: 10px; }
-    .logo-icon { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,var(--green-d),#0f7a3a); display:flex; align-items:center; justify-content:center; font-size:0.85rem; box-shadow:0 0 12px rgba(74,222,128,0.4); }
+    header { width:100%; background:rgba(5,10,5,0.85); backdrop-filter:blur(20px); border-bottom:1px solid var(--border-g); padding:14px 28px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50; }
+    header h1 { font-family:'Space Mono',monospace; font-size:1.3rem; color:var(--green); display:flex; align-items:center; gap:10px; }
+    .logo-icon { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,var(--green-d),#0f7a3a); display:flex; align-items:center; justify-content:center; font-size:0.85rem; }
     .beta-chip { background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); color:var(--yellow); font-size:0.65rem; font-weight:700; padding:2px 8px; border-radius:6px; letter-spacing:1px; }
     .header-right { display:flex; align-items:center; gap:10px; }
     .room-status { font-size:0.8rem; color:var(--muted2); }
     .btn-back { background:var(--card); border:1px solid var(--border); color:var(--muted2); padding:6px 14px; border-radius:8px; font-size:0.8rem; font-family:'Space Grotesk',sans-serif; cursor:pointer; text-decoration:none; transition:all 0.15s; }
     .btn-back:hover { border-color:var(--border-g); color:var(--green); }
 
-    main { width: 100%; max-width: 680px; padding: 24px 16px 80px; display: flex; flex-direction: column; gap: 16px; }
+    main { width:100%; max-width:680px; padding:24px 16px 80px; display:flex; flex-direction:column; gap:16px; }
 
     /* Cards */
-    .card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 18px; padding: 28px 24px;
-      backdrop-filter: blur(10px);
-    }
+    .card { background:var(--card); border:1px solid var(--border); border-radius:18px; padding:28px 24px; backdrop-filter:blur(10px); }
 
-    /* Tab bar */
+    /* Tabs */
     .tab-bar { display:flex; background:rgba(0,0,0,0.3); border-radius:12px; padding:4px; gap:4px; margin-bottom:24px; }
     .tab-btn { flex:1; padding:9px 0; border:none; border-radius:9px; font-size:0.85rem; font-weight:600; font-family:'Space Grotesk',sans-serif; cursor:pointer; transition:all 0.2s; background:transparent; color:var(--muted2); }
     .tab-btn.active { background:rgba(74,222,128,0.12); color:var(--green); border:1px solid var(--border-g); }
+    .tab-content { display:none; } .tab-content.active { display:block; }
 
-    .tab-content { display:none; }
-    .tab-content.active { display:block; }
-
-    /* Form elements */
+    /* Form */
     .form-group { display:flex; flex-direction:column; gap:7px; margin-bottom:14px; }
     .form-label { font-size:0.8rem; font-weight:600; color:var(--muted2); letter-spacing:0.5px; }
-    .form-input {
-      background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px;
-      color:var(--text); padding:11px 14px; font-size:0.95rem; font-family:'Space Grotesk',sans-serif;
-      outline:none; transition:border-color 0.2s; width:100%;
-    }
+    .form-input { background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; color:var(--text); padding:11px 14px; font-size:0.95rem; font-family:'Space Grotesk',sans-serif; outline:none; transition:border-color 0.2s; width:100%; }
     .form-input:focus { border-color:var(--border-g); }
-
-    /* Toggle */
     .toggle-row { display:flex; gap:8px; }
     .toggle-opt { flex:1; padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--card); cursor:pointer; text-align:center; font-size:0.85rem; font-weight:600; color:var(--muted2); transition:all 0.15s; }
     .toggle-opt.selected { border-color:var(--border-g); color:var(--green); background:rgba(74,222,128,0.07); }
 
     /* Buttons */
-    .btn-primary {
-      width:100%; padding:13px; border:none; border-radius:12px; cursor:pointer;
-      font-size:0.95rem; font-weight:700; font-family:'Space Grotesk',sans-serif;
-      background:linear-gradient(135deg,var(--green-d),#0f7a3a); color:#fff;
-      transition:all 0.2s; margin-top:6px; letter-spacing:0.3px;
-    }
+    .btn-primary { width:100%; padding:13px; border:none; border-radius:12px; cursor:pointer; font-size:0.95rem; font-weight:700; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg,var(--green-d),#0f7a3a); color:#fff; transition:all 0.2s; margin-top:6px; }
     .btn-primary:hover { filter:brightness(1.1); transform:translateY(-1px); }
-    .btn-secondary {
-      width:100%; padding:11px; border:1px solid var(--border); border-radius:12px; cursor:pointer;
-      font-size:0.88rem; font-weight:600; font-family:'Space Grotesk',sans-serif;
-      background:var(--card); color:var(--muted2); transition:all 0.15s; margin-top:8px;
-    }
+    .btn-secondary { width:100%; padding:11px; border:1px solid var(--border); border-radius:12px; cursor:pointer; font-size:0.88rem; font-weight:600; font-family:'Space Grotesk',sans-serif; background:var(--card); color:var(--muted2); transition:all 0.15s; margin-top:8px; }
     .btn-secondary:hover { border-color:var(--border-g); color:var(--green); }
 
-    /* Public rooms list */
+    /* Public rooms */
     .rooms-list { display:flex; flex-direction:column; gap:10px; }
-    .room-row {
-      display:flex; align-items:center; gap:14px;
-      background:var(--card); border:1px solid var(--border); border-radius:12px;
-      padding:14px 16px; cursor:pointer; transition:all 0.15s;
-    }
-    .room-row:hover { border-color:var(--border-g); background:var(--card-hover); }
-    .room-row-icon { font-size:1.4rem; }
+    .room-row { display:flex; align-items:center; gap:14px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 16px; cursor:pointer; transition:all 0.15s; }
+    .room-row:hover { border-color:var(--border-g); }
     .room-row-info { flex:1; }
     .room-row-name { font-weight:700; font-size:0.95rem; }
     .room-row-meta { font-size:0.75rem; color:var(--muted2); margin-top:2px; }
@@ -104,7 +67,6 @@
     .refresh-btn:hover { color:var(--green); }
 
     /* Lobby */
-    #lobby-screen { display:none; }
     .lobby-title { font-family:'Space Mono',monospace; font-size:1.2rem; color:var(--green); margin-bottom:6px; }
     .room-code-box { background:rgba(0,0,0,0.4); border:1px solid var(--border-g); border-radius:12px; padding:16px; text-align:center; margin:14px 0; }
     .room-code-label { font-size:0.75rem; color:var(--muted2); margin-bottom:6px; }
@@ -115,30 +77,62 @@
     .player-row { display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
     .player-name { font-weight:600; font-size:0.9rem; }
     .player-score { font-family:'Space Mono',monospace; color:var(--green); font-weight:700; font-size:0.85rem; }
-    .waiting-msg { font-size:0.8rem; color:var(--muted); text-align:center; margin-top:12px; }
 
-    /* Game */
-    #game-screen { display:none; }
+    /* ── GAME ── */
     .category-pill { display:inline-block; background:rgba(74,222,128,0.1); border:1px solid var(--border-g); color:var(--green); font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; padding:4px 12px; border-radius:999px; margin-bottom:12px; }
-    #question-text { font-size:1.1rem; line-height:1.65; margin-bottom:20px; font-weight:500; }
-    .timer-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
-    .timer-num { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--green); min-width:28px; }
+    #question-text { font-size:1.15rem; line-height:1.65; margin-bottom:22px; font-weight:500; }
+
+    /* Timer bar */
+    .timer-wrap { margin-bottom:18px; }
+    .timer-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .timer-num { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; min-width:30px; }
+    .timer-num.buzzer-phase { color:var(--blue); }
+    .timer-num.answer-phase { color:var(--yellow); }
+    .timer-label { font-size:0.78rem; color:var(--muted2); }
     .timer-bar-wrap { flex:1; height:5px; background:rgba(255,255,255,0.08); border-radius:3px; overflow:hidden; }
-    .timer-bar { height:100%; background:var(--green); border-radius:3px; transition:width 1s linear, background 0.3s; }
-    .timer-bar.warn   { background:var(--yellow); }
-    .timer-bar.danger { background:var(--red); }
+    .timer-bar { height:100%; border-radius:3px; transition:width 1s linear, background 0.3s; }
+    .timer-bar.buzzer  { background:var(--blue); }
+    .timer-bar.warn    { background:var(--yellow); }
+    .timer-bar.danger  { background:var(--red); }
+    .timer-bar.answer  { background:var(--yellow); }
 
-    /* Number input */
-    .num-row { display:flex; gap:10px; margin-top:6px; }
+    /* ── BUZZER BUTTON ── */
+    #buzzer-area { display:none; text-align:center; margin:10px 0 4px; }
+    #buzzer-area.show { display:block; }
+
+    .buzzer-btn {
+      position:relative; width:200px; height:200px; border-radius:50%;
+      border:none; cursor:pointer; font-family:'Space Mono',monospace;
+      font-size:1.5rem; font-weight:700; color:#fff; letter-spacing:2px;
+      background:radial-gradient(circle at 35% 35%, #e53e3e, #9b2c2c);
+      box-shadow:0 8px 0 #6b1a1a, 0 12px 30px rgba(229,62,62,0.5);
+      transition:all 0.1s ease; outline:none;
+      animation:buzzerPulse 2s ease-in-out infinite;
+    }
+    .buzzer-btn:hover { transform:translateY(-3px); box-shadow:0 11px 0 #6b1a1a, 0 18px 40px rgba(229,62,62,0.6); filter:brightness(1.1); }
+    .buzzer-btn:active { transform:translateY(6px); box-shadow:0 2px 0 #6b1a1a, 0 6px 20px rgba(229,62,62,0.4); }
+    .buzzer-btn:disabled { background:radial-gradient(circle at 35% 35%,#444,#222); box-shadow:0 6px 0 #111,0 8px 20px rgba(0,0,0,0.4); animation:none; cursor:not-allowed; opacity:0.6; }
+    .buzzer-hint { font-size:0.78rem; color:var(--muted2); margin-top:12px; }
+    @keyframes buzzerPulse { 0%,100%{box-shadow:0 8px 0 #6b1a1a,0 12px 30px rgba(229,62,62,0.5)} 50%{box-shadow:0 8px 0 #6b1a1a,0 12px 50px rgba(229,62,62,0.8),0 0 60px rgba(229,62,62,0.3)} }
+
+    /* Status (who buzzed) */
+    .buzz-status { border-radius:12px; padding:16px 20px; margin:10px 0; font-weight:600; font-size:0.95rem; display:none; }
+    .buzz-status.show { display:block; }
+    .buzz-status.you-buzzed { background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.3); color:var(--yellow); text-align:center; }
+    .buzz-status.other-buzzed { background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.2); color:var(--blue); text-align:center; }
+    .buzz-status.locked-out { background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.2); color:var(--red); text-align:center; }
+
+    /* Answer input */
+    #answer-area { display:none; margin-top:10px; }
+    #answer-area.show { display:block; }
+    .num-row { display:flex; gap:10px; }
     .num-row input { flex:1; background:rgba(0,0,0,0.4); border:1px solid var(--border); border-radius:10px; color:var(--text); padding:11px 14px; font-size:1rem; font-family:'Space Grotesk',sans-serif; outline:none; transition:border-color 0.2s; }
-    .num-row input:focus { border-color:var(--border-g); }
-    .btn-ok { background:linear-gradient(135deg,var(--green-d),#0f7a3a); border:none; border-radius:10px; color:#fff; font-weight:700; padding:11px 22px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:filter 0.15s; }
+    .num-row input:focus { border-color:var(--yellow); }
+    .btn-ok { background:linear-gradient(135deg,#b45309,#92400e); border:none; border-radius:10px; color:#fff; font-weight:700; padding:11px 22px; cursor:pointer; font-family:'Space Grotesk',sans-serif; transition:filter 0.15s; white-space:nowrap; }
     .btn-ok:hover { filter:brightness(1.12); }
-
-    /* Entity options */
     .entity-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
     .entity-opt { background:rgba(0,0,0,0.35); border:1px solid var(--border); border-radius:9px; padding:8px 16px; cursor:pointer; font-size:0.88rem; font-family:'Space Grotesk',sans-serif; color:var(--text); transition:all 0.15s; }
-    .entity-opt:hover { border-color:var(--border-g); background:rgba(74,222,128,0.07); }
+    .entity-opt:hover { border-color:var(--yellow); background:rgba(251,191,36,0.07); }
 
     /* Feedback */
     .feedback-box { border-radius:10px; padding:12px 16px; font-weight:600; display:none; align-items:center; gap:10px; margin-top:14px; font-size:0.9rem; }
@@ -151,22 +145,29 @@
     .live-scores-title { font-size:0.72rem; color:var(--muted2); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
     .score-list { display:flex; flex-direction:column; gap:7px; }
     .score-row { display:flex; align-items:center; gap:12px; background:rgba(0,0,0,0.3); border-radius:9px; padding:8px 12px; }
+    .score-row.locked { opacity:0.45; }
     .score-rank { font-size:1.1rem; width:26px; }
     .score-name { flex:1; font-weight:600; font-size:0.88rem; }
     .score-pts  { font-family:'Space Mono',monospace; color:var(--green); font-weight:700; font-size:0.85rem; }
+    .score-badge { font-size:0.75rem; margin-left:4px; }
 
-    /* Result panel */
+    /* Result */
     #result-panel { display:none; }
     #result-panel.show { display:block; }
     .result-title { font-family:'Space Mono',monospace; font-size:1.4rem; margin-bottom:10px; }
     .result-title.won  { color:var(--green); }
     .result-title.lost { color:var(--red); }
+    .result-title.draw { color:var(--yellow); }
     .funfact-box { background:rgba(0,0,0,0.3); border:1px solid var(--border); border-radius:10px; padding:14px; margin:14px 0; font-size:0.88rem; line-height:1.6; }
     .funfact-label { color:var(--yellow); font-weight:700; font-size:0.78rem; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
     .next-in { text-align:center; color:var(--muted); margin-top:12px; font-size:0.85rem; }
 
     /* Toast */
-    #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(30,30,30,0.95); border:1px solid var(--border-g); color:var(--text); padding:10px 20px; border-radius:10px; font-size:0.88rem; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:999; white-space:nowrap; }
+    #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(20,20,20,0.96); border:1px solid var(--border-g); color:var(--text); padding:10px 20px; border-radius:10px; font-size:0.88rem; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:999; white-space:nowrap; }
+
+    /* Animations */
+    @keyframes buzzerWon { 0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)} }
+    .buzz-won-anim { animation:buzzerWon 0.4s ease; }
   </style>
 </head>
 <body>
@@ -183,20 +184,17 @@
 
 <!-- ── JOIN SCREEN ──────────────────────────────────────────────────────────── -->
 <div id="join-screen">
-
   <div class="card">
     <div class="form-group">
       <label class="form-label">DEIN NAME</label>
       <input class="form-input" type="text" id="input-name" placeholder="SteveXL" maxlength="20"/>
     </div>
-
     <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('create')">➕ Raum erstellen</button>
-      <button class="tab-btn" onclick="switchTab('public')">🌍 Öffentliche Räume</button>
-      <button class="tab-btn" onclick="switchTab('private')">🔒 Privat beitreten</button>
+      <button class="tab-btn active" onclick="switchTab('create')">➕ Erstellen</button>
+      <button class="tab-btn" onclick="switchTab('public')">🌍 Öffentlich</button>
+      <button class="tab-btn" onclick="switchTab('private')">🔒 Privat</button>
     </div>
 
-    <!-- CREATE TAB -->
     <div class="tab-content active" id="tab-create">
       <div class="form-group">
         <label class="form-label">RAUM-NAME</label>
@@ -211,24 +209,19 @@
       </div>
       <div class="form-group" id="password-group" style="display:none">
         <label class="form-label">PASSWORT</label>
-        <input class="form-input" type="text" id="input-create-pw" placeholder="Passwort festlegen" maxlength="20"/>
+        <input class="form-input" type="text" id="input-create-pw" placeholder="Passwort" maxlength="20"/>
       </div>
-      <button class="btn-primary" onclick="createRoom()">▶ Raum erstellen &amp; starten</button>
+      <button class="btn-primary" onclick="createRoom()">▶ Raum erstellen</button>
     </div>
 
-    <!-- PUBLIC ROOMS TAB -->
     <div class="tab-content" id="tab-public">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:0.8rem;color:var(--muted2)">Aktive öffentliche Räume</span>
-        <button class="refresh-btn" onclick="requestPublicRooms()" title="Aktualisieren">↻ Aktualisieren</button>
+        <span style="font-size:0.8rem;color:var(--muted2)">Aktive Räume</span>
+        <button class="refresh-btn" onclick="requestPublicRooms()">↻ Aktualisieren</button>
       </div>
-      <div class="rooms-list" id="public-rooms-list">
-        <div class="empty-rooms">Lade Räume…</div>
-      </div>
-      <button class="btn-secondary" onclick="requestPublicRooms()">↻ Neu laden</button>
+      <div class="rooms-list" id="public-rooms-list"><div class="empty-rooms">Lade…</div></div>
     </div>
 
-    <!-- PRIVATE JOIN TAB -->
     <div class="tab-content" id="tab-private">
       <div class="form-group">
         <label class="form-label">RAUM-CODE</label>
@@ -236,48 +229,69 @@
       </div>
       <div class="form-group">
         <label class="form-label">PASSWORT (falls vorhanden)</label>
-        <input class="form-input" type="text" id="input-join-pw" placeholder="Leer lassen wenn kein Passwort"/>
+        <input class="form-input" type="text" id="input-join-pw" placeholder="Leer lassen wenn keins"/>
       </div>
       <button class="btn-primary" onclick="joinPrivateRoom()">🔒 Beitreten</button>
     </div>
   </div>
-
 </div>
 
 <!-- ── LOBBY ────────────────────────────────────────────────────────────────── -->
-<div id="lobby-screen">
+<div id="lobby-screen" style="display:none">
   <div class="card">
     <div class="lobby-title">🕹 Warteraum</div>
     <div class="room-code-box">
-      <div class="room-code-label">RAUM-CODE (für Freunde)</div>
+      <div class="room-code-label">RAUM-CODE</div>
       <div class="room-code-val" id="lobby-code">---</div>
       <button class="copy-btn" onclick="copyRoomCode()">📋 Code kopieren</button>
     </div>
     <div class="players-list" id="lobby-players"></div>
-    <div class="waiting-msg" id="waiting-msg">⏳ Spiel startet in Kürze…</div>
+    <div style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:12px">⏳ Spiel startet in Kürze…</div>
   </div>
 </div>
 
 <!-- ── GAME SCREEN ──────────────────────────────────────────────────────────── -->
-<div id="game-screen">
+<div id="game-screen" style="display:none">
+
+  <!-- Live Scoreboard -->
   <div class="live-scores" id="live-scores">
     <div class="live-scores-title">🏆 Live-Punkte</div>
     <div class="score-list" id="live-score-list"></div>
   </div>
 
+  <!-- Question Card -->
   <div class="card" style="margin-top:14px">
     <span class="category-pill" id="q-category">Kategorie</span>
     <div id="question-text">Warte auf Frage…</div>
 
-    <div class="timer-row">
-      <span class="timer-num" id="timer-num">40</span>
-      <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+    <!-- Timer -->
+    <div class="timer-wrap">
+      <div class="timer-row">
+        <span class="timer-num buzzer-phase" id="timer-num">30</span>
+        <div class="timer-bar-wrap"><div class="timer-bar buzzer" id="timer-bar" style="width:100%"></div></div>
+        <span class="timer-label" id="timer-label">zum Buzzern</span>
+      </div>
     </div>
 
-    <div id="input-area"></div>
+    <!-- BUZZER BUTTON -->
+    <div id="buzzer-area">
+      <button class="buzzer-btn" id="buzzer-btn" onclick="pressBuzzer()">BUZZ!</button>
+      <div class="buzzer-hint">Drücke zuerst den Buzzer um zu antworten!</div>
+    </div>
+
+    <!-- Status -->
+    <div class="buzz-status" id="buzz-status"></div>
+
+    <!-- Answer Input (only for buzzer player) -->
+    <div id="answer-area">
+      <div id="answer-input-inner"></div>
+    </div>
+
+    <!-- Feedback -->
     <div class="feedback-box" id="feedback-box"></div>
   </div>
 
+  <!-- Result Panel -->
   <div class="card" id="result-panel">
     <div class="result-title" id="result-title"></div>
     <div id="result-answer" style="color:var(--muted2);font-size:0.9rem;margin-bottom:12px;"></div>
@@ -294,245 +308,309 @@
 <div id="toast"></div>
 
 <script>
-// Lokal: window.location.origin (automatisch)
-// Produktion: Railway-URL eintragen in multiplayer-config.js
 const SERVER_URL = (typeof MULTIPLAYER_SERVER !== 'undefined' && MULTIPLAYER_SERVER)
-  ? MULTIPLAYER_SERVER
-  : window.location.origin;
+  ? MULTIPLAYER_SERVER : window.location.origin;
 const socket = io(SERVER_URL);
 
-let myId      = null;
-let myRoomId  = null;
-let timerMax  = 40;
-let answered  = false;
-let currentQ  = null;
+let myId        = null;
+let myRoomId    = null;
+let currentQ    = null;
+let myPhase     = 'idle'; // idle | buzzer | answering | waiting | locked
+let timerMax    = 30;
 let roomIsPublic = true;
+let lockedOutIds = [];
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
 function el(id) { return document.getElementById(id); }
 function show(id) { el(id).style.display = ''; }
 function hide(id) { el(id).style.display = 'none'; }
 function showToast(msg, dur=2800) {
-  const t = el('toast');
-  t.textContent = msg;
-  t.style.opacity = '1';
-  clearTimeout(t._iv);
-  t._iv = setTimeout(() => t.style.opacity = '0', dur);
+  const t = el('toast'); t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._iv); t._iv = setTimeout(() => t.style.opacity='0', dur);
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-let activeTab = 'create';
 function switchTab(tab) {
-  activeTab = tab;
   ['create','public','private'].forEach(t => {
-    el('tab-'+t).classList.toggle('active', t === tab);
+    el('tab-'+t).classList.toggle('active', t===tab);
   });
-  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-    btn.classList.toggle('active', ['create','public','private'][i] === tab);
+  document.querySelectorAll('.tab-btn').forEach((btn,i) => {
+    btn.classList.toggle('active', ['create','public','private'][i]===tab);
   });
-  if (tab === 'public') requestPublicRooms();
+  if (tab==='public') requestPublicRooms();
 }
 
-// ── Visibility toggle ─────────────────────────────────────────────────────────
 function selectVisibility(v) {
-  roomIsPublic = v === 'public';
+  roomIsPublic = v==='public';
   el('toggle-public').classList.toggle('selected', roomIsPublic);
   el('toggle-private').classList.toggle('selected', !roomIsPublic);
   el('password-group').style.display = roomIsPublic ? 'none' : '';
 }
 
-// ── Create room ───────────────────────────────────────────────────────────────
+// ── Room create / join ────────────────────────────────────────────────────────
 function createRoom() {
   const name     = el('input-name').value.trim() || 'Spieler';
-  const roomName = el('input-room-name').value.trim() || name + 's Raum';
-  const password = roomIsPublic ? null : (el('input-create-pw').value.trim() || null);
-  socket.emit('create_room', {
-    playerName:  name,
-    displayName: roomName,
-    isPublic:    roomIsPublic,
-    password,
-  });
+  const roomName = el('input-room-name').value.trim() || name+"s Raum";
+  const password = roomIsPublic ? null : (el('input-create-pw').value.trim()||null);
+  socket.emit('create_room', { playerName:name, displayName:roomName, isPublic:roomIsPublic, password });
 }
 
-// ── Join public room ──────────────────────────────────────────────────────────
 function joinPublicRoom(roomId) {
-  const name = el('input-name').value.trim() || 'Spieler';
-  socket.emit('join_room', { roomId, playerName: name, password: null });
+  socket.emit('join_room', { roomId, playerName: el('input-name').value.trim()||'Spieler', password: null });
 }
 
-// ── Join private room ─────────────────────────────────────────────────────────
 function joinPrivateRoom() {
-  const name     = el('input-name').value.trim() || 'Spieler';
-  const roomId   = el('input-room-code').value.trim().toLowerCase();
-  const password = el('input-join-pw').value.trim() || null;
+  const name   = el('input-name').value.trim()||'Spieler';
+  const roomId = el('input-room-code').value.trim().toLowerCase();
+  const pw     = el('input-join-pw').value.trim()||null;
   if (!roomId) { showToast('Bitte Raum-Code eingeben'); return; }
-  socket.emit('join_room', { roomId, playerName: name, password });
+  socket.emit('join_room', { roomId, playerName:name, password:pw });
 }
 
-// ── Copy room code ────────────────────────────────────────────────────────────
 function copyRoomCode() {
-  navigator.clipboard.writeText(myRoomId || '').then(() => showToast('✅ Code kopiert!'));
+  navigator.clipboard.writeText(myRoomId||'').then(() => showToast('✅ Code kopiert!'));
 }
 
-// ── Public rooms list ─────────────────────────────────────────────────────────
-function requestPublicRooms() {
-  socket.emit('get_public_rooms');
-}
+function requestPublicRooms() { socket.emit('get_public_rooms'); }
 
+// ── Public rooms ──────────────────────────────────────────────────────────────
 socket.on('public_rooms_update', (rooms) => {
   const list = el('public-rooms-list');
-  if (!rooms || rooms.length === 0) {
-    list.innerHTML = '<div class="empty-rooms">Keine offenen Räume.<br><small>Erstelle selbst einen!</small></div>';
-    return;
-  }
-  list.innerHTML = '';
+  if (!rooms||rooms.length===0) { list.innerHTML='<div class="empty-rooms">Keine Räume offen.<br><small>Erstelle einen!</small></div>'; return; }
+  list.innerHTML='';
   rooms.forEach(r => {
-    const full    = r.playerCount >= r.maxPlayers;
-    const phase   = r.phase === 'waiting' ? '⏳ Wartet' : `🎮 Runde ${r.roundNum}`;
-    const row     = document.createElement('div');
-    row.className = 'room-row' + (full ? ' disabled' : '');
-    row.style.opacity = full ? '0.5' : '1';
-    row.style.pointerEvents = full ? 'none' : '';
-    row.innerHTML = `
-      <span class="room-row-icon">${r.phase === 'waiting' ? '🟢' : '🔵'}</span>
+    const full = r.playerCount >= r.maxPlayers;
+    const row  = document.createElement('div');
+    row.className = 'room-row';
+    if (full) { row.style.opacity='0.5'; row.style.pointerEvents='none'; }
+    row.innerHTML = `<span style="font-size:1.3rem">${r.phase==='waiting'?'🟢':'🔵'}</span>
       <div class="room-row-info">
         <div class="room-row-name">${r.displayName}</div>
-        <div class="room-row-meta">${phase} · Code: <code style="color:var(--yellow)">${r.id}</code></div>
+        <div class="room-row-meta">${r.phase==='waiting'?'⏳ Wartet':'🎮 Runde '+r.roundNum} · <code style="color:var(--yellow)">${r.id}</code></div>
       </div>
       <span class="room-row-players">${r.playerCount}/${r.maxPlayers} 👤</span>`;
-    if (!full) row.addEventListener('click', () => joinPublicRoom(r.id));
+    if (!full) row.addEventListener('click', ()=>joinPublicRoom(r.id));
     list.appendChild(row);
   });
 });
 
 // ── Joined ────────────────────────────────────────────────────────────────────
 socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic }) => {
-  myId     = playerId;
-  myRoomId = roomId;
-  el('room-status').textContent = (isPublic ? '🌍 ' : '🔒 ') + displayName;
+  myId = playerId; myRoomId = roomId;
+  el('room-status').textContent = (isPublic?'🌍 ':'🔒 ') + displayName;
   el('lobby-code').textContent  = roomId;
-  hide('join-screen');
-  show('lobby-screen');
+  hide('join-screen'); show('lobby-screen');
   showToast(`✅ "${displayName}" beigetreten als ${playerName}`);
 });
 
-socket.on('join_error', ({ message }) => {
-  showToast('❌ ' + message, 4000);
-});
+socket.on('join_error', ({ message }) => showToast('❌ '+message, 4000));
 
 // ── Room state ────────────────────────────────────────────────────────────────
-socket.on('room_state', ({ players, phase }) => {
-  // Lobby list
+socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer }) => {
+  lockedOutIds = lockedOut || [];
+
+  // Lobby
   const lobbyList = el('lobby-players');
   lobbyList.innerHTML = '';
   players.forEach(p => {
     const row = document.createElement('div');
     row.className = 'player-row';
-    row.innerHTML = `<span class="player-name">${p.id === myId ? '⭐ ' : ''}${p.name}</span>
-                     <span class="player-score">${p.score} Pkt.</span>
-                     <span>${p.answered ? '✅' : '<span style="color:var(--muted)">…</span>'}</span>`;
+    row.innerHTML = `<span class="player-name">${p.id===myId?'⭐ ':''}${p.name}</span>
+                     <span class="player-score">${p.score} Pkt.</span>`;
     lobbyList.appendChild(row);
   });
 
-  // Live scoreboard
+  // Live scores
   const liveList = el('live-score-list');
   liveList.innerHTML = '';
   [...players].sort((a,b)=>b.score-a.score).forEach((p,i) => {
+    const isLocked  = lockedOutIds.includes(p.id);
+    const isBuzzing = p.id === currentBuzzer;
     const row = document.createElement('div');
-    row.className = 'score-row';
+    row.className = 'score-row' + (isLocked?' locked':'');
     row.innerHTML = `<span class="score-rank">${['🥇','🥈','🥉'][i]||'#'+(i+1)}</span>
-                     <span class="score-name">${p.id===myId?'<strong>':''}${p.name}${p.id===myId?'</strong>':''}</span>
-                     <span class="score-pts">${p.score}</span>
-                     ${p.answered?'<span style="color:var(--green)">✅</span>':''}`;
+                     <span class="score-name">${p.id===myId?'<strong>':''}${p.name}${p.id===myId?'</strong>':''}
+                       ${isBuzzing?'<span class="score-badge">🎙</span>':''}
+                       ${isLocked?'<span class="score-badge">❌</span>':''}
+                     </span>
+                     <span class="score-pts">${p.score}</span>`;
     liveList.appendChild(row);
   });
 });
 
 // ── Question ──────────────────────────────────────────────────────────────────
 socket.on('question', (q) => {
-  currentQ  = q;
-  answered  = false;
-  timerMax  = q.timeLimit || 40;
+  currentQ = q; myPhase = 'buzzer'; lockedOutIds = [];
 
   hide('lobby-screen');
   el('result-panel').classList.remove('show');
   show('game-screen');
   el('live-scores').style.display = '';
 
-  el('q-category').textContent    = q.category;
+  el('q-category').textContent   = q.category;
   el('question-text').textContent = `#${q.roundNum}: ${q.question}`;
-  el('timer-num').textContent     = timerMax;
-  el('timer-bar').style.width     = '100%';
-  el('timer-bar').className       = 'timer-bar';
-  el('feedback-box').className    = 'feedback-box';
-  el('feedback-box').innerHTML    = '';
 
-  buildInput(q);
+  // Reset UI
+  el('feedback-box').className   = 'feedback-box';
+  el('feedback-box').innerHTML   = '';
+  el('buzz-status').className    = 'buzz-status';
+  el('buzz-status').innerHTML    = '';
+  el('answer-area').classList.remove('show');
+  el('answer-input-inner').innerHTML = '';
+
+  // Show buzzer
+  el('buzzer-area').classList.add('show');
+  el('buzzer-btn').disabled = false;
+  el('buzzer-btn').textContent = 'BUZZ!';
+
+  // Timer
+  el('timer-num').textContent  = 30;
+  el('timer-num').className    = 'timer-num buzzer-phase';
+  el('timer-bar').style.width  = '100%';
+  el('timer-bar').className    = 'timer-bar buzzer';
+  el('timer-label').textContent = 'zum Buzzern';
 });
 
-function buildInput(q) {
-  const area = el('input-area');
-  area.style.opacity = '1';
-  area.style.pointerEvents = '';
+// ── Timer ─────────────────────────────────────────────────────────────────────
+socket.on('timer', ({ left, max, phase }) => {
+  timerMax = max;
+  el('timer-num').textContent = left;
+  el('timer-bar').style.width = (left/max*100)+'%';
+
+  if (phase === 'buzzer') {
+    el('timer-num').className   = 'timer-num buzzer-phase';
+    el('timer-bar').className   = 'timer-bar' + (left<=5?' danger':left<=10?' warn':' buzzer');
+    el('timer-label').textContent = 'zum Buzzern';
+  } else {
+    el('timer-num').className   = 'timer-num answer-phase';
+    el('timer-bar').className   = 'timer-bar' + (left<=4?' danger':' answer');
+    el('timer-label').textContent = 'zum Antworten';
+  }
+});
+
+// ── BUZZER PRESSED ────────────────────────────────────────────────────────────
+function pressBuzzer() {
+  if (myPhase !== 'buzzer') return;
+  if (lockedOutIds.includes(myId)) return;
+  socket.emit('buzz');
+}
+
+socket.on('buzzer_won', ({ playerId, playerName }) => {
+  el('buzzer-area').classList.remove('show');
+
+  if (playerId === myId) {
+    // I won the buzzer!
+    myPhase = 'answering';
+    const status = el('buzz-status');
+    status.className = 'buzz-status show you-buzzed';
+    status.innerHTML = '🎙 Du hast den Buzzer! Antworte schnell…';
+    buildAnswerInput(currentQ);
+    el('answer-area').classList.add('show');
+    showToast('⚡ Du hast den Buzzer!');
+  } else {
+    myPhase = 'waiting';
+    const status = el('buzz-status');
+    status.className = 'buzz-status show other-buzzed';
+    status.innerHTML = `🎙 <strong>${playerName}</strong> hat den Buzzer und denkt nach…`;
+  }
+});
+
+// ── Buzzer reset (someone was wrong, buzzer reopens) ─────────────────────────
+socket.on('buzzer_reset', ({ lockedOut }) => {
+  lockedOutIds = lockedOut || [];
+  const amLocked = lockedOutIds.includes(myId);
+
+  if (amLocked) {
+    myPhase = 'locked';
+    const status = el('buzz-status');
+    status.className = 'buzz-status show locked-out';
+    status.innerHTML = '❌ Du hast falsch geantwortet — die anderen sind dran.';
+    el('answer-area').classList.remove('show');
+    el('buzzer-area').classList.remove('show');
+  } else {
+    myPhase = 'buzzer';
+    el('buzz-status').className = 'buzz-status';
+    el('buzzer-area').classList.add('show');
+    el('buzzer-btn').disabled = false;
+    el('answer-area').classList.remove('show');
+  }
+});
+
+// ── Build answer input ────────────────────────────────────────────────────────
+function buildAnswerInput(q) {
+  const inner = el('answer-input-inner');
+  inner.innerHTML = '';
 
   if (q.type === 'number') {
-    area.innerHTML = `
+    inner.innerHTML = `
       <div class="num-row">
         <input type="number" id="num-input" placeholder="Deine Antwort…" autofocus/>
-        <button class="btn-ok" id="btn-submit">OK</button>
+        <button class="btn-ok" onclick="submitAnswer(el('num-input').value)">Absenden</button>
       </div>`;
-    el('btn-submit').addEventListener('click', () => submitAnswer(el('num-input').value));
     el('num-input').addEventListener('keydown', e => { if(e.key==='Enter') submitAnswer(el('num-input').value); });
   } else {
     const opts = q.options || [];
-    area.innerHTML = `<div class="entity-grid" id="entity-grid"></div>
-      <div class="num-row" style="margin-top:10px;">
-        <input type="text" id="entity-input" placeholder="Oder selbst tippen…"/>
-        <button class="btn-ok" id="btn-submit-e">OK</button>
+    inner.innerHTML = `<div class="entity-grid" id="entity-grid"></div>
+      <div class="num-row" style="margin-top:10px">
+        <input type="text" id="entity-input" placeholder="Oder tippen…"/>
+        <button class="btn-ok" onclick="submitAnswer(el('entity-input').value)">Absenden</button>
       </div>`;
     opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'entity-opt';
       btn.textContent = opt;
-      btn.addEventListener('click', () => submitAnswer(opt));
+      btn.onclick = () => submitAnswer(opt);
       el('entity-grid').appendChild(btn);
     });
-    el('btn-submit-e').addEventListener('click', () => submitAnswer(el('entity-input').value));
     el('entity-input').addEventListener('keydown', e => { if(e.key==='Enter') submitAnswer(el('entity-input').value); });
   }
 }
 
 function submitAnswer(val) {
-  if (answered || !val) return;
-  answered = true;
+  if (myPhase !== 'answering' || !val) return;
+  myPhase = 'waiting';
   socket.emit('submit_answer', { answer: val });
-  el('input-area').style.opacity      = '0.4';
-  el('input-area').style.pointerEvents = 'none';
+  el('answer-area').classList.remove('show');
+  el('buzz-status').className  = 'buzz-status show other-buzzed';
+  el('buzz-status').innerHTML  = '⏳ Antwort wird geprüft…';
 }
 
-// ── Timer ─────────────────────────────────────────────────────────────────────
-socket.on('timer', ({ left }) => {
-  el('timer-num').textContent  = left;
-  el('timer-bar').style.width  = (left / timerMax * 100) + '%';
-  el('timer-bar').className    = 'timer-bar' + (left <= 5 ? ' danger' : left <= 12 ? ' warn' : '');
-});
-
-// ── Answer feedback ───────────────────────────────────────────────────────────
-socket.on('answer_result', ({ correct, arrow, text, score, timeBonus }) => {
+// ── Answer broadcast (everyone sees result of the buzz) ───────────────────────
+socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score, speedBonus, timeout }) => {
   const box = el('feedback-box');
-  box.className = 'feedback-box show ' + (correct ? 'correct' : 'wrong');
-  box.innerHTML = `<span style="font-size:1.3rem">${arrow}</span>
-                   <span>${text}${correct && timeBonus ? ` <span style="color:var(--yellow)">(+${timeBonus} Zeitbonus)</span>` : ''}</span>
-                   <span style="margin-left:auto;font-family:'Space Mono',monospace;font-weight:700">${score} Pkt.</span>`;
+
+  if (correct) {
+    box.className = 'feedback-box show correct';
+    box.innerHTML = `<span style="font-size:1.3rem">✅</span>
+      <span><strong>${playerName}</strong> hat richtig geantwortet!${speedBonus?` <span style="color:var(--yellow)">(+${speedBonus} Speedbonus)</span>`:''}</span>
+      ${playerId===myId?`<span style="margin-left:auto;font-family:'Space Mono',monospace;font-weight:700">${score} Pkt.</span>`:''}`;
+    el('buzz-status').className = 'buzz-status';
+  } else {
+    box.className = 'feedback-box show wrong';
+    const reason = timeout ? 'Zeit abgelaufen!' : (submitted ? `"${submitted}" war falsch!` : 'Keine Antwort!');
+    box.innerHTML = `<span style="font-size:1.3rem">❌</span>
+      <span><strong>${playerName}</strong> — ${reason}</span>`;
+  }
 });
 
 // ── Result ────────────────────────────────────────────────────────────────────
-socket.on('result', ({ answer, funFact, scores, nextIn }) => {
+socket.on('result', ({ answer, funFact, scores, nextIn, winnerId }) => {
   el('result-panel').classList.add('show');
-  el('result-title').textContent  = answered ? (scores[0]?.id === myId ? '🏆 Du führst!' : '📊 Runde vorbei!') : '⏱ Zeit abgelaufen!';
-  el('result-title').className    = 'result-title';
-  el('result-answer').innerHTML   = `Richtige Antwort: <strong style="color:var(--green)">${answer}</strong>`;
-  el('funfact-text').textContent  = funFact || '';
+  myPhase = 'idle';
+
+  if (!winnerId) {
+    el('result-title').textContent = '😔 Niemand hat gewusst…';
+    el('result-title').className   = 'result-title draw';
+  } else if (winnerId === myId) {
+    el('result-title').textContent = '🏆 Du hast diese Runde gewonnen!';
+    el('result-title').className   = 'result-title won';
+  } else {
+    const winner = scores.find(s=>s.id===winnerId);
+    el('result-title').textContent = `🏅 ${winner?.name||'Jemand'} hat gewonnen!`;
+    el('result-title').className   = 'result-title lost';
+  }
+
+  el('result-answer').innerHTML  = `Richtige Antwort: <strong style="color:var(--green)">${answer}</strong>`;
+  el('funfact-text').textContent = funFact||'';
 
   const sb = el('result-scoreboard');
   sb.innerHTML = '';
@@ -549,17 +627,16 @@ socket.on('result', ({ answer, funFact, scores, nextIn }) => {
   el('next-in').textContent = `Nächste Frage in ${secs}…`;
   const iv = setInterval(() => {
     secs--;
-    if (secs <= 0) { clearInterval(iv); el('next-in').textContent = ''; }
+    if (secs<=0) { clearInterval(iv); el('next-in').textContent=''; }
     else el('next-in').textContent = `Nächste Frage in ${secs}…`;
   }, 1000);
 });
 
 // ── Connection ────────────────────────────────────────────────────────────────
 socket.on('connect',       () => showToast('🟢 Verbunden!'));
-socket.on('connect_error', () => showToast('❌ Verbindung fehlgeschlagen. Server läuft?', 5000));
+socket.on('connect_error', () => showToast('❌ Server nicht erreichbar', 5000));
 socket.on('disconnect',    () => showToast('⚠️ Verbindung getrennt', 5000));
 
-// Initial load
 requestPublicRooms();
 </script>
 </body>
