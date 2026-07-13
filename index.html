@@ -8833,7 +8833,31 @@ function selectMode(mode) {
   loadNextQuestion();
 }
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+
+// ── Start Button ─────────────────────────────────────────────────────────────
+document.getElementById('btn-start-game').addEventListener('click', function() {
+  var splash = document.getElementById('splash');
+  splash.style.transition = 'opacity 0.4s ease';
+  splash.style.opacity = '0';
+  setTimeout(function() { splash.style.display = 'none'; }, 420);
+
+  if (!initFirebase()) {
+    finishAuth();
+    return;
+  }
+  var unsub = fbAuth.onAuthStateChanged(function(user) {
+    unsub();
+    if (user) {
+      currentUser = user;
+      isGuest = false;
+      loadCloudStats().then(finishAuth);
+    } else {
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+  });
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
 init();
 </script>
 </body>
