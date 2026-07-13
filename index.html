@@ -1,0 +1,4164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MineGuess – Das Minecraft Quiz</title>
+  <style>
+    /* ── Reset & Fonts ─────────────────────────────── */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:     #4ade80;
+      --green-d:   #16a34a;
+      --green-dim: #14532d;
+      --accent:    #4ade80;
+      --yellow:    #fbbf24;
+      --red:       #f87171;
+      --blue:      #60a5fa;
+      --purple:    #a78bfa;
+      --bg:        #050a05;
+      --bg2:       #0c140c;
+      --card:      rgba(255,255,255,0.035);
+      --card-hover:rgba(255,255,255,0.06);
+      --border:    rgba(255,255,255,0.08);
+      --border-g:  rgba(74,222,128,0.25);
+      --text:      #f0fdf4;
+      --muted:     #6b7280;
+      --muted2:    #9ca3af;
+      --glow:      0 0 20px rgba(74,222,128,0.15);
+    }
+
+    body {
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,222,128,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 80% 80%,  rgba(74,222,128,0.04) 0%, transparent 50%);
+      color: var(--text);
+      font-family: 'Space Grotesk', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      width: 100%;
+      background: rgba(5,10,5,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-g);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+
+    header h1 {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--green);
+      letter-spacing: 1px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    header h1 .logo-icon {
+      width: 28px; height: 28px; border-radius: 6px;
+      background: linear-gradient(135deg, var(--green-d), #0f7a3a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+      box-shadow: 0 0 12px rgba(74,222,128,0.4);
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 6px;
+    }
+
+    .stat {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--muted2);
+      transition: border-color 0.2s;
+    }
+    .stat:hover { border-color: var(--border-g); }
+    .stat span:first-child { font-size: 0.95rem; font-weight: 700; color: var(--text); }
+
+    /* ── Main layout ────────────────────────────────── */
+    main {
+      width: 100%;
+      max-width: 620px;
+      padding: 28px 16px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Session score bar ──────────────────────────── */
+    .session-score {
+      display: flex;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 20px;
+      gap: 8px;
+    }
+
+    .session-score .sc {
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      flex: 1;
+    }
+    .session-score .sc:not(:last-child) {
+      border-right: 1px solid var(--border);
+    }
+    .session-score .sc span:first-child {
+      font-size: 1.4rem; font-weight: 700; color: var(--text);
+      font-family: 'Space Mono', monospace;
+    }
+    .session-score .sc span:last-child {
+      font-size: 0.7rem; color: var(--muted); letter-spacing: 0.5px;
+    }
+
+    /* ── Category pill ──────────────────────────────── */
+    .category-pill {
+      align-self: flex-start;
+      background: rgba(74,222,128,0.1);
+      color: var(--green);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(74,222,128,0.3);
+    }
+
+    /* ── Question card ──────────────────────────────── */
+    .question-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      text-align: center;
+      font-size: 1.2rem;
+      line-height: 1.65;
+      font-weight: 500;
+      color: var(--text);
+      position: relative;
+      overflow: hidden;
+    }
+    .question-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(74,222,128,0.4), transparent);
+    }
+
+    /* ── Attempts bar ───────────────────────────────── */
+    .attempts-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .attempt-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: all 0.25s;
+    }
+    .attempt-dot.used    { background: var(--muted); border-color: var(--muted); }
+    .attempt-dot.correct { background: var(--green);  border-color: var(--green);  box-shadow: 0 0 8px rgba(74,222,128,0.6); }
+    .attempt-dot.failed  { background: var(--red);    border-color: var(--red);    box-shadow: 0 0 8px rgba(248,113,113,0.5); }
+
+    /* ── Timer ──────────────────────────────────────── */
+    .timer-wrap {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+    }
+
+    .timer-ring {
+      position: relative; width: 60px; height: 60px; flex-shrink: 0;
+    }
+    .timer-ring svg { transform: rotate(-90deg); }
+    .timer-ring circle { fill: none; stroke-width: 4; }
+    .timer-ring .bg { stroke: rgba(255,255,255,0.07); }
+    .timer-ring .fg {
+      stroke: var(--green); stroke-linecap: round;
+      transition: stroke-dashoffset 0.9s linear, stroke 0.3s;
+      filter: drop-shadow(0 0 4px rgba(74,222,128,0.6));
+    }
+    .timer-ring.warn   .fg { stroke: var(--yellow); filter: drop-shadow(0 0 4px rgba(251,191,36,0.6)); }
+    .timer-ring.danger .fg { stroke: var(--red);    filter: drop-shadow(0 0 4px rgba(248,113,113,0.6)); }
+
+    .timer-num {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-size: 1.2rem; font-weight: 700;
+      color: var(--text);
+    }
+    .timer-ring.danger .timer-num { color: var(--red); }
+
+    /* ── Guesses display ────────────────────────────── */
+    .guesses-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .guess-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      animation: slideIn 0.2s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .guess-value   { font-weight: 700; font-size: 1rem; min-width: 70px; font-family: 'Space Mono', monospace; }
+    .guess-feedback { flex: 1; font-size: 0.88rem; }
+    .guess-arrow   { font-size: 1.1rem; }
+
+    .fb-high    { color: var(--red);    border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.06); }
+    .fb-low     { color: var(--blue);   border-color: rgba(96,165,250,0.35);  background: rgba(96,165,250,0.06); }
+    .fb-close   { color: var(--yellow); border-color: rgba(251,191,36,0.35);  background: rgba(251,191,36,0.06); }
+    .fb-correct { color: var(--green);  border-color: rgba(74,222,128,0.35);  background: rgba(74,222,128,0.06); }
+    .fb-wrong   { color: var(--red);    border-color: rgba(248,113,113,0.35); background: rgba(248,113,113,0.06); }
+
+    /* ── Input area ─────────────────────────────────── */
+    .input-area { display: flex; gap: 10px; }
+
+    .input-area input, .input-area select {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1rem;
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 13px 18px;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+    .input-area input:focus, .input-area select:focus {
+      border-color: var(--green);
+      background: rgba(74,222,128,0.05);
+      box-shadow: 0 0 0 3px rgba(74,222,128,0.1);
+    }
+    .input-area input::placeholder { color: var(--muted); }
+
+    .btn-guess {
+      background: var(--green);
+      border: none;
+      border-radius: 12px;
+      color: #000;
+      font-size: 0.9rem;
+      font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.3px;
+      padding: 13px 22px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      box-shadow: 0 0 16px rgba(74,222,128,0.25);
+    }
+    .btn-guess:hover  { background: #6ee79a; box-shadow: 0 0 24px rgba(74,222,128,0.4); transform: translateY(-1px); }
+    .btn-guess:active { transform: scale(0.97); }
+    .btn-guess:disabled { background: rgba(255,255,255,0.1); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+
+    /* ── Autocomplete ───────────────────────────────── */
+    .autocomplete-wrapper { position: relative; flex: 1; }
+
+    .autocomplete-list {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #0e170e;
+      border: 1px solid var(--border-g);
+      border-radius: 12px;
+      z-index: 100; max-height: 220px; overflow-y: auto;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+    }
+    .autocomplete-list li {
+      list-style: none; padding: 10px 16px; cursor: pointer;
+      font-size: 0.92rem; transition: background 0.1s;
+    }
+    .autocomplete-list li:hover, .autocomplete-list li.active {
+      background: rgba(74,222,128,0.1); color: var(--green);
+    }
+
+    /* ── Result panel ───────────────────────────────── */
+    .result-panel {
+      background: var(--card);
+      border: 1px solid var(--border-g);
+      border-radius: 20px;
+      padding: 28px 24px;
+      display: none; flex-direction: column; gap: 14px;
+      animation: slideIn 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .result-panel::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--green), transparent);
+    }
+    .result-panel.show { display: flex; }
+
+    .result-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 1.6rem; font-weight: 700;
+      color: var(--green);
+      text-align: center;
+    }
+    .result-title.lost { color: var(--red); }
+
+    .result-answer {
+      text-align: center; font-size: 1rem; color: var(--muted2);
+    }
+    .result-answer strong { color: var(--text); font-family: 'Space Mono', monospace; }
+
+    .funfact-box {
+      background: rgba(251,191,36,0.05);
+      border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 0.88rem; line-height: 1.65; color: var(--muted2);
+    }
+    .funfact-label {
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--yellow); margin-bottom: 6px; font-weight: 700;
+    }
+
+    .btn-share {
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 10px;
+      color: var(--yellow);
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+      padding: 11px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      transition: all 0.15s;
+    }
+    .btn-share:hover { background: rgba(251,191,36,0.18); border-color: var(--yellow); }
+
+    /* ── Next countdown ─────────────────────────────── */
+    .next-countdown {
+      text-align: center; font-size: 0.9rem; color: var(--muted);
+    }
+    .next-countdown strong { color: var(--green); font-size: 1.1rem; }
+
+    /* ── Toast ──────────────────────────────────────── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(15,25,15,0.95);
+      border: 1px solid var(--border-g);
+      backdrop-filter: blur(20px);
+      color: var(--text);
+      padding: 11px 22px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 999; pointer-events: none;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Splash / Start Screen ──────────────────────── */
+    #splash {
+      position: fixed; inset: 0; z-index: 1000;
+      background: #050a05;
+      background-image:
+        radial-gradient(ellipse 70% 50% at 50% 30%, rgba(74,222,128,0.07) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(74,222,128,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 30% 30% at 80% 70%, rgba(96,165,250,0.03) 0%, transparent 50%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Stars */
+    #splash::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 25% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 40% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 5%,  rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 75% 12%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 88% 18%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5%  35%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 92% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 33% 3%,  rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 80% 7%,  rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 55% 25%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 15% 55%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 95% 50%, rgba(255,255,255,0.3) 0%, transparent 100%);
+    }
+
+    /* Bottom glow bar */
+    #splash::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--green) 50%, transparent 100%);
+      opacity: 0.4;
+    }
+
+    .splash-logo {
+      width: 120px; height: 120px; border-radius: 24px;
+      box-shadow: 0 0 0 1px rgba(74,222,128,0.2), 0 0 60px rgba(74,222,128,0.2);
+      position: relative; z-index: 1; margin-bottom: 24px;
+    }
+
+    .splash-title {
+      font-family: 'Space Mono', monospace;
+      font-size: 3.2rem; font-weight: 700;
+      color: var(--text);
+      letter-spacing: -1px;
+      position: relative; z-index: 1;
+      margin-bottom: 4px;
+    }
+    .splash-title span { color: var(--green); }
+
+    .splash-tagline {
+      font-size: 0.95rem; color: var(--muted2);
+      text-align: center; max-width: 320px;
+      line-height: 1.6; position: relative; z-index: 1;
+      margin-bottom: 36px;
+    }
+
+    .splash-features {
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1; margin-bottom: 40px;
+    }
+
+    .splash-feat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.78rem; color: var(--muted2);
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .btn-start {
+      position: relative; z-index: 1;
+      background: var(--green);
+      color: #000;
+      border: none; border-radius: 14px;
+      padding: 16px 52px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.05rem; font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      box-shadow: 0 0 0 1px rgba(74,222,128,0.5), 0 0 40px rgba(74,222,128,0.25);
+      transition: all 0.2s;
+    }
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(74,222,128,0.7), 0 0 60px rgba(74,222,128,0.35);
+      background: #6ee79a;
+    }
+    .btn-start:active { transform: translateY(0); }
+
+    .splash-version {
+      position: absolute; bottom: 20px; right: 20px; z-index: 1;
+      font-size: 0.68rem; color: var(--muted); letter-spacing: 1px;
+      font-family: 'Space Mono', monospace;
+    }
+
+    /* Game wrapper */
+    #game-wrapper { display: none; width: 100%; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #game-wrapper.visible {
+      display: contents;
+      animation: fadeIn 0.35s ease;
+    }
+
+    /* ── Floating MC Blocks (Splash) ─────────────────── */
+    .mc-block {
+      position: absolute; border-radius: 4px;
+      animation: blockFloat var(--dur,5s) var(--delay,0s) ease-in-out infinite;
+      z-index: 0; pointer-events: none;
+    }
+    @keyframes blockFloat {
+      0%,100% { transform: translateY(0) rotate(var(--rot,0deg)) scale(1); }
+      50%      { transform: translateY(-18px) rotate(calc(var(--rot,0deg) + 6deg)) scale(1.03); }
+    }
+    @keyframes blockAppear {
+      from { opacity:0; transform: translateY(30px) scale(0.7); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .mc-block.grass   { background: linear-gradient(145deg,#4a7c2f,#5da832); box-shadow: inset 3px 3px 0 #7dd44a, inset -3px -3px 0 #2d5a1c; }
+    .mc-block.stone   { background: linear-gradient(145deg,#5a5a5a,#888); box-shadow: inset 3px 3px 0 #aaa, inset -3px -3px 0 #333; }
+    .mc-block.diamond { background: linear-gradient(145deg,#1a9090,#52d4d4); box-shadow: inset 3px 3px 0 #80eee0, inset -3px -3px 0 #0d5050; }
+    .mc-block.gold    { background: linear-gradient(145deg,#b08800,#f5c518); box-shadow: inset 3px 3px 0 #ffe870, inset -3px -3px 0 #7a5e00; }
+    .mc-block.nether  { background: linear-gradient(145deg,#1e0a0a,#3a1010); box-shadow: inset 3px 3px 0 #5a1515, inset -3px -3px 0 #0d0303; }
+    .mc-block.iron    { background: linear-gradient(145deg,#707070,#c0b8b0); box-shadow: inset 3px 3px 0 #e0d8d0, inset -3px -3px 0 #404038; }
+
+    /* ── Auth modal ────────────────────────────────────── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 900;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .overlay.hidden { display: none; }
+
+    .modal-card {
+      background: #0a120a; border: 1px solid rgba(74,222,128,0.18);
+      border-radius: 24px; padding: 40px 32px;
+      max-width: 400px; width: 92%;
+      display: flex; flex-direction: column; gap: 18px;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(74,222,128,0.05);
+      animation: blockAppear 0.3s ease;
+    }
+    .modal-card::before {
+      content: ''; position: absolute; top:0; left:24px; right:24px; height:1px;
+      background: linear-gradient(90deg,transparent,rgba(74,222,128,0.35),transparent);
+    }
+    .modal-logo {
+      font-family: 'Space Mono', monospace; font-size: 1.3rem; font-weight: 700;
+      color: var(--text); text-align: center; margin-bottom: -4px;
+    }
+    .modal-logo span { color: var(--green); }
+    .modal-title { font-size: 0.95rem; color: var(--muted); text-align: center; line-height: 1.6; }
+
+    .btn-social {
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 13px 20px; background: rgba(255,255,255,0.04);
+      color: var(--text); font-size: 0.92rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .btn-social:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); transform: translateY(-1px); }
+
+    .divider { display:flex; align-items:center; gap:12px; color:var(--muted); font-size:0.78rem; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    .btn-guest {
+      background: transparent; border: 1px solid var(--border);
+      border-radius: 12px; padding: 11px 20px;
+      color: var(--muted); font-size: 0.85rem; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif; transition: all 0.15s; text-align: center;
+    }
+    .btn-guest:hover { border-color: var(--muted2); color: var(--text); }
+    .auth-note { font-size: 0.72rem; color: var(--muted); text-align: center; line-height: 1.5; }
+
+    /* ── Mode selection ─────────────────────────────────── */
+    #mode-screen {
+      position: fixed; inset: 0; z-index: 800;
+      background: var(--bg);
+      background-image: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(74,222,128,0.06) 0%, transparent 60%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 20px; padding: 24px;
+    }
+    #mode-screen.hidden { display: none; }
+    .mode-welcome { font-size: 0.88rem; color: var(--muted); }
+    .mode-welcome strong { color: var(--green); }
+    .mode-title { font-family: 'Space Mono', monospace; font-size: 1.6rem; font-weight: 700; color: var(--text); }
+
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .mode-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 20px; padding: 28px 22px;
+      width: 180px; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      text-align: center; transition: all 0.2s; position: relative; overflow: hidden;
+    }
+    .mode-card::after {
+      content: ''; position: absolute; top:0; left:0; right:0; height:2px;
+      background: var(--mc,var(--green)); transform: scaleX(0); transition: transform 0.2s;
+    }
+    .mode-card:hover { border-color: var(--mc,var(--green)); transform: translateY(-5px); }
+    .mode-card:hover::after { transform: scaleX(1); }
+    .mode-icon { font-size: 2.4rem; }
+    .mode-name { font-weight: 700; font-size: 1rem; color: var(--text); }
+    .mode-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; }
+    .mode-tag {
+      background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25);
+      color: var(--yellow); font-size: 0.62rem; font-weight: 700;
+      letter-spacing: 1px; padding: 2px 8px; border-radius: 999px;
+    }
+    .mode-tag.green-tag {
+      background: rgba(74,222,128,0.1); border-color: rgba(74,222,128,0.25); color: var(--green);
+    }
+
+    /* ── User chip in header ────────────────────────────── */
+    .user-chip {
+      display:flex; align-items:center; gap:7px;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:8px; padding:5px 10px; font-size:0.76rem;
+      cursor:pointer; transition:all 0.15s; color:var(--muted2);
+    }
+    .user-chip:hover { border-color:var(--border-g); }
+    .user-chip img { width:18px; height:18px; border-radius:50%; }
+    .user-chip .uname { max-width:72px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    /* ── Points in session bar ──────────────────────────── */
+    .sc.pts span:first-child { color: var(--green) !important; }
+
+    /* ── Competition progress ───────────────────────────── */
+    #comp-bar { display:none; }
+    #comp-bar.show { display:flex; }
+    #comp-bar {
+      align-items: center; justify-content: space-between;
+      background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 12px; padding: 10px 16px; font-size: 0.82rem; color: var(--muted2);
+      gap: 12px;
+    }
+    #comp-bar .cb-item { display:flex; flex-direction:column; align-items:center; gap:2px; }
+    #comp-bar .cb-item span:first-child { font-family:'Space Mono',monospace; font-weight:700; color:var(--text); font-size:1rem; }
+    #comp-bar .cb-item span:last-child { font-size:0.65rem; letter-spacing:0.5px; }
+    #comp-bar .cb-pts span:first-child { color: var(--green); }
+    .comp-bar-sep { width:1px; height:24px; background:var(--border); }
+
+    /* ── Hint system ────────────────────────────────────── */
+    .hint-area { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
+    .btn-hint {
+      align-self: flex-start;
+      background: rgba(251,191,36,0.06); border: 1px solid rgba(251,191,36,0.2);
+      border-radius: 8px; color: var(--yellow); font-size: 0.78rem;
+      font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+      padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-hint:hover:not(:disabled) { background:rgba(251,191,36,0.14); border-color:var(--yellow); }
+    .btn-hint:disabled { opacity:0.38; cursor:not-allowed; }
+    .hint-cost { font-size:0.67rem; opacity:0.7; }
+
+    .hint-box {
+      background: rgba(251,191,36,0.05); border: 1px solid rgba(251,191,36,0.18);
+      border-radius: 10px; padding: 10px 14px; font-size: 0.84rem;
+      color: #d4b44a; display:none; line-height:1.55;
+    }
+    .hint-box.show { display:block; animation:slideIn 0.2s ease; }
+
+    /* ── Answer animations ──────────────────────────────── */
+    @keyframes correctPulse {
+      0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.55); }
+      50%  { box-shadow: 0 0 0 18px rgba(74,222,128,0); }
+      100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+    }
+    @keyframes wrongShake {
+      0%,100% { transform:translateX(0); }
+      15%     { transform:translateX(-9px); }
+      35%     { transform:translateX(9px); }
+      55%     { transform:translateX(-6px); }
+      75%     { transform:translateX(5px); }
+    }
+    .question-card.anim-correct {
+      animation: correctPulse 0.65s ease;
+      border-color: rgba(74,222,128,0.45) !important;
+      background: rgba(74,222,128,0.04) !important;
+    }
+    .question-card.anim-wrong {
+      animation: wrongShake 0.5s ease;
+      border-color: rgba(248,113,113,0.4) !important;
+      background: rgba(248,113,113,0.04) !important;
+    }
+
+    /* ── Points earned badge ────────────────────────────── */
+    .pts-earned {
+      text-align:center; font-family:'Space Mono',monospace;
+      font-size:1.8rem; font-weight:700; margin-bottom:-4px;
+    }
+    .pts-earned.pos { color:var(--green); }
+    .pts-earned.neg { color:var(--red); }
+
+    /* ── Leaderboard modal ──────────────────────────────── */
+    #lb-modal { position:fixed; inset:0; z-index:950; background:rgba(0,0,0,0.82); backdrop-filter:blur(14px); display:flex; align-items:center; justify-content:center; }
+    #lb-modal.hidden { display:none; }
+    .lb-card {
+      background:#0a120a; border:1px solid rgba(74,222,128,0.18);
+      border-radius:22px; padding:30px 24px;
+      max-width:460px; width:92%; max-height:80vh; overflow-y:auto;
+      position:relative; box-shadow:0 32px 80px rgba(0,0,0,0.8);
+      animation:blockAppear 0.3s ease;
+    }
+    .lb-title { font-family:'Space Mono',monospace; font-size:1.2rem; font-weight:700; color:var(--text); text-align:center; margin-bottom:6px; }
+    .lb-sub   { font-size:0.75rem; color:var(--muted); text-align:center; margin-bottom:18px; }
+    .lb-row {
+      display:flex; align-items:center; gap:12px;
+      padding:10px 14px; border-radius:10px; margin-bottom:6px;
+      background:var(--card); border:1px solid var(--border);
+    }
+    .lb-row.me { border-color:rgba(74,222,128,0.3); background:rgba(74,222,128,0.04); }
+    .lb-rank   { font-family:'Space Mono',monospace; font-size:0.9rem; width:28px; }
+    .lb-name   { flex:1; font-weight:600; font-size:0.88rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .lb-score  { font-family:'Space Mono',monospace; color:var(--green); font-weight:700; font-size:0.88rem; }
+    .lb-meta   { font-size:0.72rem; color:var(--muted); white-space:nowrap; }
+    .lb-tabs   { display:flex; gap:8px; margin-bottom:16px; }
+    .lb-tab    { flex:1; padding:7px 0; border-radius:8px; border:1px solid var(--border); background:var(--card);
+                 font-size:0.8rem; font-family:'Space Grotesk',sans-serif; color:var(--muted2); cursor:pointer; transition:all 0.15s; }
+    .lb-tab.active { border-color:var(--border-g); color:var(--green); background:rgba(74,222,128,0.07); }
+    .lb-refresh { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1rem; position:absolute; top:14px; left:14px; }
+    .lb-refresh:hover { color:var(--green); }
+    .lb-close-btn {
+      position:absolute; top:14px; right:14px;
+      background:var(--card); border:1px solid var(--border);
+      border-radius:8px; color:var(--muted); cursor:pointer;
+      padding:5px 12px; font-size:0.78rem; font-family:'Space Grotesk',sans-serif;
+      transition:all 0.15s;
+    }
+    .lb-close-btn:hover { border-color:var(--red); color:var(--red); }
+    .lb-empty { text-align:center; color:var(--muted); padding:28px 0; font-size:0.88rem; }
+
+    /* ── Competition end screen ─────────────────────────── */
+    #comp-end {
+      position:fixed; inset:0; z-index:870;
+      background:rgba(0,0,0,0.88); backdrop-filter:blur(18px);
+      display:flex; align-items:center; justify-content:center;
+    }
+    #comp-end.hidden { display:none; }
+    .comp-end-card {
+      background:#0a120a; border:1px solid rgba(74,222,128,0.2);
+      border-radius:24px; padding:40px 30px;
+      max-width:420px; width:92%; text-align:center;
+      display:flex; flex-direction:column; gap:16px;
+      box-shadow:0 32px 80px rgba(0,0,0,0.8);
+      animation:blockAppear 0.35s ease;
+    }
+    .ce-title { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--text); }
+    .ce-score { font-family:'Space Mono',monospace; font-size:3.2rem; font-weight:700; color:var(--green); line-height:1; }
+    .ce-label { font-size:0.8rem; color:var(--muted); letter-spacing:1px; }
+    .ce-stats {
+      display:flex; justify-content:center; gap:24px;
+      padding:16px; background:var(--card); border-radius:14px; border:1px solid var(--border);
+    }
+    .ce-stat { display:flex; flex-direction:column; align-items:center; gap:3px; }
+    .ce-stat .v { font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; }
+    .ce-stat .l { font-size:0.67rem; color:var(--muted); letter-spacing:0.5px; }
+    .ce-btns { display:flex; gap:10px; }
+    .ce-btns button {
+      flex:1; border:none; border-radius:10px; padding:13px 12px;
+      font-family:'Space Grotesk',sans-serif; font-weight:700; cursor:pointer; transition:all 0.15s;
+    }
+    .btn-ce-lb   { background:rgba(74,222,128,0.1); border:1px solid rgba(74,222,128,0.25) !important; color:var(--green); }
+    .btn-ce-lb:hover { background:rgba(74,222,128,0.18); }
+    .btn-ce-home { background:var(--green); color:#000; box-shadow:0 0 20px rgba(74,222,128,0.2); }
+    .btn-ce-home:hover { background:#6ee79a; }
+
+    /* ── Leaderboard button in header ───────────────────── */
+    .btn-lb-header {
+      background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.2);
+      border-radius:8px; color:var(--yellow); padding:5px 10px;
+      font-size:0.76rem; font-weight:600; cursor:pointer; transition:all 0.15s;
+      font-family:'Space Grotesk',sans-serif;
+    }
+    .btn-lb-header:hover { background:rgba(251,191,36,0.16); border-color:var(--yellow); }
+
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js" onerror="window.FIREBASE_ENABLED=false;window.FIREBASE_CONFIG=null;"></script>
+</head>
+<body>
+
+
+<div id="splash">
+  <!-- Floating pixel blocks background -->
+  <div class="mc-block grass"   style="width:52px;height:52px;top:12%;left:8%;--rot:-15deg;--dur:5s;--delay:0s;opacity:0.7;animation:blockFloat 5s 0s ease-in-out infinite,blockAppear 0.6s 0.1s both;"></div>
+  <div class="mc-block stone"   style="width:38px;height:38px;top:20%;left:18%;--rot:10deg;--dur:6s;--delay:0.8s;opacity:0.5;animation:blockFloat 6s 0.8s ease-in-out infinite,blockAppear 0.6s 0.3s both;"></div>
+  <div class="mc-block diamond" style="width:46px;height:46px;top:8%;right:10%;--rot:20deg;--dur:7s;--delay:0.4s;opacity:0.65;animation:blockFloat 7s 0.4s ease-in-out infinite,blockAppear 0.6s 0.2s both;"></div>
+  <div class="mc-block gold"    style="width:40px;height:40px;top:25%;right:22%;--rot:-8deg;--dur:5.5s;--delay:1.2s;opacity:0.55;animation:blockFloat 5.5s 1.2s ease-in-out infinite,blockAppear 0.6s 0.5s both;"></div>
+  <div class="mc-block nether"  style="width:34px;height:34px;top:65%;left:6%;--rot:12deg;--dur:6.5s;--delay:0.2s;opacity:0.45;animation:blockFloat 6.5s 0.2s ease-in-out infinite,blockAppear 0.6s 0.4s both;"></div>
+  <div class="mc-block iron"    style="width:44px;height:44px;top:70%;right:7%;--rot:-20deg;--dur:5s;--delay:0.9s;opacity:0.6;animation:blockFloat 5s 0.9s ease-in-out infinite,blockAppear 0.6s 0.6s both;"></div>
+  <div class="mc-block grass"   style="width:30px;height:30px;top:55%;left:14%;--rot:5deg;--dur:7s;--delay:0.6s;opacity:0.4;animation:blockFloat 7s 0.6s ease-in-out infinite,blockAppear 0.6s 0.7s both;"></div>
+  <div class="mc-block diamond" style="width:36px;height:36px;top:75%;right:18%;--rot:-12deg;--dur:6s;--delay:1.5s;opacity:0.45;animation:blockFloat 6s 1.5s ease-in-out infinite,blockAppear 0.6s 0.8s both;"></div>
+  <div class="mc-block gold"    style="width:28px;height:28px;top:40%;left:4%;--rot:18deg;--dur:5.5s;--delay:0.3s;opacity:0.35;animation:blockFloat 5.5s 0.3s ease-in-out infinite,blockAppear 0.6s 0.9s both;"></div>
+  <div class="mc-block stone"   style="width:50px;height:50px;top:42%;right:5%;--rot:-6deg;--dur:6s;--delay:1s;opacity:0.4;animation:blockFloat 6s 1s ease-in-out infinite,blockAppear 0.6s 0.5s both;"></div>
+
+  <!-- Center content -->
+  <img class="splash-logo" src="logo.svg" alt="MineGuess Logo" style="animation:blockAppear 0.5s 0.2s both" onerror="this.style.display='none'"/>
+  <div class="splash-title" style="animation:blockAppear 0.5s 0.35s both">Mine<span>Guess</span></div>
+  <div class="splash-tagline" style="animation:blockAppear 0.5s 0.5s both">
+    Teste dein Minecraft-Wissen!<br>
+    225+ Fragen · Endlos- &amp; Wettkampfmodus
+  </div>
+  <div class="splash-features" style="animation:blockAppear 0.5s 0.65s both">
+    <div class="splash-feat">⏱ 40 Sek./Frage</div>
+    <div class="splash-feat">💡 Tipps &amp; Fun Facts</div>
+    <div class="splash-feat">🏆 Leaderboard</div>
+    <div class="splash-feat">🎮 Multiplayer</div>
+  </div>
+  <button class="btn-start" id="btn-start-game" style="animation:blockAppear 0.5s 0.8s both">▶  Spielen</button>
+  <div class="splash-version">v2.0 · MineGuess</div>
+</div>
+
+<!-- ── Auth Modal ─────────────────────────────────────────────────────────── -->
+<div class="overlay hidden" id="auth-modal">
+  <div class="modal-card">
+    <div class="modal-logo">Mine<span>Guess</span></div>
+    <div class="modal-title">Melde dich an, um Statistiken zu speichern,<br>Punkte zu sammeln und im Leaderboard aufzutauchen.</div>
+    <button class="btn-social" id="btn-google-signin">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H24v7h11.1C33.5 32.4 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5 12.7 5.5 3.5 14.7 3.5 26S12.7 46.5 24 46.5c10.9 0 20-7.9 20-20 0-1.3-.1-2.7-.4-3.9-.3-.7-.3-1.5 0-2.1z"/><path fill="#34A853" d="M6.3 15.6l6.3 4.6C14.2 16.5 18.8 13.5 24 13.5c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5c-7.7 0-14.4 4.3-17.7 10.1z"/><path fill="#FBBC05" d="M24 46.5c4.8 0 9.1-1.6 12.4-4.4l-5.7-4.7C28.9 38.8 26.6 39.5 24 39.5c-5.2 0-9.5-2.8-11.7-6.8l-6.2 4.8C9.5 42.3 16.3 46.5 24 46.5z"/><path fill="#EA4335" d="M43.6 20.5H24v7h11.1c-.8 2.2-2.3 4-4.2 5.4l5.7 4.7c3.4-3.1 5.4-7.8 5.4-13.1 0-1.3-.1-2.7-.4-4z"/></svg>
+      Mit Google anmelden
+    </button>
+    <div class="divider">oder</div>
+    <button class="btn-guest" id="btn-guest-play">Als Gast spielen (keine Statistiken)</button>
+    <div class="auth-note">Deine Daten werden sicher in der Cloud gespeichert.<br>Gäste haben keinen Leaderboard-Zugang.</div>
+  </div>
+</div>
+
+<!-- ── Mode Selection ─────────────────────────────────────────────────────── -->
+<div id="mode-screen" class="hidden">
+  <div class="mode-welcome" id="mode-welcome">Wähle einen Modus</div>
+  <div class="mode-title">Was möchtest du spielen?</div>
+  <div class="mode-grid">
+    <div class="mode-card" style="--mc:#4ade80" onclick="selectMode('endless')">
+      <div class="mode-icon">🔄</div>
+      <div class="mode-name">Endlosmodus</div>
+      <div class="mode-desc">225+ Fragen ohne Ende. Übe und verbessere dein Wissen.</div>
+      <div class="mode-tag green-tag">FÜR ALLE</div>
+    </div>
+    <div class="mode-card" style="--mc:#fbbf24" onclick="selectMode('competition')" id="comp-mode-card">
+      <div class="mode-icon">🏆</div>
+      <div class="mode-name">Wettkampf</div>
+      <div class="mode-desc">10 Fragen täglich. Punkte sammeln und im Leaderboard aufsteigen.</div>
+      <div class="mode-tag" id="comp-mode-tag">NUR ACCOUNTS</div>
+    </div>
+    <div class="mode-card" style="--mc:#60a5fa;grid-column:1/-1" onclick="window.location.href='multiplayer.html'">
+      <div class="mode-icon">🎮</div>
+      <div class="mode-name">Multiplayer <span style="font-size:0.65rem;background:rgba(96,165,250,0.15);border:1px solid rgba(96,165,250,0.3);color:#60a5fa;padding:2px 8px;border-radius:6px;vertical-align:middle;letter-spacing:1px">BETA</span></div>
+      <div class="mode-desc">Spiele gegen andere Spieler in Echtzeit. Öffentliche oder private Räume.</div>
+      <div class="mode-tag" style="background:rgba(96,165,250,0.1);color:#60a5fa">ECHTZEIT</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:8px;justify-content:center;flex-wrap:wrap">
+    <button class="btn-lb-header" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    <button class="btn-lb-header" id="btn-mode-signout" onclick="doSignOut()" style="display:none;opacity:0.7">↩ Abmelden</button>
+  </div>
+</div>
+
+<!-- ── Leaderboard Modal ───────────────────────────────────────────────────── -->
+<div id="lb-modal" class="hidden">
+  <div class="lb-card">
+    <button class="lb-refresh" onclick="loadLeaderboard(currentLbFilter)" title="Aktualisieren">↻</button>
+    <button class="lb-close-btn" onclick="document.getElementById('lb-modal').classList.add('hidden')">✕ Schließen</button>
+    <div class="lb-title">🏆 Leaderboard</div>
+    <div class="lb-tabs">
+      <button class="lb-tab active" id="lb-tab-today" onclick="loadLeaderboard('today')">Heute</button>
+      <button class="lb-tab" id="lb-tab-all" onclick="loadLeaderboard('all')">Allzeit</button>
+    </div>
+    <div id="lb-list"><div class="lb-empty">Lade…</div></div>
+  </div>
+</div>
+
+<!-- ── Competition End Screen ─────────────────────────────────────────────── -->
+<div id="comp-end" class="hidden">
+  <div class="comp-end-card">
+    <div class="ce-title">🏁 Wettkampf abgeschlossen!</div>
+    <div>
+      <div class="ce-score" id="ce-score">0</div>
+      <div class="ce-label">PUNKTE</div>
+    </div>
+    <div class="ce-stats">
+      <div class="ce-stat"><span class="v" id="ce-correct">0</span><span class="l">RICHTIG</span></div>
+      <div class="ce-stat"><span class="v" id="ce-total">10</span><span class="l">FRAGEN</span></div>
+      <div class="ce-stat"><span class="v" id="ce-pct">0%</span><span class="l">QUOTE</span></div>
+    </div>
+    <div id="ce-lb-note" style="font-size:0.8rem;color:var(--muted)">Punkte werden ins Leaderboard eingetragen…</div>
+    <div class="ce-btns">
+      <button class="btn-ce-lb" onclick="showLeaderboard()">🏆 Leaderboard</button>
+      <button class="btn-ce-home" onclick="location.reload()">🏠 Neu starten</button>
+    </div>
+  </div>
+</div>
+
+<div id="game-wrapper">
+<header>
+  <h1><span class="logo-icon">⛏</span> Mine<span style="color:rgba(74,222,128,0.7)">Guess</span></h1>
+  <div class="header-stats">
+    <div class="stat"><span id="streak-val">0</span><span>STREAK</span></div>
+    <div class="stat"><span id="best-val">0</span><span>BEST</span></div>
+    <div class="stat"><span id="played-val">0</span><span>GESPIELT</span></div>
+    <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()" style="display:none">🏆</button>
+    <div class="user-chip" id="user-chip" style="display:none" onclick="doSignOut()">
+      <img id="user-avatar" src="" alt=""/>
+      <span class="uname" id="user-name"></span>
+      <span style="font-size:0.65rem;opacity:0.5">▾</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Competition progress bar -->
+  <div id="comp-bar">
+    <div class="cb-item"><span id="comp-q-num">1</span><span>FRAGE</span></div>
+    <div class="comp-bar-sep"></div>
+    <div class="cb-item"><span id="comp-q-of">10</span><span>GESAMT</span></div>
+    <div class="comp-bar-sep"></div>
+    <div class="cb-item cb-pts"><span id="comp-pts">0</span><span>PUNKTE</span></div>
+  </div>
+
+  <div class="session-score">
+    <div class="sc"><span id="sess-correct">0</span><span>RICHTIG</span></div>
+    <div class="sc"><span id="sess-total">0</span><span>GESPIELT</span></div>
+    <div class="sc pts"><span id="sess-points">0</span><span>PUNKTE</span></div>
+    <div class="sc"><span id="sess-num">#1</span><span>FRAGE</span></div>
+  </div>
+
+  <div class="category-pill" id="category-pill">Kategorie</div>
+
+  <div class="question-card" id="question-text">Lade Frage…</div>
+
+  <div class="attempts-bar" id="attempts-bar"></div>
+
+  <div class="timer-wrap" id="timer-wrap" style="display:none">
+    <div class="timer-ring" id="timer-ring">
+      <svg width="56" height="56" viewBox="0 0 56 56">
+        <circle class="bg" cx="28" cy="28" r="24"/>
+        <circle class="fg" id="timer-arc" cx="28" cy="28" r="24"
+          stroke-dasharray="150.8" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-num" id="timer-num">10</div>
+    </div>
+  </div>
+
+  <div class="guesses-list" id="guesses-list"></div>
+
+  <div class="input-area" id="input-area">
+    <!-- dynamically filled -->
+  </div>
+  <div class="hint-area">
+    <button class="btn-hint" id="hint-btn" onclick="useHint()">
+      💡 Tipp 1 <span class="hint-cost">(-200 Pkt.)</span>
+    </button>
+    <div class="hint-box" id="hint-box"></div>
+  </div>
+
+  <div class="result-panel" id="result-panel">
+    <div class="result-title" id="result-title"></div>
+    <div class="pts-earned" id="pts-earned"></div>
+    <div class="result-answer" id="result-answer"></div>
+    <div class="funfact-box">
+      <div class="funfact-label">💡 Fun Fact</div>
+      <div id="funfact-text"></div>
+    </div>
+    <button class="btn-share" id="btn-share">📋 Ergebnis teilen</button>
+    <div class="next-countdown" id="next-countdown"></div>
+  </div>
+</main>
+
+</div><!-- #game-wrapper -->
+
+<div id="toast"></div>
+
+<script>
+// ── Entity list for autocomplete ─────────────────────────────────────────────
+const ENTITIES = [
+  "Mooshroom","Pilzkuh","Blaze","Lohe","Creeper","Zombie","Skelett","Spinne","Enderman",
+  "Slime","Schleimblock","Witch","Hexe","Silverfish","Silberfischchen","Guardian","Wächter",
+  "Elder Guardian","Älterer Wächter","Shulker","Hüllenträger","Wither","Witherskelett",
+  "Blaze","Ghast","Magma Cube","Magmawürfel","Zombie Piglin","Zombifiziertes Schweinfelin",
+  "Piglin","Hoglin","Zoglin","Strider","Lurchstrider","Ravager","Verwüster","Pillager",
+  "Evoker","Beschwörer","Vindicator","Bestraferer","Illusioner","Witch","Bat","Fledermaus",
+  "Cat","Katze","Chicken","Huhn","Cow","Kuh","Donkey","Esel","Fox","Fuchs",
+  "Horse","Pferd","Llama","Lama","Mule","Maulesel","Ocelot","Ozelot","Panda","Parrot",
+  "Papagei","Pig","Schwein","Polar Bear","Eisbär","Rabbit","Kaninchen","Sheep","Schaf",
+  "Squid","Tintenfisch","Glow Squid","Leuchtender Tintenfisch","Turtle","Schildkröte",
+  "Wolf","Bee","Biene","Dolphin","Delfin","Drowned","Ertrunkener","Phantom","Ender-Drache",
+  "Endermite","Iron Golem","Eisengolem","Snow Golem","Schneegolem","Villager","Dorfbewohner",
+  "Wandering Trader","Wandernder Händler","Warden","Froschlicht","Frog","Frosch","Allay",
+  "Vex","Axolotl","Glow Squid",
+  // Items & Blocks
+  "Obsidian","Diamant","Netherit","Netherite","Goldener Apfel","Golden Apple",
+  "Unsichtbarkeitstrank","Trank der Unsichtbarkeit","Schleimblock","Slime Block",
+  "Glowstone","Leuchtstein","Prismarin","Prismarinblock","Seegurke","Sea Lantern",
+  "Schuldkisten","Schulkiste","Totem der Unsterblichkeit","Elytra","Trident","Dreizack",
+  "Fishing Rod","Angelrute","Bow","Bogen","Crossbow","Armbrust"
+];
+
+// ── Config ───────────────────────────────────────────────────────────────────
+const MAX_ATTEMPTS = 6;
+const CLOSE_THRESHOLD_PERCENT = 0.15;
+const TIMER_SECONDS = 40;
+const CIRCUMFERENCE = 2 * Math.PI * 24; // r=24 → ~150.8
+
+// ── State ────────────────────────────────────────────────────────────────────
+let allQuestions = [];
+let questionOrder = [];
+let currentIndex = 0;
+let question = null;
+let attempts = 0;
+let finished = false;
+let timerInterval = null;
+let timerLeft = TIMER_SECONDS;
+let nextTimeout = null;
+
+// Session score
+let sessCorrect = 0;
+let sessTotal   = 0;
+
+// ── Storage helpers ──────────────────────────────────────────────────────────
+function getStats() {
+  return JSON.parse(localStorage.getItem('mg_stats') || '{"streak":0,"best":0,"played":0}');
+}
+function saveStats(s) {
+  localStorage.setItem('mg_stats', JSON.stringify(s));
+}
+function getTodayState() {
+  return JSON.parse(localStorage.getItem('mg_today_' + todayKey) || 'null');
+}
+function saveTodayState(state) {
+  localStorage.setItem('mg_today_' + todayKey, JSON.stringify(state));
+}
+
+// ── Date helpers ─────────────────────────────────────────────────────────────
+function getDateKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function getYesterdayKey() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function pickQuestion(questions, dateKey) {
+  // Deterministic daily question based on date
+  let hash = 0;
+  for (let i = 0; i < dateKey.length; i++) hash = (hash * 31 + dateKey.charCodeAt(i)) >>> 0;
+  return questions[hash % questions.length];
+}
+
+// ── Countdown to next question ───────────────────────────────────────────────
+function updateCountdown() {
+  const now = new Date();
+  const midnight = new Date(now);
+  midnight.setHours(24, 0, 0, 0);
+  const diff = midnight - now;
+  const h = Math.floor(diff / 3_600_000);
+  const m = Math.floor((diff % 3_600_000) / 60_000);
+  const s = Math.floor((diff % 60_000) / 1_000);
+  document.getElementById('countdown').innerHTML =
+    `Nächste Frage in: <strong>${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</strong>`;
+}
+
+// ── UI helpers ───────────────────────────────────────────────────────────────
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function renderAttemptBar() {
+  const bar = document.getElementById('attempts-bar');
+  bar.innerHTML = '';
+  for (let i = 0; i < MAX_ATTEMPTS; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'attempt-dot';
+    dot.id = `dot-${i}`;
+    bar.appendChild(dot);
+  }
+}
+
+function markDot(index, type) {
+  const dot = document.getElementById(`dot-${index}`);
+  if (dot) dot.classList.add(type);
+}
+
+function updateStatsDisplay() {
+  const s = getStats();
+  document.getElementById('streak-val').textContent = s.streak;
+  document.getElementById('best-val').textContent   = s.best;
+  document.getElementById('played-val').textContent = s.played;
+}
+
+// ── Feedback logic ───────────────────────────────────────────────────────────
+function getFeedback(q, userAnswer) {
+  if (q.type === 'number') {
+    const num = parseFloat(userAnswer);
+    if (isNaN(num)) return { correct: false, text: 'Bitte eine Zahl eingeben', arrow: '❓', cls: 'fb-wrong' };
+
+    if (num === q.answer) return { correct: true, text: 'Richtig! 🎉', arrow: '✅', cls: 'fb-correct' };
+
+    const diff = Math.abs(num - q.answer);
+    const pct  = diff / Math.abs(q.answer || 1);
+    const isClose = pct <= CLOSE_THRESHOLD_PERCENT || diff <= 2;
+    const higher = num > q.answer;
+
+    if (isClose) {
+      return {
+        correct: false,
+        text: higher ? 'Zu hoch – aber nah dran! 🌡️' : 'Zu niedrig – aber nah dran! 🌡️',
+        arrow: higher ? '⬇️' : '⬆️',
+        cls: 'fb-close'
+      };
+    }
+    return {
+      correct: false,
+      text: higher ? 'Zu hoch ↓' : 'Zu niedrig ↑',
+      arrow: higher ? '⬇️' : '⬆️',
+      cls: higher ? 'fb-high' : 'fb-low'
+    };
+  }
+
+  // entity
+  const norm = s => s.toLowerCase().trim();
+  const accepted = q.acceptedAnswers.map(norm);
+  if (accepted.includes(norm(userAnswer))) {
+    return { correct: true, text: 'Richtig! 🎉', arrow: '✅', cls: 'fb-correct' };
+  }
+  return { correct: false, text: 'Falsch – versuch nochmal!', arrow: '❌', cls: 'fb-wrong' };
+}
+
+// ── Add guess row ─────────────────────────────────────────────────────────────
+function addGuessRow(value, unit, fb) {
+  const list = document.getElementById('guesses-list');
+  const row = document.createElement('div');
+  row.className = `guess-row ${fb.cls}`;
+
+  const label = unit ? `${value} ${unit}` : value;
+  row.innerHTML = `
+    <span class="guess-arrow">${fb.arrow}</span>
+    <span class="guess-value">${label}</span>
+    <span class="guess-feedback">${fb.text}</span>
+  `;
+  list.appendChild(row);
+}
+
+// ── Show result panel ─────────────────────────────────────────────────────────
+function showResult(won, ptsThisQuestion) {
+  sessTotal++;
+  if (won) sessCorrect++;
+  document.getElementById('sess-correct').textContent = sessCorrect;
+  document.getElementById('sess-total').textContent   = sessTotal;
+  document.getElementById('sess-num').textContent     = '#' + (sessTotal + 1);
+
+  const panel = document.getElementById('result-panel');
+  const title = document.getElementById('result-title');
+  title.textContent = won ? '🎉 Richtig!' : '😢 Falsch!';
+  title.className   = 'result-title' + (won ? '' : ' lost');
+  panel.classList.add('show');
+
+  // Points display
+  const ptsEl = document.getElementById('pts-earned');
+  const pts = ptsThisQuestion || 0;
+  if (won) {
+    ptsEl.textContent = '+' + Math.max(0, pts).toLocaleString() + ' Pkt.';
+    ptsEl.className = 'pts-earned pos';
+  } else {
+    ptsEl.textContent = pts + ' Pkt. diese Frage';
+    ptsEl.className = 'pts-earned neg';
+  }
+
+  const answerStr = question.type === 'number'
+    ? `${question.answer}${question.unit ? ' ' + question.unit : ''}`
+    : question.answer;
+
+  document.getElementById('result-answer').innerHTML =
+    won ? `Antwort: <strong>${answerStr}</strong>`
+        : `Richtige Antwort: <strong>${answerStr}</strong>`;
+
+  document.getElementById('funfact-text').textContent = question.funFact;
+  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('hint-btn').disabled = true;
+
+  // Competition mode: check if done
+  if (gameMode === 'competition') {
+    if (compIndex >= COMP_TOTAL) {
+      localStorage.setItem('mg_comp_'+getDateKey(), JSON.stringify({score:compScore,correct:compCorrect}));
+      setTimeout(() => showCompEnd(compScore, compCorrect, COMP_TOTAL), 3500);
+      document.getElementById('next-countdown').textContent = 'Wettkampf abgeschlossen!';
+      return;
+    }
+  }
+
+  // Auto-advance
+  let secs = 4;
+  const cd = document.getElementById('next-countdown');
+  cd.innerHTML = `Nächste Frage in <strong>${secs}</strong>…`;
+  clearTimeout(nextTimeout);
+  const cdInterval = setInterval(() => {
+    secs--;
+    if (secs <= 0) { clearInterval(cdInterval); cd.innerHTML = ''; loadNextQuestion(); }
+    else cd.innerHTML = `Nächste Frage in <strong>${secs}</strong>…`;
+  }, 1000);
+}
+
+// ── Share result ──────────────────────────────────────────────────────────────
+function buildShareText(won) {
+  const dots = document.querySelectorAll('.attempt-dot');
+  const emojis = [...dots].map(d => {
+    if (d.classList.contains('correct')) return '🟩';
+    if (d.classList.contains('used'))    return '⬜';
+    if (d.classList.contains('failed'))  return '🟥';
+    return '⬛';
+  }).join('');
+
+  const result = won ? `${attempts}/${MAX_ATTEMPTS}` : 'X/6';
+  return `⛏ MineGuess ${getDateKey()}\n${result}\n${emojis}\n\nSpiel selbst: [dein-link]`;
+}
+
+// ── Timer ─────────────────────────────────────────────────────────────────────
+function startTimer() {
+  if (finished) return;
+  clearInterval(timerInterval);
+  timerLeft = TIMER_SECONDS;
+
+  const wrap = document.getElementById('timer-wrap');
+  const ring = document.getElementById('timer-ring');
+  const arc  = document.getElementById('timer-arc');
+  const num  = document.getElementById('timer-num');
+
+  wrap.style.display = 'flex';
+  num.textContent = timerLeft;
+  arc.style.strokeDashoffset = '0';
+  ring.className = 'timer-ring';
+
+  timerInterval = setInterval(() => {
+    timerLeft--;
+    num.textContent = timerLeft;
+
+    const progress = timerLeft / TIMER_SECONDS;
+    arc.style.strokeDashoffset = CIRCUMFERENCE * (1 - progress);
+
+    ring.className = 'timer-ring' +
+      (timerLeft <= 3 ? ' danger' : timerLeft <= 5 ? ' warn' : '');
+
+    if (timerLeft <= 0) {
+      clearInterval(timerInterval);
+      if (!finished) {
+        // Time's up – count as wrong guess
+        addGuessRow('⏱ Zeit abgelaufen', '', { arrow: '⏱', text: 'Zeit abgelaufen!', cls: 'fb-wrong', correct: false });
+        markDot(attempts, 'used');
+        attempts++;
+
+        const state = getTodayState() || { guesses: [], done: false, won: false };
+        state.guesses.push({ val: '⏱', fb: { arrow: '⏱', text: 'Zeit abgelaufen!', cls: 'fb-wrong', correct: false } });
+
+        if (attempts >= MAX_ATTEMPTS) {
+          markDot(attempts - 1, 'failed');
+          finished = true;
+          state.done = true; state.won = false;
+          saveTodayState(state);
+          const stats = getStats(); stats.played++; stats.streak = 0;
+          saveStats(stats); updateStatsDisplay();
+          showResult(false);
+        } else {
+          saveTodayState(state);
+          showToast('⏱ Zeit abgelaufen! Nächster Versuch…');
+          startTimer(); // restart for next attempt
+        }
+      }
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timer-wrap').style.display = 'none';
+}
+
+// ── Build input area ──────────────────────────────────────────────────────────
+function buildInput() {
+  const area = document.getElementById('input-area');
+  area.innerHTML = '';
+
+  if (question.type === 'number') {
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.id   = 'answer-input';
+    inp.placeholder = `Zahl eingeben${question.unit ? ' (' + question.unit + ')' : ''}…`;
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitGuess(); });
+    area.appendChild(inp);
+  } else {
+    // Entity autocomplete
+    const wrapper = document.createElement('div');
+    wrapper.className = 'autocomplete-wrapper';
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.id   = 'answer-input';
+    inp.placeholder = 'Mob / Item / Block eingeben…';
+    inp.autocomplete = 'off';
+
+    const droplist = document.createElement('ul');
+    droplist.className = 'autocomplete-list';
+    droplist.style.display = 'none';
+
+    let activeIdx = -1;
+
+    inp.addEventListener('input', () => {
+      const val = inp.value.toLowerCase().trim();
+      droplist.innerHTML = '';
+      activeIdx = -1;
+      if (!val) { droplist.style.display = 'none'; return; }
+
+      const matches = ENTITIES.filter(e => e.toLowerCase().includes(val)).slice(0, 10);
+      if (!matches.length) { droplist.style.display = 'none'; return; }
+
+      matches.forEach((m, i) => {
+        const li = document.createElement('li');
+        li.textContent = m;
+        li.addEventListener('mousedown', () => { inp.value = m; droplist.style.display = 'none'; });
+        droplist.appendChild(li);
+      });
+      droplist.style.display = 'block';
+    });
+
+    inp.addEventListener('keydown', e => {
+      const items = droplist.querySelectorAll('li');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIdx = Math.min(activeIdx + 1, items.length - 1);
+        items.forEach((li,i) => li.classList.toggle('active', i === activeIdx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIdx = Math.max(activeIdx - 1, -1);
+        items.forEach((li,i) => li.classList.toggle('active', i === activeIdx));
+      } else if (e.key === 'Enter') {
+        if (activeIdx >= 0 && items[activeIdx]) {
+          inp.value = items[activeIdx].textContent;
+          droplist.style.display = 'none';
+        } else {
+          submitGuess();
+        }
+      } else if (e.key === 'Escape') {
+        droplist.style.display = 'none';
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (!wrapper.contains(e.target)) droplist.style.display = 'none';
+    });
+
+    wrapper.appendChild(inp);
+    wrapper.appendChild(droplist);
+    area.appendChild(wrapper);
+  }
+
+  const btn = document.createElement('button');
+  btn.className = 'btn-guess';
+  btn.textContent = 'Raten';
+  btn.addEventListener('click', submitGuess);
+  area.appendChild(btn);
+}
+
+// ── Submit guess ──────────────────────────────────────────────────────────────
+function submitGuess() {
+  if (finished) return;
+
+  clearInterval(timerInterval);
+
+  const inp = document.getElementById('answer-input');
+  const val = inp.value.trim();
+  if (!val) { startTimer(); showToast('Bitte eine Antwort eingeben!'); return; }
+
+  const fb = getFeedback(question, val);
+  addGuessRow(val, question.type === 'number' ? question.unit : '', fb);
+  markDot(attempts, fb.correct ? 'correct' : 'used');
+  attempts++;
+  inp.value = '';
+
+  if (fb.correct) {
+    // +1000 points for correct (already reduced by wrong/hint)
+    const earned = Math.max(0, POINTS_CORRECT + questionPoints);
+    addPoints(earned - questionPoints); // net to reach total
+    animateCard('correct');
+    finished = true;
+    stopTimer();
+    if (gameMode === 'competition') compCorrect++;
+    if (!isGuest) { const s=getStats(); s.played++; const yd=localStorage.getItem('mg_today_'+getYesterdayKey()); const ydS=yd?JSON.parse(yd):null; s.streak=(ydS&&ydS.done)?s.streak+1:1; s.best=Math.max(s.best,s.streak); saveStats(s); saveCloudStats(); updateStatsDisplay(); }
+    showResult(true, Math.max(0, POINTS_CORRECT + questionPoints));
+    return;
+  }
+
+  animateCard('wrong');
+  addPoints(POINTS_WRONG);
+
+  if (attempts >= MAX_ATTEMPTS) {
+    markDot(attempts - 1, 'failed');
+    finished = true;
+    stopTimer();
+    if (!isGuest) { const s=getStats(); s.played++; s.streak=0; saveStats(s); saveCloudStats(); updateStatsDisplay(); }
+    showResult(false, questionPoints);
+  } else {
+    startTimer();
+  }
+}
+
+// ── Restore today's session ───────────────────────────────────────────────────
+function restoreSession(state) {
+  if (!state) return;
+
+  state.guesses.forEach((g, i) => {
+    addGuessRow(g.val, question.type === 'number' ? question.unit : '', g.fb);
+    markDot(i, g.fb.correct ? 'correct' : 'used');
+  });
+  attempts = state.guesses.length;
+
+  if (state.done) {
+    finished = true;
+    // Check if last was wrong (lost)
+    const last = state.guesses[state.guesses.length - 1];
+    if (!last?.fb?.correct) {
+      markDot(attempts - 1, 'failed');
+    }
+    showResult(state.won);
+
+    // Banner removed in new design
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+let todayKey = '';
+
+async function init() {
+  todayKey = getDateKey();
+  updateStatsDisplay();
+
+  const questions = [
+  {
+    "id": 1,
+    "type": "number",
+    "question": "Wie viele Blocks weit kann ein Redstone-Signal ohne Repeater übertragen werden?",
+    "answer": 15,
+    "unit": "Blocks",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Redstone-Signal verliert pro Block Stärke und erlischt bei 0. Repeater setzen es wieder auf volle Stärke 15 zurück."
+  },
+  {
+    "id": 2,
+    "type": "entity",
+    "question": "Welcher Mob gibt dir unendlich Pilzsuppe, wenn du ihn mit einer Schüssel melkst?",
+    "answer": "Mooshroom",
+    "acceptedAnswers": [
+      "Mooshroom",
+      "Pilzkuh",
+      "Mushroom Cow"
+    ],
+    "category": "Mobs",
+    "funFact": "Mooshrooms spawnen nur in Pilzfeld-Biomen – einem der seltensten Biome in Minecraft."
+  },
+  {
+    "id": 3,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Creeper?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ein geladener Creeper (vom Blitz getroffen) hat dieselben HP, macht aber doppelten Explosionsschaden."
+  },
+  {
+    "id": 4,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zombie?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zombies verbrennen im Sonnenlicht, es sei denn, sie tragen einen Helm oder stehen im Schatten."
+  },
+  {
+    "id": 5,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Skelett?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Skelette weichen Wölfen aus. Sie können Bögen mit bis zu Unendlichkeit III tragen und damit schiessen."
+  },
+  {
+    "id": 6,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Enderman?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Endermen nehmen Schaden durch Wasser und Regen. Sie teleportieren sich, wenn sie nass werden."
+  },
+  {
+    "id": 7,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Blaze?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Blazes nehmen Schaden durch Schneebälle – jeder Treffer macht 3 Schaden (1,5 Herzen)."
+  },
+  {
+    "id": 8,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Ghast?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Man kann Ghast-Feuerbälle zurückschlagen und den Ghast damit töten – Achievement: Return to Sender."
+  },
+  {
+    "id": 9,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Witherskelett?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Witherskelette hinterlassen den Wither-Effekt beim Treffer. Ihr Kopf ist nötig, um den Wither zu beschwören."
+  },
+  {
+    "id": 10,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Wither (Boss)?",
+    "answer": 600,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Wither ist der einzige Boss, den man selbst beschwören kann. Er erzeugt eine massive Explosion beim Erscheinen."
+  },
+  {
+    "id": 11,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat der Ender-Drache?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Ender-Drache wird durch End-Kristalle auf den Obsidiansäulen geheilt. Zerstöre sie zuerst!"
+  },
+  {
+    "id": 12,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Elder Guardian?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Elder Guardian gibt dem Spieler beim Annähern den Mining-Fatigue-III-Effekt für 5 Minuten."
+  },
+  {
+    "id": 13,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Warden?",
+    "answer": 500,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Warden ist blind und orientiert sich nur durch Vibrationen. Ein Schlag auf Normal macht 30 Herzen Schaden."
+  },
+  {
+    "id": 14,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Iron Golem?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Iron Golems können sich selbst heilen, indem man sie mit Eisenbarren anklickt (25 HP pro Barren)."
+  },
+  {
+    "id": 15,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Ravager?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ravager kann von Bees, Wolves und Iron Golems angegriffen werden und betäubt Spieler beim Aufprall."
+  },
+  {
+    "id": 16,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Strider?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Strider sind die einzigen Mobs, die auf Lava laufen. Man reitet sie mit einem Warped Fungus on a Stick."
+  },
+  {
+    "id": 17,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Hoglin?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hoglins fürchten sich vor Krimsonpilzen. Sie droppen rohes Schweinefleisch und Leder."
+  },
+  {
+    "id": 18,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Witch (Hexe)?",
+    "answer": 52,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hexen trinken Tränke zur Selbstheilung und werfen Tränke auf Spieler. Sie spawnen in Hexenhütten in Sümpfen."
+  },
+  {
+    "id": 19,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Slime (groß)?",
+    "answer": 16,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Große Slimes teilen sich beim Tod in mittlere (4 HP), diese in kleine (1 HP). Kleine Slimes droppen Slimeballs."
+  },
+  {
+    "id": 20,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Magma Cube (groß)?",
+    "answer": 16,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Magma Cubes sind immun gegen Fallschaden und Feuer. Kleine Magma Cubes droppen Magmacreme."
+  },
+  {
+    "id": 21,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Shulker?",
+    "answer": 60,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Shulker-Projektile verursachen Levitation für 10 Sekunden. Shulker können sich teleportieren, wenn sie angegriffen werden."
+  },
+  {
+    "id": 22,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Pillager?",
+    "answer": 24,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Tötet man einen Pillager-Anführer (mit Banner), bekommt man den Bad-Omen-Effekt, der einen Raid auslöst."
+  },
+  {
+    "id": 23,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Evoker?",
+    "answer": 48,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Evoker beschwören Vexes und Fang-Attacken. Sie sind die einzige Quelle für Totems der Unsterblichkeit."
+  },
+  {
+    "id": 24,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Bee (Biene)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Nach dem Stechen verliert die Biene ihren Stachel und stirbt nach kurzer Zeit. Sie hinterlässt Gift beim Spieler."
+  },
+  {
+    "id": 25,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Phantom?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Phantome spawnen, wenn man 3+ Minecraft-Tage (72 Minuten real) nicht geschlafen hat. Katzen vertreiben sie."
+  },
+  {
+    "id": 26,
+    "type": "number",
+    "question": "Wie viele verschiedene Biome gibt es in Minecraft Java Edition 1.20?",
+    "answer": 61,
+    "unit": "Biome",
+    "tolerance": 3,
+    "category": "Weltgenerierung",
+    "funFact": "Zu den seltensten Biomen zählen Modified Jungle Edge und Mushroom Fields Shore."
+  },
+  {
+    "id": 27,
+    "type": "number",
+    "question": "Wie viele Blöcke ist ein Chunk breit (X-Achse)?",
+    "answer": 16,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Chunks sind 16x16 Blöcke groß und 384 Blöcke hoch (von Y=-64 bis Y=320). Ein Chunk hat 98.304 Blöcke."
+  },
+  {
+    "id": 28,
+    "type": "number",
+    "question": "Auf welchem Y-Level spawnt Diamanterz am häufigsten (seit 1.18)?",
+    "answer": -58,
+    "unit": "Y-Level",
+    "tolerance": 5,
+    "category": "Weltgenerierung",
+    "funFact": "Seit Caves & Cliffs (1.18) ist Y=-58 das Optimum. Diamant generiert von Y=-64 bis Y=16, häuft sich aber tief unten."
+  },
+  {
+    "id": 29,
+    "type": "number",
+    "question": "Wie viele XP gibt der Ender-Drache beim ersten Kill?",
+    "answer": 12000,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Das ist mit Abstand die meiste XP, die ein Mob geben kann. Weitere Kills geben nur noch 500 XP."
+  },
+  {
+    "id": 30,
+    "type": "number",
+    "question": "Wie viele XP gibt das Töten eines Withers?",
+    "answer": 50,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Obwohl der Wither sehr stark ist, gibt er nur 50 XP – deutlich weniger als der Ender-Drache."
+  },
+  {
+    "id": 31,
+    "type": "number",
+    "question": "Wie lange dauert es, einen Obsidian-Block mit einer Diamant-Spitzhacke abzubauen (Sekunden)?",
+    "answer": 9.4,
+    "unit": "Sekunden",
+    "tolerance": 0.5,
+    "category": "Blöcke",
+    "funFact": "Mit Effizienz V und Netherit-Spitzhacke dauert es nur noch ca. 1,15 Sekunden."
+  },
+  {
+    "id": 32,
+    "type": "number",
+    "question": "Wie lange dauert es, einen Obsidian-Block mit den bloßen Händen abzubauen (Sekunden)?",
+    "answer": 250,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Blöcke",
+    "funFact": "Obsidian mit der Hand abzubauen dauert über 4 Minuten – und der Block fällt dabei nicht mal als Item!"
+  },
+  {
+    "id": 33,
+    "type": "number",
+    "question": "Wie viele Fackeln kann man mit einem Stöckchen und einer Kohle herstellen?",
+    "answer": 4,
+    "unit": "Fackeln",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Holzkohle funktioniert genauso wie Kohle zum Fackeln-Herstellen. Pro Rezept gibt es immer 4 Fackeln."
+  },
+  {
+    "id": 34,
+    "type": "number",
+    "question": "Wie viele Pfeile kann man mit 1 Flint, 1 Stöckchen und 1 Feder herstellen?",
+    "answer": 4,
+    "unit": "Pfeile",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Pfeile können auch von Skeletten gedroppt werden. Mit Plünderung III bis zu 5 pro Kill."
+  },
+  {
+    "id": 35,
+    "type": "number",
+    "question": "Wie viele Bretter (Planks) erhält man aus einem Holzblock?",
+    "answer": 4,
+    "unit": "Bretter",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Holzbretter sind eines der grundlegendsten Ressourcen – fast alle frühen Werkzeuge und Möbel benötigen sie."
+  },
+  {
+    "id": 36,
+    "type": "number",
+    "question": "Wie viele Stöcke (Sticks) erhält man aus 2 Holzbrettern?",
+    "answer": 4,
+    "unit": "Stöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Stöcke sind das universelle Werkzeug-Ingredient – für Schwerter, Spitzhacken, Schaufeln, Äxte, Bögen und mehr."
+  },
+  {
+    "id": 37,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Schärfe (Sharpness) maximal?",
+    "answer": 5,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Schärfe V erhöht den Schaden um 3 zusätzliche halbe Herzen. Mit einem Netherit-Schwert: insgesamt 13 Schaden."
+  },
+  {
+    "id": 38,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Schutz (Protection) maximal?",
+    "answer": 4,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Schutz IV reduziert 16 Prozent des eingehenden Schadens. Vier volle Rüstungsteile mit Schutz IV = 64 Prozent Schadensreduktion."
+  },
+  {
+    "id": 39,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Glück (Fortune) maximal?",
+    "answer": 3,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Fortune III kann Diamantausbeute von 1 auf bis zu 4 pro Erz erhöhen."
+  },
+  {
+    "id": 40,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Effizienz (Efficiency) maximal?",
+    "answer": 5,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Effizienz V mit einer Netherit-Spitzhacke und Hasten II ist die schnellstmögliche Abbaugeschwindigkeit im Vanilla-Spiel."
+  },
+  {
+    "id": 41,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Reparatur (Mending) maximal?",
+    "answer": 1,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Mending kann nicht über Verzauberungstische erhalten werden – nur aus Beute, Handel oder Angeln."
+  },
+  {
+    "id": 42,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Unendlichkeit (Infinity) maximal?",
+    "answer": 1,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Infinity erfordert mindestens 1 Pfeil im Inventar, erzeugt aber unendlich viele. Unvereinbar mit Mending."
+  },
+  {
+    "id": 43,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Plünderung (Looting) maximal?",
+    "answer": 3,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Looting III erhöht die maximale Drop-Anzahl seltener Items um 3. Essentiell für Witherskelet-Köpfe zu farmen."
+  },
+  {
+    "id": 44,
+    "type": "number",
+    "question": "Wie lange brennt eine Kohle als Ofenbrennstoff (Sekunden)?",
+    "answer": 80,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Eine Kohle schmelzt 8 Items. Ein Kohlenstoß (9 Kohlen) schmelzt 72 Items."
+  },
+  {
+    "id": 45,
+    "type": "number",
+    "question": "Wie lange brennt ein Kohlenstoß (Block of Coal) als Ofenbrennstoff (Sekunden)?",
+    "answer": 800,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Kohlenstoß schmelzt 80 Items – 10x mehr als eine Einzelkohle."
+  },
+  {
+    "id": 46,
+    "type": "number",
+    "question": "Wie lange dauert es, ein Item in einem normalen Ofen zu schmelzen (Sekunden)?",
+    "answer": 10,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Hochofen schmelzt Erze doppelt so schnell (5 Sek.), verbraucht aber auch doppelt so viel Brennstoff."
+  },
+  {
+    "id": 47,
+    "type": "number",
+    "question": "Welche Lichtstärke hat eine Fackel?",
+    "answer": 14,
+    "unit": "Lichtstärke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Fackeln haben Lichtstärke 14. Die maximale Lichtstärke (15) haben z.B. Glowstone, Lanterns und Seegurken."
+  },
+  {
+    "id": 48,
+    "type": "number",
+    "question": "Welche minimale Lichtstärke verhindert das Spawnen von Monstern (seit 1.18)?",
+    "answer": 1,
+    "unit": "Lichtstärke",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Seit 1.18 spawnen Monster nur noch bei Lichtstärke 0. Davor war es Lichtstärke 7."
+  },
+  {
+    "id": 49,
+    "type": "number",
+    "question": "Wie viele Slots hat das Spieler-Inventar insgesamt (inkl. Hotbar, Rüstung, Offhand)?",
+    "answer": 41,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "27 Hauptinventar + 9 Hotbar + 4 Rüstung + 1 Offhand = 41 Slots."
+  },
+  {
+    "id": 50,
+    "type": "number",
+    "question": "Wie viele Items passen maximal in einen Stack?",
+    "answer": 64,
+    "unit": "Items",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Werkzeuge, Rüstung und einige Items stapeln nicht oder nur bis 16. Boote stapeln nur bis 1."
+  },
+  {
+    "id": 51,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Schnelligkeit II (Sekunden)?",
+    "answer": 90,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Schnelligkeit II erhöht die Bewegungsgeschwindigkeit um 20 Prozent. Schnelligkeit I dauert 180 Sekunden."
+  },
+  {
+    "id": 52,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Stärke I (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Stärke I erhöht den Nahkampfschaden um 3 (1,5 Herzen). Stärke II erhöht um 6 Herzen, dauert aber nur 90 Sek."
+  },
+  {
+    "id": 53,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Regeneration I (Sekunden)?",
+    "answer": 45,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Regeneration I heilt alle 2,5 Sekunden 1 HP. Regeneration II heilt jede Sekunde 1 HP."
+  },
+  {
+    "id": 54,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Feuerresistenz (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Feuerresistenz schützt vor Lava, Feuer und Blaze-Bällen – essenziell für Nether-Erkundungen."
+  },
+  {
+    "id": 55,
+    "type": "entity",
+    "question": "Welche Zutat verwandelt einen Splaschtrank in einen anhaltenden Trank (Lingering Potion)?",
+    "answer": "Drachenhauch",
+    "acceptedAnswers": [
+      "Drachenhauch",
+      "Dragon Breath",
+      "Dragons Breath"
+    ],
+    "category": "Tränke",
+    "funFact": "Drachenhauch sammelt man mit einer leeren Flasche, indem man die Säure-Wolke des Ender-Drachen damit auffängt."
+  },
+  {
+    "id": 56,
+    "type": "entity",
+    "question": "Welcher Mob droppt Blaze Rods (Blazestäbe)?",
+    "answer": "Blaze",
+    "acceptedAnswers": [
+      "Blaze",
+      "Lohe"
+    ],
+    "category": "Mobs",
+    "funFact": "Blazestäbe sind für Brauständer und Eyes of Ender unerlässlich. Ohne sie ist der Endkampf nicht erreichbar."
+  },
+  {
+    "id": 57,
+    "type": "entity",
+    "question": "Welcher Mob droppt Ender Pearls (Enderperlen)?",
+    "answer": "Enderman",
+    "acceptedAnswers": [
+      "Enderman",
+      "Endermen"
+    ],
+    "category": "Mobs",
+    "funFact": "Enderperlen haben eine Drop-Chance von 50 Prozent pro Enderman. Mit Plünderung III bis zu 4 pro Kill."
+  },
+  {
+    "id": 58,
+    "type": "entity",
+    "question": "Welcher Mob droppt Schleim (Slimeballs)?",
+    "answer": "Slime",
+    "acceptedAnswers": [
+      "Slime",
+      "Schleim"
+    ],
+    "category": "Mobs",
+    "funFact": "Slimes spawnen in Sümpfen bei Vollmond oder in Slime Chunks unter Y=40. Slimeballs sind für Kolben nötig."
+  },
+  {
+    "id": 59,
+    "type": "entity",
+    "question": "Welcher Mob droppt Ghast Tears (Ghasttränen)?",
+    "answer": "Ghast",
+    "acceptedAnswers": [
+      "Ghast"
+    ],
+    "category": "Mobs",
+    "funFact": "Ghasttränen sind die Basis für Regenerations-Tränke. Die Drop-Chance beträgt nur 30 Prozent, mit Plünderung III bis zu 4."
+  },
+  {
+    "id": 60,
+    "type": "entity",
+    "question": "Welcher Mob droppt Magmacreme (Magma Cream)?",
+    "answer": "Magma Cube",
+    "acceptedAnswers": [
+      "Magma Cube",
+      "Magmawürfel"
+    ],
+    "category": "Mobs",
+    "funFact": "Magmacreme ist nötig für Feuerresistenz-Tränke. Nur kleine und mittlere Magma Cubes droppen sie."
+  },
+  {
+    "id": 61,
+    "type": "number",
+    "question": "Wie viele Ancient Debris braucht man für einen Netherit-Barren?",
+    "answer": 4,
+    "unit": "Ancient Debris",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "4 Ancient Debris -> 4 Netherit-Schrott -> 4 Schrott + 4 Goldbarren = 1 Netherit-Barren."
+  },
+  {
+    "id": 62,
+    "type": "number",
+    "question": "Wie viele Netherit-Barren braucht man für eine vollständige Netherit-Rüstung?",
+    "answer": 4,
+    "unit": "Netherit-Barren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Jedes Rüstungsteil benötigt 1 Netherit-Barren + das entsprechende Diamant-Stück im Schmiedetisch."
+  },
+  {
+    "id": 63,
+    "type": "number",
+    "question": "Wie viele Rüstungspunkte gibt eine Diamant-Brustplatte?",
+    "answer": 8,
+    "unit": "Rüstungspunkte",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Die Brustplatte gibt die meisten Rüstungspunkte. Helm: 3, Hose: 6, Stiefel: 3, Brustplatte: 8."
+  },
+  {
+    "id": 64,
+    "type": "number",
+    "question": "Wie viele Eyes of Ender braucht man für einen vollständigen End-Portal-Rahmen?",
+    "answer": 12,
+    "unit": "Eyes of Ender",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "In Strongholds sind 0-12 Eyes bereits eingesetzt (zufällig). Manchmal braucht man nur wenige zu platzieren."
+  },
+  {
+    "id": 65,
+    "type": "number",
+    "question": "Wie viele Strongholds gibt es in einer Minecraft-Welt (Java Edition)?",
+    "answer": 128,
+    "unit": "Strongholds",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Strongholds spawnen in Ringen um den Weltmittelpunkt. Die ersten 3 sind am nächsten, bis zu 128 insgesamt."
+  },
+  {
+    "id": 66,
+    "type": "number",
+    "question": "Wie hoch ist das Verhältnis: 1 Block im Nether = ? Blöcke in der Overworld (X/Z-Achse)?",
+    "answer": 8,
+    "unit": "Overworld-Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Das 1:8-Verhältnis macht den Nether zur perfekten Autobahn. 1000 Blöcke Nether = 8000 Blöcke Overworld-Distanz!"
+  },
+  {
+    "id": 67,
+    "type": "number",
+    "question": "Wie viele Blöcke hoch ist die Overworld-Welt insgesamt (tiefste bis höchste Y-Ebene)?",
+    "answer": 384,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Von Y=-64 (tiefstes Bedrock) bis Y=320 (höchste Baumöglichkeit) = 384 Blöcke Höhe. Vor 1.18 waren es nur 256."
+  },
+  {
+    "id": 68,
+    "type": "entity",
+    "question": "Welcher Block ist im Survival-Modus unzerstörbar?",
+    "answer": "Bedrock",
+    "acceptedAnswers": [
+      "Bedrock",
+      "Grundgestein"
+    ],
+    "category": "Blöcke",
+    "funFact": "Bedrock ist im Survival-Modus unzerstörbar. Es existiert am Boden der Overworld, des Nethers und überall im End."
+  },
+  {
+    "id": 69,
+    "type": "number",
+    "question": "Wie viele Schichten Bedrock gibt es am Boden der Overworld?",
+    "answer": 5,
+    "unit": "Schichten",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Die 5 Bedrock-Schichten (Y=-64 bis Y=-60) sind zufällig verteilt."
+  },
+  {
+    "id": 70,
+    "type": "number",
+    "question": "Wie viele Bücherregale muss man für maximale Verzauberungen um einen Tisch platzieren?",
+    "answer": 15,
+    "unit": "Bücherregale",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Die Bücherregale müssen 1 Block Abstand vom Tisch haben. Blöcke dazwischen blockieren den Bonus."
+  },
+  {
+    "id": 71,
+    "type": "number",
+    "question": "Wie viele Bücher braucht man für ein Bücherregal?",
+    "answer": 3,
+    "unit": "Bücher",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Bücherregal = 6 Holzbretter + 3 Bücher. Für 15 Bücherregale braucht man 45 Bücher = 135 Papier + 45 Leder."
+  },
+  {
+    "id": 72,
+    "type": "number",
+    "question": "Wie viele Lapis Lazuli kostet die teuerste Verzauberung im Verzauberungstisch?",
+    "answer": 3,
+    "unit": "Lapis",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Die teuerste Verzauberung kostet 3 Lapis Lazuli und 30 Erfahrungslevel."
+  },
+  {
+    "id": 73,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für eine Diamant-Spitzhacke?",
+    "answer": 3,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Diamant-Spitzhacke hat 1561 Haltbarkeit. Netherit-Spitzhacke: 2031. Beide können Obsidian abbauen."
+  },
+  {
+    "id": 74,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für ein Diamantschwert?",
+    "answer": 2,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Diamantschwert macht 7 Schaden (3,5 Herzen). Netherit-Schwert macht 8 Schaden (4 Herzen)."
+  },
+  {
+    "id": 75,
+    "type": "number",
+    "question": "Wie viele verschiedene Dorfbewohner-Berufe gibt es?",
+    "answer": 13,
+    "unit": "Berufe",
+    "tolerance": 0,
+    "category": "Dorfbewohner",
+    "funFact": "13 Berufe: Armorer, Butcher, Cartographer, Cleric, Farmer, Fisherman, Fletcher, Leatherworker, Librarian, Mason, Shepherd, Toolsmith, Weaponsmith."
+  },
+  {
+    "id": 76,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Bibliothekar-Dorfbewohner (Librarian) verwendet?",
+    "answer": "Lectern",
+    "acceptedAnswers": [
+      "Lectern",
+      "Lesepult",
+      "Bücherlesepult"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Das Lesepult ermöglicht auch das Teilen von beschriebenen Büchern mit mehreren Spielern."
+  },
+  {
+    "id": 77,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Pfarrer (Cleric) verwendet?",
+    "answer": "Braustand",
+    "acceptedAnswers": [
+      "Braustand",
+      "Brewing Stand",
+      "Brauerei"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Pfarrer handeln mit Rotstein-Staub, Lapis Lazuli, Glowstone, Netherwarzen und Totems der Unsterblichkeit."
+  },
+  {
+    "id": 78,
+    "type": "number",
+    "question": "Wie viele Netherwarzen braucht man als Basis für jeden Trank?",
+    "answer": 1,
+    "unit": "Netherwarzen",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Netherwarzen im Braustand mit Wasser ergeben Awkward Potions – die Basis für ALLE nützlichen Tränke."
+  },
+  {
+    "id": 79,
+    "type": "number",
+    "question": "Wie lange dauert ein Minecraft-Tag insgesamt (in echten Minuten)?",
+    "answer": 20,
+    "unit": "Minuten",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "1 Minecraft-Tag = 20 Minuten real: 10 Min. Tag, 1,5 Min. Morgendämmerung, 7 Min. Nacht."
+  },
+  {
+    "id": 80,
+    "type": "number",
+    "question": "Wie weit kann Wasser auf flacher Ebene fließen (Blöcke)?",
+    "answer": 8,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Wasser fließt maximal 8 Blöcke weit. In eine Vertiefung fließt es unbegrenzt hinein."
+  },
+  {
+    "id": 81,
+    "type": "number",
+    "question": "Wie weit fließt Lava auf einer flachen Ebene in der Overworld (Blöcke)?",
+    "answer": 4,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Im Nether fließt Lava 8 Blöcke weit (wie Wasser in der Overworld)."
+  },
+  {
+    "id": 82,
+    "type": "number",
+    "question": "Wie weit spawnen Mobs minimal vom Spieler entfernt (Blöcke)?",
+    "answer": 24,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Mobs spawnen zwischen 24 und 128 Blöcken vom Spieler. Näher als 24: kein Spawn. Weiter als 128: despawnen sofort."
+  },
+  {
+    "id": 83,
+    "type": "entity",
+    "question": "Auf welchem Block müssen Netherwarzen gepflanzt werden?",
+    "answer": "Seelensand",
+    "acceptedAnswers": [
+      "Seelensand",
+      "Soul Sand"
+    ],
+    "category": "Blöcke",
+    "funFact": "Netherwarzen wachsen nur auf Seelensand – egal ob im Nether oder in der Overworld."
+  },
+  {
+    "id": 84,
+    "type": "number",
+    "question": "Wie viele Zuckerrohre braucht man für 1 Papier?",
+    "answer": 3,
+    "unit": "Zuckerrohre",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "3 Zuckerrohre nebeneinander im Crafting-Tisch = 3 Papier. Papier wird für Karten, Bücher und Feuerwerke benötigt."
+  },
+  {
+    "id": 85,
+    "type": "number",
+    "question": "Wie hoch wächst Zuckerrohr maximal (Blöcke)?",
+    "answer": 3,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Zuckerrohr wächst nur auf Grass, Dirt, Sand oder Red Sand direkt neben Wasser."
+  },
+  {
+    "id": 86,
+    "type": "number",
+    "question": "Wie viele verschiedene Farben gibt es für Wolle (Wool) in Minecraft?",
+    "answer": 16,
+    "unit": "Farben",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Die 16 Farben entsprechen den 16 Farbstoff-Varianten: Weiß, Orange, Magenta, Hellblau, Gelb, Limettengrün, Pink, Grau, Hellgrau, Türkis, Lila, Blau, Braun, Grün, Rot, Schwarz."
+  },
+  {
+    "id": 87,
+    "type": "number",
+    "question": "Wie viele verschiedene Musikdisketten (Music Discs) gibt es in Minecraft Java Edition 1.20?",
+    "answer": 15,
+    "unit": "Disketten",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Die 15 Discs: 13, cat, blocks, chirp, far, mall, mellohi, stal, strad, ward, 11, wait, otherside, 5 und Pigstep."
+  },
+  {
+    "id": 88,
+    "type": "entity",
+    "question": "Wie bekommt man eine Musikdiskette von einem Creeper gedroppt?",
+    "answer": "Skelett tötet Creeper",
+    "acceptedAnswers": [
+      "Skelett tötet Creeper",
+      "Skeleton kills Creeper",
+      "Creeper von Skelett getötet",
+      "Skeleton"
+    ],
+    "category": "Mobs",
+    "funFact": "Wenn ein Skelett-Pfeil einen Creeper tötet, droppen 13 verschiedene Discs (zufällig)."
+  },
+  {
+    "id": 89,
+    "type": "number",
+    "question": "Wie viele Blöcke kann ein Kolben (Piston) in einer Linie schieben?",
+    "answer": 12,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Kolben kann maximal 12 Blöcke schieben. Mit Schleimblöcken können Strukturen als Einheit bewegt werden."
+  },
+  {
+    "id": 90,
+    "type": "number",
+    "question": "Wie viele Redstone-Ticks dauert ein Repeater auf maximaler Verzögerung?",
+    "answer": 4,
+    "unit": "Redstone-Ticks",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Redstone-Tick = 2 Game-Ticks = 0,1 Sekunden. Ein Repeater auf Stufe 4 verzögert das Signal um 0,4 Sekunden."
+  },
+  {
+    "id": 91,
+    "type": "number",
+    "question": "Wie viele Slots hat ein Trichter (Hopper)?",
+    "answer": 5,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Trichter transportieren Items mit 2,5 Items pro Sekunde. Sie können nach unten oder seitwärts gerichtet werden."
+  },
+  {
+    "id": 92,
+    "type": "number",
+    "question": "Wie hoch ist die maximale Build Height in Minecraft (Y-Level)?",
+    "answer": 320,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Build Height: Y=320. Wolken befinden sich bei Y=192. Vor 1.18 war die maximale Höhe Y=255."
+  },
+  {
+    "id": 93,
+    "type": "number",
+    "question": "Wie viele Meeresschuppen braucht man für einen Schildkröten-Helm?",
+    "answer": 5,
+    "unit": "Meeresschuppen",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Der Schildkröten-Helm gibt 2 Rüstungspunkte und +10 Sekunden Wasseratmung."
+  },
+  {
+    "id": 94,
+    "type": "entity",
+    "question": "Was droppen Baby-Schildkröten, wenn sie erwachsen werden?",
+    "answer": "Meeresschuppe",
+    "acceptedAnswers": [
+      "Meeresschuppe",
+      "Scute",
+      "Turtle Scute"
+    ],
+    "category": "Mobs",
+    "funFact": "5 Meeresschuppen = 1 Schildkröten-Helm. Er gibt Konduit-Effekt wenn im Wasser."
+  },
+  {
+    "id": 95,
+    "type": "number",
+    "question": "Wie viele Goldbarren braucht man für einen normalen Goldenen Apfel?",
+    "answer": 8,
+    "unit": "Goldbarren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Goldbarren + 1 Apfel = Goldener Apfel. Der verzauberte (Notch-Apfel) ist nicht mehr herstellbar."
+  },
+  {
+    "id": 96,
+    "type": "number",
+    "question": "Wie viele Goldblöcke brauchte man früher für einen verzauberten Goldenen Apfel (Notch Apple)?",
+    "answer": 8,
+    "unit": "Goldblöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Goldblöcke (72 Goldbarren!) + 1 Apfel = Notch-Apfel. Seit 1.9 ist das Rezept entfernt."
+  },
+  {
+    "id": 97,
+    "type": "entity",
+    "question": "Welcher Mob wird durch einen Blitz in ein Zombie Piglin verwandelt?",
+    "answer": "Schwein",
+    "acceptedAnswers": [
+      "Schwein",
+      "Pig"
+    ],
+    "category": "Mobs",
+    "funFact": "Blitzeinschläge verwandeln Schweine in Zombie Piglins, Dorfbewohner in Hexen und Creeper in geladene Creeper."
+  },
+  {
+    "id": 98,
+    "type": "number",
+    "question": "Wie lange sind Zombie Piglins feindselig nach einem Angriff (Sekunden)?",
+    "answer": 20,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Mobs",
+    "funFact": "Wenn man einen Zombie Piglin angreift, werden ALLE Zombie Piglins in 35 Blöcken Umkreis feindselig."
+  },
+  {
+    "id": 99,
+    "type": "number",
+    "question": "Wie viele Obsidian-Blöcke braucht man mindestens für ein Nether-Portal?",
+    "answer": 10,
+    "unit": "Obsidian",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Das Mini-Portal ist 4x5 Blöcke. Die Ecken sind optional – deshalb 10 statt 14."
+  },
+  {
+    "id": 100,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für eine vollständige Diamantrüstung?",
+    "answer": 24,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Helm: 5, Brustplatte: 8, Hose: 7, Stiefel: 4 = 24 Diamanten."
+  },
+  {
+    "id": 101,
+    "type": "number",
+    "question": "Wie viele Slots hat eine Doppelkiste?",
+    "answer": 54,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Eine Doppelkiste fasst 54x64 = 3456 Items (maximal). Sie entsteht automatisch, wenn man 2 Truhen nebeneinander platziert."
+  },
+  {
+    "id": 102,
+    "type": "number",
+    "question": "Wie viele Slots hat eine Ender-Kiste (Ender Chest)?",
+    "answer": 27,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Der Inhalt einer Ender-Kiste ist spielerbezogen und von überall auf der Welt zugänglich."
+  },
+  {
+    "id": 103,
+    "type": "number",
+    "question": "Wie viele Obsidian-Blöcke braucht man für eine Ender-Kiste?",
+    "answer": 8,
+    "unit": "Obsidian",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Obsidian + 1 Auge des Enders = Ender-Kiste. Sie hat denselben Explosionsschutz wie Obsidian."
+  },
+  {
+    "id": 104,
+    "type": "entity",
+    "question": "Welches Item braucht man, um einen Strider im Nether zu reiten?",
+    "answer": "Warped Fungus on a Stick",
+    "acceptedAnswers": [
+      "Warped Fungus on a Stick",
+      "Verwelkter Pilz auf Stange",
+      "Pilz auf Stange"
+    ],
+    "category": "Items",
+    "funFact": "Man kombiniert einen Fishing Rod mit einem Warped Fungus. Der Strider läuft in Richtung des gehaltenen Pilzes."
+  },
+  {
+    "id": 105,
+    "type": "number",
+    "question": "Wie weit kann man mit einer Enderperle teleportieren (Blöcke)?",
+    "answer": 32,
+    "unit": "Blöcke",
+    "tolerance": 2,
+    "category": "Items",
+    "funFact": "Enderperlen verursachen 2,5 Herzen Fallschaden beim Landen. Federfall IV negiert diesen Schaden."
+  },
+  {
+    "id": 106,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Axolotl?",
+    "answer": 28,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Axolotls spielen tote, wenn sie Schaden nehmen. Sie greifen Guardian-Mobs an!"
+  },
+  {
+    "id": 107,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Kamel (Camel)?",
+    "answer": 64,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Kamele spawnen in Wüstendörfern, können 2 Spieler tragen und machen einen Dash-Sprung über 2 Blöcke breite Lücken."
+  },
+  {
+    "id": 108,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Ziege (Goat)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ziegen rammen Spieler und Mobs. Schreiende Ziegen (Screaming Goats) sind seltener."
+  },
+  {
+    "id": 109,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Piglin Brute?",
+    "answer": 100,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Piglin-Brutes greifen immer an – auch wenn man goldene Rüstung trägt."
+  },
+  {
+    "id": 110,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zoglin?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zoglins entstehen, wenn Hoglins in die Overworld oder den End teleportiert werden. Sie greifen alles außer Creeper an."
+  },
+  {
+    "id": 111,
+    "type": "number",
+    "question": "Wie viele Farb-Varianten hat ein Axolotl?",
+    "answer": 5,
+    "unit": "Varianten",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Axolotl-Farben: Leucas (weiß), Wild (braun), Gold (gelb), Cyan und selten Blue (1:1200 Chance beim Züchten)."
+  },
+  {
+    "id": 112,
+    "type": "number",
+    "question": "Wie viele Frosch-Varianten gibt es in Minecraft 1.19+?",
+    "answer": 3,
+    "unit": "Varianten",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "3 Frosch-Farben: Temperate (orange), Warm (weiß), Cold (grün). Die Farbe bestimmt das Biom, in dem der Kaulquapp aufwächst."
+  },
+  {
+    "id": 113,
+    "type": "entity",
+    "question": "Welcher seltene Block entsteht, wenn ein kleiner Magma Cube von einem Frosch gefressen wird?",
+    "answer": "Froschlicht",
+    "acceptedAnswers": [
+      "Froschlicht",
+      "Froglight",
+      "Frog Light"
+    ],
+    "category": "Blöcke",
+    "funFact": "Es gibt 3 Froschlicht-Farben (Purpur, Grünlich, Gelb), je nach Frosch-Variante. Alle haben Lichtstärke 15."
+  },
+  {
+    "id": 114,
+    "type": "number",
+    "question": "Wie viel Schaden macht ein Warden-Angriff auf Normal (halbe Herzen)?",
+    "answer": 30,
+    "unit": "Schaden",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Warden macht auf Normal 30 Schaden (15 Herzen). Auf Hard: 45 Schaden!"
+  },
+  {
+    "id": 115,
+    "type": "number",
+    "question": "Wie weit kann der Warden seinen Sonic Boom schießen (Blöcke)?",
+    "answer": 15,
+    "unit": "Blöcke",
+    "tolerance": 2,
+    "category": "Mobs",
+    "funFact": "Der Sonic Boom durchdringt Rüstung und Schilde vollständig! Er macht 10 Schaden unabhängig von Rüstung."
+  },
+  {
+    "id": 116,
+    "type": "number",
+    "question": "Wie viele Shrieks muss man im Deep Dark auslösen, bevor ein Warden spawnt?",
+    "answer": 3,
+    "unit": "Shrieks",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Erst nach 3 Shriek-Ereignissen (je 90 Ticks Abstand) erscheint ein Warden. Schleichen verhindert Vibrations."
+  },
+  {
+    "id": 117,
+    "type": "entity",
+    "question": "Welcher Block kann Vibrationen blockieren und Sculk-Sensoren blind machen?",
+    "answer": "Wollblock",
+    "acceptedAnswers": [
+      "Wolle",
+      "Wollblock",
+      "Wool",
+      "Wool Block"
+    ],
+    "category": "Blöcke",
+    "funFact": "Wollblöcke absorbieren Vibrationssignale und verhindern, dass Sculk-Sensoren Geräusche durch sie hindurch erkennen."
+  },
+  {
+    "id": 118,
+    "type": "number",
+    "question": "Wie viel Schaden macht der Wither-Effekt pro Sekunde (halbe Herzen)?",
+    "answer": 1,
+    "unit": "Schaden/s",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Wither-Effekt kann bis zum Tod töten und wirkt auf Untote. Milch heilt ihn sofort."
+  },
+  {
+    "id": 119,
+    "type": "number",
+    "question": "Wie hoch sind die maximalen Y-Koordinaten von Ancient Debris-Spawns?",
+    "answer": 119,
+    "unit": "Y-Level",
+    "tolerance": 5,
+    "category": "Weltgenerierung",
+    "funFact": "Ancient Debris spawnt zwischen Y=8 und Y=119, am häufigsten bei Y=15."
+  },
+  {
+    "id": 120,
+    "type": "number",
+    "question": "Wie viel Schaden macht ein Magma Block pro Sekunde beim Draufstehen (halbe Herzen)?",
+    "answer": 1,
+    "unit": "Schaden/s",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Magmablöcke schaden 1 HP alle 0,5 Sek. Schleichen auf Magmablöcken verhindert den Schaden."
+  },
+  {
+    "id": 121,
+    "type": "entity",
+    "question": "Welcher Block bildet den Boden des End und kann nicht durch Explosionen zerstört werden?",
+    "answer": "Endstein",
+    "acceptedAnswers": [
+      "Endstein",
+      "End Stone",
+      "Endstone"
+    ],
+    "category": "Blöcke",
+    "funFact": "Endstein ist der Haupt-Baublock des End. Mit Endstein-Ziegelsteinen und -Mauern gibt es viele dekorative Varianten."
+  },
+  {
+    "id": 122,
+    "type": "number",
+    "question": "Wie viele Feuerbälle schießt ein Blaze in einer Angriffsserie?",
+    "answer": 3,
+    "unit": "Feuerbälle",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Blazes schießen immer 3 Feuerbälle in schneller Folge, pausieren dann kurz. Schneebälle sind die günstigste Gegenmaßnahme."
+  },
+  {
+    "id": 123,
+    "type": "number",
+    "question": "Wie viele verschiedene Banner-Muster (Patterns) gibt es in Minecraft?",
+    "answer": 42,
+    "unit": "Muster",
+    "tolerance": 3,
+    "category": "Items",
+    "funFact": "Banner können mit Farbstoffen, Blumen und speziellen Mustern dekoriert werden. Shields können Banner aufnehmen."
+  },
+  {
+    "id": 124,
+    "type": "entity",
+    "question": "Welches Item findet man in einer Truhenboot (Chest Boat)?",
+    "answer": "Truhe",
+    "acceptedAnswers": [
+      "Truhe",
+      "Chest",
+      "Kiste"
+    ],
+    "category": "Items",
+    "funFact": "Seit 1.19 kann man eine Truhe mit einem Boot kombinieren. Das Truhenboot hat 27 Inventarslots."
+  },
+  {
+    "id": 125,
+    "type": "number",
+    "question": "Wie viele Herzen Absorption gibt ein normaler Goldener Apfel?",
+    "answer": 4,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Ein normaler Goldener Apfel gibt Regeneration II (5 Sek.) und Absorption I (2 Min. = 4 extra Herzen)."
+  },
+  {
+    "id": 126,
+    "type": "entity",
+    "question": "Welcher blaue hilfreiche Mob aus 1.19 gewann die Mob-Abstimmung 2021?",
+    "answer": "Allay",
+    "acceptedAnswers": [
+      "Allay"
+    ],
+    "category": "Mobs",
+    "funFact": "Der Allay sammelt Items für den Spieler und tanzt bei Musik-Blocks. Er kann mit einer Amethyst-Scherbe dupliziert werden."
+  },
+  {
+    "id": 127,
+    "type": "number",
+    "question": "Wie weit greifen Zombie Piglins in der Gruppe an, wenn man einen angreift (Blöcke)?",
+    "answer": 35,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Mobs",
+    "funFact": "Zombie Piglins sind neutraler Mob bis man angreift. Sie droppen Gold-Nuggets und manchmal Gold-Barren."
+  },
+  {
+    "id": 128,
+    "type": "number",
+    "question": "Wie viele Ticks pro Sekunde (TPS) hat ein normaler Minecraft-Server?",
+    "answer": 20,
+    "unit": "TPS",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Ein Game Tick dauert 0,05 Sekunden. Redstone-Repeater arbeiten in Vielfachen von 1 Tick (0,1s pro Tick-Delay)."
+  },
+  {
+    "id": 129,
+    "type": "number",
+    "question": "Wie viele Slots hat ein Dispenser (Werfer)?",
+    "answer": 9,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Dispenser können fast alle Items werfen oder verwenden: Pfeile schiessen, Eimer leeren/füllen, Tränke schütten."
+  },
+  {
+    "id": 130,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Sniffer?",
+    "answer": 30,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Sniffer gewann die Mob-Abstimmung 2022. Er gräbt antike Samenkörner (Torchflower, Pitcher Plant) aus."
+  },
+  {
+    "id": 131,
+    "type": "number",
+    "question": "Wie viele Smaragde kostet eine Rüstungsverzauberung beim Armorer-Dorfbewohner (Meister-Level) ca.?",
+    "answer": 14,
+    "unit": "Smaragde",
+    "tolerance": 5,
+    "category": "Dorfbewohner",
+    "funFact": "Armorer-Meister können Diamant-Rüstung mit zufälligen Verzauberungen verkaufen."
+  },
+  {
+    "id": 132,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Vindicator (Bestraferer)?",
+    "answer": 24,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Bestraferer sind die gefährlichsten Plünderer-Mobs. Mit einer Axt machen sie auf Hard bis zu 19 Schaden pro Treffer."
+  },
+  {
+    "id": 133,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Drowned (Ertrunkener)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ertrunkene spawnen im Wasser oder entstehen, wenn Zombies zu lange unter Wasser sind. Sie droppen manchmal Dreizack."
+  },
+  {
+    "id": 134,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Husk (Hüllenzombie)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hüllenzombies spawnen nur in Wüsten. Ihr Angriff verursacht Hunger-Effekt statt direkten Schaden."
+  },
+  {
+    "id": 135,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Stray (Irrlicht)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Irrlichter sind Skelett-Varianten aus Schneebiomen. Ihre Pfeile verursachen Verlangsamung I für 30 Sekunden."
+  },
+  {
+    "id": 136,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zombie Villager?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zombie-Dorfbewohner können mit einem Schwächetrank und Goldenem Apfel geheilt werden (2-5 Minuten)."
+  },
+  {
+    "id": 137,
+    "type": "number",
+    "question": "Wie viele Knochen braucht man durchschnittlich, um einen Wolf zu zähmen?",
+    "answer": 3,
+    "unit": "Knochen",
+    "tolerance": 2,
+    "category": "Mobs",
+    "funFact": "Die Erfolgswahrscheinlichkeit pro Knochen betraegt 1/3. Durchschnittlich 3 Knochen, aber es kann auch 1 oder 10 dauern."
+  },
+  {
+    "id": 138,
+    "type": "number",
+    "question": "Wie viele XP benoetigt man fuer Level 1?",
+    "answer": 7,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Die XP-Kosten pro Level steigen: Level 1-16 kosten jeweils 7-17 XP. Ab Level 31 braucht man ueber 100 XP pro Level."
+  },
+  {
+    "id": 139,
+    "type": "number",
+    "question": "Welche Lichtstaerke hat ein Glowstone-Block?",
+    "answer": 15,
+    "unit": "Lichtstaerke",
+    "tolerance": 0,
+    "category": "Bloecke",
+    "funFact": "Lichtstaerke 15 ist das Maximum in Minecraft. Glowstone, Leuchtende Laterne, Lagerfeuer und Seegurke haben alle 15."
+  },
+  {
+    "id": 140,
+    "type": "number",
+    "question": "Wie viele Weizenähren braucht man, um 2 Kühe zu züchten?",
+    "answer": 2,
+    "unit": "Weizenähren",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Kühe, Schafe und Pilzkühe werden mit Weizen gezüchtet. Das Kälbchen wird erwachsen nach 20 Minuten."
+  },
+  {
+    "id": 141,
+    "type": "number",
+    "question": "Wie viele Kakaofrüchte bekommt man aus einer reifen Kakaopflanze?",
+    "answer": 3,
+    "unit": "Kakaofrüchte",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Kakaopflanzen wachsen nur auf Dschungelholz und haben 3 Reifestufen."
+  },
+  {
+    "id": 142,
+    "type": "entity",
+    "question": "Welcher Block erzeugt eine aufsteigende Luftblase-Spalte unter Wasser?",
+    "answer": "Seelensand",
+    "acceptedAnswers": [
+      "Seelensand",
+      "Soul Sand"
+    ],
+    "category": "Blöcke",
+    "funFact": "Seelensand erzeugt aufsteigende Luftblasen. Magmablock erzeugt eine absinkende Wasserströmung – ideal für Aufzüge!"
+  },
+  {
+    "id": 143,
+    "type": "number",
+    "question": "Wie viele Schichten hat ein Kuchen (Cake) insgesamt?",
+    "answer": 7,
+    "unit": "Schichten",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Jede Kuchenschicht gibt 2 Hunger-Punkte. Ein ganzer Kuchen gibt 14 Hunger-Punkte."
+  },
+  {
+    "id": 144,
+    "type": "entity",
+    "question": "Welcher Mob droppt Federn (Feathers)?",
+    "answer": "Huhn",
+    "acceptedAnswers": [
+      "Huhn",
+      "Chicken"
+    ],
+    "category": "Mobs",
+    "funFact": "Hühner droppen 0-2 Federn beim Tod. Mit Plünderung III bis zu 5 Federn."
+  },
+  {
+    "id": 145,
+    "type": "number",
+    "question": "Wie hoch ist die Nether-Welt maximal (Y-Level)?",
+    "answer": 128,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Der Nether ist von Y=0 bis Y=127 bewohnbar. Über Y=128 gibt es eine begehbare Bedrock-Fläche."
+  },
+  {
+    "id": 146,
+    "type": "number",
+    "question": "Wie weit sucht ein Dorfbewohner nach seinem Arbeitsblock (Blöcke)?",
+    "answer": 48,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Dorfbewohner",
+    "funFact": "Dorfbewohner suchen in einem Radius von 48 Blöcken nach einem freien Arbeitsblock."
+  },
+  {
+    "id": 147,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Rüstungsschmied (Armorer) verwendet?",
+    "answer": "Hochofen",
+    "acceptedAnswers": [
+      "Hochofen",
+      "Blast Furnace"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Der Hochofen schmelzt Erze doppelt so schnell wie ein normaler Ofen, kann aber keine Nahrung kochen."
+  },
+  {
+    "id": 148,
+    "type": "number",
+    "question": "Wie viele Diamanten droppt maximal ein Diamanterz-Block (ohne Verzauberung)?",
+    "answer": 1,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Mit Glück III kann ein einziger Diamant-Erz-Block bis zu 4 Diamanten droppen."
+  },
+  {
+    "id": 149,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein Netherit-Schwert?",
+    "answer": 2031,
+    "unit": "Haltbarkeit",
+    "tolerance": 10,
+    "category": "Items",
+    "funFact": "Netherit-Schwert: 2031. Diamant: 1561. Mit Reparatur (Mending) kann ein Schwert theoretisch ewig halten."
+  },
+  {
+    "id": 150,
+    "type": "number",
+    "question": "Wie weit kann ein Bogen (vollständig gespannt) maximal schiessen (Blöcke)?",
+    "answer": 52,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Items",
+    "funFact": "Ein vollständig gespannter Bogen macht 9 Schaden (4,5 Herzen). Mit Kraft V: 12,5 Schaden."
+  },
+  {
+    "id": 151,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein Diamant-Pickel?",
+    "answer": 1561,
+    "unit": "Haltbarkeit",
+    "tolerance": 10,
+    "category": "Items",
+    "funFact": "Diamant-Werkzeuge halten 1561 Nutzungen aus. Mit Stabilität III verdreifacht sich die Haltbarkeit."
+  },
+  {
+    "id": 152,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein Holzpickel?",
+    "answer": 59,
+    "unit": "Haltbarkeit",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Holzwerkzeuge sind die schwächsten im Spiel – nur 59 Nutzungen. Gold hat sogar noch weniger (32), ist aber schneller beim Abbauen."
+  },
+  {
+    "id": 153,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein goldenes Schwert?",
+    "answer": 32,
+    "unit": "Haltbarkeit",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Goldwerkzeuge sind die zerbrechlichsten (32), aber schnellsten Werkzeuge. Nur mit Glück-Verzauberung lohnen sie sich wirklich."
+  },
+  {
+    "id": 154,
+    "type": "number",
+    "question": "Wie viele Schneebälle kann man maximal in einem Stack stapeln?",
+    "answer": 16,
+    "unit": "Schneebälle",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Schneebälle stacken auf 16, nicht 64. Flintenstock-Munition und Enderperlen stacken ebenfalls auf 16."
+  },
+  {
+    "id": 155,
+    "type": "number",
+    "question": "Wie viel Schaden macht ein Schneeball gegen einen Blaze?",
+    "answer": 3,
+    "unit": "Schaden",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Schneebälle machen normalerweise keinen Schaden – ausser gegen Blazes (1,5 Herzen) und den Enderdrachen (3 Schaden)."
+  },
+  {
+    "id": 156,
+    "type": "entity",
+    "question": "Welches Item wird zum Craften eines Bücherregals benoetigt?",
+    "answer": "Buch",
+    "acceptedAnswers": [
+      "Buch",
+      "Book"
+    ],
+    "category": "Crafting",
+    "funFact": "3 Bücher + 6 Holzbretter = 1 Bücherregal. Ein Bücherregal erhöht den maximalen Verzauberungslevel um 2."
+  },
+  {
+    "id": 157,
+    "type": "number",
+    "question": "Wie viele Leder braucht man für eine komplette Lederrüstung?",
+    "answer": 24,
+    "unit": "Leder",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Helm: 5, Brustplatte: 8, Beinlinge: 7, Stiefel: 4 – macht zusammen 24 Leder für das volle Set."
+  },
+  {
+    "id": 158,
+    "type": "number",
+    "question": "Wie viele Eisenbarren braucht man für eine komplette Eisenrüstung?",
+    "answer": 24,
+    "unit": "Eisenbarren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Helm (5), Brustplatte (8), Beinlinge (7), Stiefel (4) – genau 24 Barren, gleich wie bei Leder-, Gold- und Diamantrüstungen."
+  },
+  {
+    "id": 159,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein Lederstiefel?",
+    "answer": 65,
+    "unit": "Haltbarkeit",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Lederrüstung: Helm 55, Brustplatte 80, Beinlinge 75, Stiefel 65 – die schwächste Rüstungsklasse im Spiel."
+  },
+  {
+    "id": 160,
+    "type": "number",
+    "question": "Wie viele Schüsse kann ein Bogen abfeuern (ohne Verzauberung)?",
+    "answer": 384,
+    "unit": "Schüsse",
+    "tolerance": 10,
+    "category": "Items",
+    "funFact": "Ein Bogen hat 384 Haltbarkeit. Mit Endlosigkeit schiesst man unendlich, braucht aber noch mindestens 1 Pfeil im Inventar."
+  },
+  {
+    "id": 161,
+    "type": "number",
+    "question": "Wie weit überträgt ein Redstone-Staub das Signal (Blöcke)?",
+    "answer": 15,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Nach 15 Blöcken ist die Signalstärke auf 0. Ein Redstone-Repeater lädt das Signal wieder auf 15 auf."
+  },
+  {
+    "id": 162,
+    "type": "number",
+    "question": "Wie viele Ticks Verzögerung kann ein Redstone-Repeater maximal haben?",
+    "answer": 4,
+    "unit": "Ticks",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "1 Tick = 0,1 Sekunden. Ein Repeater kann 1-4 Ticks verzögern. Mehrere in Reihe ermöglichen längere Verzögerungen."
+  },
+  {
+    "id": 163,
+    "type": "number",
+    "question": "Wie viele Blöcke kann ein normaler Piston maximal schieben?",
+    "answer": 12,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Pistons schieben maximal 12 Blöcke. Sticky Pistons ziehen ausserdem 1 Block zurück, wenn das Signal aufhört."
+  },
+  {
+    "id": 164,
+    "type": "number",
+    "question": "Welche maximale Signalstärke gibt ein Komparator aus?",
+    "answer": 15,
+    "unit": "Signalstärke",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Komparatoren messen Behälter-Füllstände und geben 0-15 als Signal aus. Eine volle Truhe ergibt 15."
+  },
+  {
+    "id": 165,
+    "type": "number",
+    "question": "Auf welcher Tick-Rate läuft ein Standard-Minecraft-Server?",
+    "answer": 20,
+    "unit": "Ticks/Sek",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "20 TPS ist der Standard. Bei weniger als 20 TPS beginnt der Server zu laggen – alles verlangsamt sich proportional."
+  },
+  {
+    "id": 166,
+    "type": "number",
+    "question": "Wie viele Redstone-Fackeln erhält man aus 1 Redstone-Staub + 1 Stock?",
+    "answer": 1,
+    "unit": "Fackel",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "1 Stock + 1 Redstone = 1 Redstone-Fackel. Sie emittieren Lichtlevel 7 und invertieren Redstone-Signale."
+  },
+  {
+    "id": 167,
+    "type": "number",
+    "question": "Wie lange bleibt eine Steindruckplatte nach dem Verlassen aktiv (Sekunden)?",
+    "answer": 1,
+    "unit": "Sekunde",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Steindruckplatten bleiben ~1 Sekunde aktiv. Holzdruckplatten bleiben aktiv, solange sich ein Spieler/Mob drauf befindet."
+  },
+  {
+    "id": 168,
+    "type": "number",
+    "question": "Wie viele Herzen hat ein Spieler standardmässig?",
+    "answer": 10,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "10 Herzen = 20 HP. Mit Absorption-Effekt (goldene Äpfel) können temporäre gelbe Bonusherzen hinzugefügt werden."
+  },
+  {
+    "id": 169,
+    "type": "number",
+    "question": "Ab wie vielen Blöcken Fallhöhe nimmt ein Spieler Schaden?",
+    "answer": 4,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Erst ab 4 Blöcken Fallhöhe gibt es Schaden. Federn, Wasser, Schleimblöcke und Heu absorbieren Fallschaden vollständig."
+  },
+  {
+    "id": 170,
+    "type": "number",
+    "question": "Wie lange dauert ein Minecraft-Tag in Echtzeit (Minuten)?",
+    "answer": 10,
+    "unit": "Minuten",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Ein Minecraft-Tag dauert genau 10 Minuten: 7 Min. Tag, 1,5 Min. Dämmerung, 1 Min. Nacht, 0,5 Min. Morgenrot."
+  },
+  {
+    "id": 171,
+    "type": "number",
+    "question": "Ab welchem Hunger-Level stoppt die Lebensregeneration?",
+    "answer": 18,
+    "unit": "Hunger-Punkte",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Unter 18 Hungerpunkten (9 Hungerherzen) stoppt die Regeneration. Unter 6 stoppt Sprinten, unter 1 sinken HPs auf 0,5."
+  },
+  {
+    "id": 172,
+    "type": "number",
+    "question": "Wie lange brennt ein Spieler nach dem Kontakt mit Lava (Sekunden)?",
+    "answer": 15,
+    "unit": "Sekunden",
+    "tolerance": 2,
+    "category": "Spielmechanik",
+    "funFact": "Lava gibt 15 Sekunden Feuer-Debuff. Mit Feuerresistenz-Trank kann man problemlos in Lava schwimmen."
+  },
+  {
+    "id": 173,
+    "type": "number",
+    "question": "Wie viel Schaden macht Fallschaden pro Block ab dem 4. Block?",
+    "answer": 1,
+    "unit": "Schaden",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Ab dem 4. Block: 1 Schaden/Block. 23 Blöcke Fallhöhe töten einen Spieler ohne Rüstung (20 HP)."
+  },
+  {
+    "id": 174,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Stärke I (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Tränke",
+    "funFact": "Stärke I dauert 3 Minuten, Stärke II nur 1:30. Stärke I gibt +3 Schaden, Stärke II gibt +6 Schaden pro Angriff."
+  },
+  {
+    "id": 175,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Feuerresistenz (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Tränke",
+    "funFact": "Feuerresistenz dauert 3 Minuten und macht immun gegen Feuer, Lava und Blaze-Angriffe – unverzichtbar im Nether."
+  },
+  {
+    "id": 176,
+    "type": "entity",
+    "question": "Welche Zutat verwandelt einen Trank in einen Wurf-Trank?",
+    "answer": "Schiesspulver",
+    "acceptedAnswers": [
+      "Schiesspulver",
+      "Schießpulver",
+      "Gunpowder"
+    ],
+    "category": "Tränke",
+    "funFact": "Schiesspulver verwandelt jeden Trank in einen Wurf-Trank. Drachenatem macht daraus einen Verweilenden Trank."
+  },
+  {
+    "id": 177,
+    "type": "entity",
+    "question": "Welche Zutat verlängert die Wirkungsdauer eines Tranks?",
+    "answer": "Redstone",
+    "acceptedAnswers": [
+      "Redstone",
+      "Redstonestaub"
+    ],
+    "category": "Tränke",
+    "funFact": "Redstone verlängert die Dauer. Glowstone intensiviert den Effekt (Stufe II), verkürzt aber die Dauer deutlich."
+  },
+  {
+    "id": 178,
+    "type": "entity",
+    "question": "Welche Zutat wird zu einem Trank der Schwäche gebraut (direkt aus Wasser)?",
+    "answer": "Fermentiertes Spinneauge",
+    "acceptedAnswers": [
+      "Fermentiertes Spinneauge",
+      "Fermented Spider Eye"
+    ],
+    "category": "Tränke",
+    "funFact": "Schwäche ist der einzige Trank ohne Nether-Warzen-Basistrank. Ideal zum Heilen von Zombie-Dorfbewohnern."
+  },
+  {
+    "id": 179,
+    "type": "number",
+    "question": "Welchen maximalen Level hat die Schärfe-Verzauberung?",
+    "answer": 5,
+    "unit": "Level",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Schärfe V gibt +3 Schaden pro Treffer (Java). Auf Bedrock Edition ist der Bonus etwas anders berechnet."
+  },
+  {
+    "id": 180,
+    "type": "number",
+    "question": "Wie viele Bücherregale braucht man für Level-30-Verzauberungen?",
+    "answer": 15,
+    "unit": "Bücherregale",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "15 Bücherregale müssen im Abstand von 1 Block um den Verzauberungstisch stehen – ohne Blöcke dazwischen."
+  },
+  {
+    "id": 181,
+    "type": "number",
+    "question": "Welchen maximalen Level hat die Glück-Verzauberung?",
+    "answer": 3,
+    "unit": "Level",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Glück III auf einem Diamantpickel kann bis zu 4 Diamanten aus einem einzigen Erz-Block droppen lassen."
+  },
+  {
+    "id": 182,
+    "type": "number",
+    "question": "Welchen maximalen Level hat Effizienz (für Werkzeuge)?",
+    "answer": 5,
+    "unit": "Level",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Effizienz V macht Diamantwerkzeuge extrem schnell. Kombiniert mit Hast II ist es die schnellste Abbauvariante ohne Befehle."
+  },
+  {
+    "id": 183,
+    "type": "number",
+    "question": "Wie viele Lapis Lazuli kostet eine Level-30-Verzauberung?",
+    "answer": 3,
+    "unit": "Lapis Lazuli",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Verzauberungen bis Level 30 kosten 1-3 Lapis Lazuli. Die Steine werden verbraucht, nicht zurückgegeben."
+  },
+  {
+    "id": 184,
+    "type": "entity",
+    "question": "Welcher Dorfbewohner-Beruf verwendet den Steinmetz-Block?",
+    "answer": "Maurer",
+    "acceptedAnswers": [
+      "Maurer",
+      "Mason",
+      "Steinmetz"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Der Maurer verkauft Quarz, Terrakotta und verschiedene Stein-Varianten. Sein Arbeitsblock ist der Steinmetz."
+  },
+  {
+    "id": 185,
+    "type": "entity",
+    "question": "Welcher Dorfbewohner verkauft Verzauberungsbücher?",
+    "answer": "Bibliothekar",
+    "acceptedAnswers": [
+      "Bibliothekar",
+      "Librarian"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Bibliothekare sind die wertvollsten Dorfbewohner – sie können Mending und andere seltene Bücher verkaufen."
+  },
+  {
+    "id": 186,
+    "type": "number",
+    "question": "Wie lange dauert ein Zombie-Dorfbewohner zum Heilen (Minuten, beste Methode)?",
+    "answer": 2,
+    "unit": "Minuten",
+    "tolerance": 1,
+    "category": "Dorfbewohner",
+    "funFact": "Mit Bett und Eisengitter in der Nähe dauert die Heilung nur 1-2 Minuten statt der normalen 2-5 Minuten."
+  },
+  {
+    "id": 187,
+    "type": "number",
+    "question": "Wie viele Holzbretter bekommt man aus einem Holzblock?",
+    "answer": 4,
+    "unit": "Holzbretter",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "1 Holzblock → 4 Bretter. 2 Bretter → 4 Stöcke. Die Holzverwertungskette ist eine der effizientesten in Minecraft."
+  },
+  {
+    "id": 188,
+    "type": "number",
+    "question": "Wie viele Wollblöcke braucht man für ein Bett?",
+    "answer": 3,
+    "unit": "Wollblöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "3 Wolle + 3 Bretter = 1 Bett. Alle Wollblöcke müssen dieselbe Farbe haben. Betten explodieren im Nether und im End!"
+  },
+  {
+    "id": 189,
+    "type": "number",
+    "question": "Wie viele Bretter braucht man für eine Truhe?",
+    "answer": 8,
+    "unit": "Holzbretter",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Bretter (Randform) = 1 Truhe mit 27 Slots. Zwei nebeneinander bilden eine Doppeltruhe mit 54 Slots."
+  },
+  {
+    "id": 190,
+    "type": "number",
+    "question": "Wie viele Obsidian-Blöcke braucht man minimal für ein Nether-Portal?",
+    "answer": 10,
+    "unit": "Obsidian",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein minimales Portal (2×3 innen) braucht 10 Obsidian. Die Ecken können weggelassen werden. Max: 23×23 innen."
+  },
+  {
+    "id": 191,
+    "type": "number",
+    "question": "Wie viele Stöcke bekommt man aus 2 Holzbrettern?",
+    "answer": 4,
+    "unit": "Stöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "2 Bretter (vertikal) = 4 Stöcke. Stöcke sind Grundmaterial für Werkzeuge, Waffen, Fackeln und Zäune."
+  },
+  {
+    "id": 192,
+    "type": "number",
+    "question": "Wie viele Eisenbarren braucht man für einen Amboss?",
+    "answer": 31,
+    "unit": "Eisenbarren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "3 Eisenblöcke (27 Barren) + 4 einzelne Barren = Amboss. Er nutzt sich nach etwa 25 Reparaturen ab."
+  },
+  {
+    "id": 193,
+    "type": "number",
+    "question": "Wie viele Lohen-Stäbe braucht man für eine Braustation?",
+    "answer": 1,
+    "unit": "Lohen-Stab",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "1 Lohen-Stab + 3 Kopfsteinpflaster = Braustation. Lohen-Stäbe brennen auch als Treibstoff (20 Brauvorgänge)."
+  },
+  {
+    "id": 194,
+    "type": "number",
+    "question": "Auf welchem Y-Level spawnt Diamanterz am häufigsten (Java 1.20)?",
+    "answer": -58,
+    "unit": "Y-Level",
+    "tolerance": 5,
+    "category": "Weltgenerierung",
+    "funFact": "Seit 1.18 spawnt Diamant am häufigsten bei Y=-58. Früher war es Y=12 – das neue Höhlensystem ist viel tiefer."
+  },
+  {
+    "id": 195,
+    "type": "number",
+    "question": "Wie tief geht die Welt in Minecraft seit 1.18 (tiefstes Y-Level)?",
+    "answer": -64,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Seit 1.18 (Caves & Cliffs) geht die Welt bis Y=-64. Bedrock beginnt bei ca. Y=-64 bis Y=-60."
+  },
+  {
+    "id": 196,
+    "type": "number",
+    "question": "Wie hoch ist die maximale Bauhöhe in der Overworld (seit 1.18)?",
+    "answer": 320,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Seit 1.18 reicht die Overworld von Y=-64 bis Y=320 – das ergibt 384 Blöcke Gesamthöhe (vorher waren es 256)."
+  },
+  {
+    "id": 197,
+    "type": "number",
+    "question": "Wie viele Blöcke breit und lang ist ein Chunk?",
+    "answer": 16,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Chunks sind 16×16×384 Blöcke gross (seit 1.18). Das Spiel lädt immer einen Bereich von Chunks um den Spieler herum."
+  },
+  {
+    "id": 198,
+    "type": "number",
+    "question": "Wie viele Overworld-Blöcke entspricht ein Nether-Block?",
+    "answer": 8,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "1 Block im Nether = 8 Blöcke in der Overworld. Nether-Portale nutzen dieses Verhältnis für schnelles Reisen."
+  },
+  {
+    "id": 199,
+    "type": "number",
+    "question": "Wie viele Herzen hat der Enderdrache?",
+    "answer": 100,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Enderdrache hat 200 HP (100 Herzen) und ist damit der stärkste reguläre Boss im Vanilla-Spiel."
+  },
+  {
+    "id": 200,
+    "type": "number",
+    "question": "Wie viele End-Kristalle gibt es beim Enderdrachen-Kampf?",
+    "answer": 10,
+    "unit": "End-Kristalle",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "10 Obsidiansäulen mit je einem End-Kristall oben. Die Kristalle heilen den Drachen – erst zerstören, dann kämpfen!"
+  },
+  {
+    "id": 201,
+    "type": "number",
+    "question": "Wie viele Herzen hat ein Wither?",
+    "answer": 150,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Wither hat 300 HP (150 Herzen) – mehr als der Enderdrache. Er spawnt mit einer gewaltigen Schädelexplosion."
+  },
+  {
+    "id": 202,
+    "type": "number",
+    "question": "Wie viele Wither-Schädel braucht man, um den Wither zu beschwören?",
+    "answer": 3,
+    "unit": "Schädel",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "3 Wither-Schädel + 4 Seelensand/Seelenerde = Wither. Schädel droppen von Wither-Skeletten mit ca. 2,5% Chance."
+  },
+  {
+    "id": 203,
+    "type": "number",
+    "question": "Wie viele XP droppt der Enderdrache beim ersten Kill?",
+    "answer": 12000,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "12.000 XP bringt dich direkt auf Level 68! Beim Rematch gibt er nur 500 XP. Grösste XP-Quelle im Spiel."
+  },
+  {
+    "id": 204,
+    "type": "number",
+    "question": "Wie viele Herzen hat ein Ghast?",
+    "answer": 5,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ghasts haben nur 10 HP (5 Herzen). Zurückgeschlagene Feuerbälle töten sie mit 1 Treffer."
+  },
+  {
+    "id": 205,
+    "type": "number",
+    "question": "Wie viele Herzen hat ein Schweinezombie (Zombified Piglin)?",
+    "answer": 10,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Schweinezombies sind neutral – sie greifen erst an, wenn man sie provoziert. Dann alarmieren sie alle in der Nähe."
+  },
+  {
+    "id": 206,
+    "type": "number",
+    "question": "Wie viele Slimes entstehen maximal aus einem grossen Slime?",
+    "answer": 4,
+    "unit": "Slimes",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Grosser Slime → 4 mittlere → je 4 kleine. Kleine Slimes droppen 0-2 Slimebälle. Spawnen nur in bestimmten Chunks."
+  },
+  {
+    "id": 207,
+    "type": "number",
+    "question": "Wie viele Blöcke weit können Skelette Spieler angreifen?",
+    "answer": 16,
+    "unit": "Blöcke",
+    "tolerance": 1,
+    "category": "Mobs",
+    "funFact": "Skelette greifen auf bis zu 16 Blöcke mit Bögen an. Auf hoher Schwierigkeit schiesst der Pfeil bei Bewegung voraus."
+  },
+  {
+    "id": 208,
+    "type": "number",
+    "question": "Wie viele XP droppt ein Blaze beim Tod?",
+    "answer": 10,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Blazes geben 10 XP, eine der höchsten Mengen unter Nether-Mobs. Blaze-Stäbe sind essenziell für Brautränke."
+  },
+  {
+    "id": 209,
+    "type": "number",
+    "question": "Wie schnell kann das schnellste Pferd laufen (Blöcke/Sekunde)?",
+    "answer": 14,
+    "unit": "Blöcke/Sek",
+    "tolerance": 2,
+    "category": "Mobs",
+    "funFact": "Das schnellste Pferd läuft ~14 Blöcke/Sekunde. Ein Spieler sprintet ~5,6 Blöcke/Sekunde. Pferde sind viel schneller."
+  },
+  {
+    "id": 210,
+    "type": "number",
+    "question": "Wie lange dauert es, bis ein Baby-Tier erwachsen wird (Minuten)?",
+    "answer": 20,
+    "unit": "Minuten",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Alle Tiere brauchen 20 Minuten zum Erwachsenwerden. Mit dem Zucht-Futter kann man es um jeweils 10% beschleunigen."
+  },
+  {
+    "id": 211,
+    "type": "number",
+    "question": "Wie viele Lichtlevel emittiert eine normale Fackel?",
+    "answer": 14,
+    "unit": "Lichtlevel",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Fackeln haben Lichtlevel 14, Glowstone 15. Der Unterschied von 1 Level ändert den Mob-Spawn nicht wesentlich."
+  },
+  {
+    "id": 212,
+    "type": "number",
+    "question": "Wie hoch ist die Sprengkraft von TNT (Blaststärke)?",
+    "answer": 4,
+    "unit": "Blaststärke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "TNT hat Blaststärke 4. Creeper: 3, Charged Creeper: 6, Bett im Nether: 5, Enderdrachen-Explosion: 7."
+  },
+  {
+    "id": 213,
+    "type": "number",
+    "question": "Wie viele Kaktus-Blöcke braucht man für 1 grünen Farbstoff?",
+    "answer": 1,
+    "unit": "Kaktusblock",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "1 Kaktus im Ofen = 1 grüner Farbstoff. Das ist der einzige Weg, grünen Farbstoff in Minecraft herzustellen."
+  },
+  {
+    "id": 214,
+    "type": "entity",
+    "question": "Welcher Block kann nicht durch Explosionen zerstört werden?",
+    "answer": "Bedrock",
+    "acceptedAnswers": [
+      "Bedrock",
+      "Grundgestein"
+    ],
+    "category": "Blöcke",
+    "funFact": "Bedrock hat unbegrenzte Blastwiderstandskraft und kann im Survival-Modus nicht abgebaut werden."
+  },
+  {
+    "id": 215,
+    "type": "number",
+    "question": "Wie viele Items passen in eine Enderchest?",
+    "answer": 27,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Enderchests haben 27 Slots – gleich wie normale Truhen. Der Inhalt ist spielerspezifisch und überall abrufbar."
+  },
+  {
+    "id": 216,
+    "type": "number",
+    "question": "Wie viele Smaragde gibt ein Dorfbewohner maximal für einen Handel?",
+    "answer": 64,
+    "unit": "Smaragde",
+    "tolerance": 0,
+    "category": "Dorfbewohner",
+    "funFact": "Manche Dorfbewohner-Handel kosten bis zu 64 Smaragde. Meister-Bibliothekare verlangen das für seltene Bücher."
+  },
+  {
+    "id": 217,
+    "type": "number",
+    "question": "Wie viele Eisenbarren braucht man für eine Schiene (Output: 16)?",
+    "answer": 6,
+    "unit": "Eisenbarren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "6 Eisenbarren + 1 Stock = 16 Schienen. Antriebsschienen kosten je 6 Goldbarren + 1 Redstone + 1 Stock."
+  },
+  {
+    "id": 218,
+    "type": "number",
+    "question": "Wie viele Glasblöcke braucht man für 3 Glasflaschen?",
+    "answer": 3,
+    "unit": "Glasblöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "3 Glasblöcke (V-Form) = 3 Glasflaschen – die Basis jeder Trankherstellung in Minecraft."
+  },
+  {
+    "id": 219,
+    "type": "entity",
+    "question": "Was braucht man zusätzlich zu Eisenblöcken, um einen Eisengolem zu beschwören?",
+    "answer": "Geschnitzter Kürbis",
+    "acceptedAnswers": [
+      "Kürbis",
+      "Geschnitzter Kürbis",
+      "Carved Pumpkin"
+    ],
+    "category": "Items",
+    "funFact": "4 Eisenblöcke (T-Form) + 1 geschnitzter Kürbis = Eisengolem. Er spawnt auch natürlich in Dörfern."
+  },
+  {
+    "id": 220,
+    "type": "entity",
+    "question": "Welches Item entzündet ein Nether-Portal?",
+    "answer": "Feuerstein und Stahl",
+    "acceptedAnswers": [
+      "Feuerstein und Stahl",
+      "Feuerstein",
+      "Flint and Steel"
+    ],
+    "category": "Items",
+    "funFact": "Feuerstein und Stahl (1 Feuerstein + 1 Eisenbarren) entzündet Obsidian-Portale. Auch Feuerbälle funktionieren."
+  },
+  {
+    "id": 221,
+    "type": "number",
+    "question": "Wie viele Schaden macht ein kritischer Treffer mit einem Diamantschwert (ohne Verzauberung)?",
+    "answer": 11,
+    "unit": "Schaden",
+    "tolerance": 1,
+    "category": "Items",
+    "funFact": "Diamantschwert: 7 Basis + 50% kritisch = ~10,5 → aufgerundet 11 Schaden. Kritisch trifft man beim Fallen."
+  },
+  {
+    "id": 222,
+    "type": "entity",
+    "question": "Welcher Mob droppt garantiert einen Sattel beim Tod?",
+    "answer": "Ravager",
+    "acceptedAnswers": [
+      "Ravager",
+      "Verwüster"
+    ],
+    "category": "Mobs",
+    "funFact": "Ravager droppen garantiert einen Sattel. Sättel gibt es auch in Truhen von Dungeons, Dörfern und beim Angeln."
+  },
+  {
+    "id": 223,
+    "type": "entity",
+    "question": "Welcher Block erzeugt eine absinkende Wasserströmung unter Wasser?",
+    "answer": "Magmablock",
+    "acceptedAnswers": [
+      "Magmablock",
+      "Magma Block"
+    ],
+    "category": "Blöcke",
+    "funFact": "Magmablock erzeugt eine absinkende Strömung (Aufzug abwärts). Seelensand erzeugt die aufsteigende Gegenvariante."
+  },
+  {
+    "id": 224,
+    "type": "number",
+    "question": "Wie viele Lichtlevel hat ein Lagerfeuer?",
+    "answer": 15,
+    "unit": "Lichtlevel",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Lagerfeuer emittieren Lichtlevel 15 und senden einen Rauchsignal-Partikel aus, der auch als Signal genutzt werden kann."
+  },
+  {
+    "id": 225,
+    "type": "number",
+    "question": "Wie viele Items kann ein Trichter (Hopper) pro Sekunde transferieren?",
+    "answer": 2,
+    "unit": "Items/Sek",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Hoppers transferieren 2,5 Items pro Sekunde (1 Item alle 8 Ticks). Minecarts with Hoppers sind schneller."
+  }
+];
+  // Shuffle questions for this session
+  allQuestions = questions;
+  questionOrder = [...Array(questions.length).keys()].sort(() => Math.random() - 0.5);
+  currentIndex = 0;
+
+  loadNextQuestion();
+}
+
+// ── Load next question ────────────────────────────────────────────────────────
+function loadNextQuestion() {
+  document.getElementById('result-panel').classList.remove('show');
+  document.getElementById('next-countdown').innerHTML = '';
+  document.getElementById('guesses-list').innerHTML   = '';
+  document.getElementById('input-area').style.display = '';
+
+  resetHints();
+  questionPoints = 0;
+
+  if (gameMode === 'competition') {
+    if (compIndex >= COMP_TOTAL) return; // handled by showResult
+    question = allQuestions[compOrder[compIndex]];
+    compIndex++;
+    updateCompBar();
+  } else {
+    if (currentIndex >= questionOrder.length) {
+      questionOrder = [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
+      currentIndex  = 0;
+      showToast('Alle Fragen durch! Neue Runde…');
+    }
+    question = allQuestions[questionOrder[currentIndex]];
+    currentIndex++;
+  }
+
+  attempts = 0;
+  finished = false;
+
+  document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
+  document.getElementById('category-pill').textContent = question.category;
+
+  // Animate question in
+  const qEl = document.getElementById('question-text');
+  qEl.style.opacity = '0';
+  qEl.style.transform = 'translateY(8px)';
+  qEl.textContent = question.question;
+  requestAnimationFrame(() => {
+    qEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    qEl.style.opacity = '1';
+    qEl.style.transform = 'translateY(0)';
+    setTimeout(() => { qEl.style.transition = ''; }, 350);
+  });
+
+  renderAttemptBar();
+  buildInput();
+  startTimer();
+}
+
+// ── Share button ──────────────────────────────────────────────────────────────
+document.getElementById('btn-share').addEventListener('click', () => {
+  const dots = document.querySelectorAll('.attempt-dot');
+  const emojis = [...dots].map(d =>
+    d.classList.contains('correct') ? 'O' :
+    d.classList.contains('failed')  ? 'X' :
+    d.classList.contains('used')    ? '-' : '_'
+  ).join('');
+  const won = document.getElementById('result-title').textContent.includes('Richtig');
+  const text = 'MineGuess\n' + (won ? attempts + '/' + MAX_ATTEMPTS : 'X/6') + '\n' + emojis + '\n\nScore: ' + sessCorrect + '/' + sessTotal;
+  navigator.clipboard.writeText(text).then(() => showToast('Kopiert!'));
+});
+
+// ── Firebase & Auth ──────────────────────────────────────────────────────────
+let fbAuth = null, fbDb = null, currentUser = null, isGuest = true;
+
+function initFirebase() {
+  if (typeof FIREBASE_ENABLED === 'undefined' || !FIREBASE_ENABLED || !FIREBASE_CONFIG) return false;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = firebase.auth();
+    fbDb   = firebase.firestore();
+    return true;
+  } catch(e) { console.warn('Firebase init:', e); return false; }
+}
+
+async function signInGoogle() {
+  if (!fbAuth) { showToast('Firebase nicht konfiguriert'); return; }
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const result   = await fbAuth.signInWithPopup(provider);
+    currentUser = result.user; isGuest = false;
+    await loadCloudStats();
+    finishAuth();
+  } catch(e) { showToast('Anmeldung fehlgeschlagen'); console.error(e); }
+}
+
+function playAsGuest() {
+  currentUser = null; isGuest = true;
+  finishAuth();
+}
+
+let _authDone = false;
+function finishAuth() {
+  if (_authDone) return; // prevent double-call from onAuthStateChanged + signInGoogle
+  _authDone = true;
+  document.getElementById('auth-modal').classList.add('hidden');
+  // Show mode screen
+  const modeScreen = document.getElementById('mode-screen');
+  modeScreen.classList.remove('hidden');
+  if (currentUser) {
+    const name = currentUser.displayName || currentUser.email || 'Spieler';
+    document.getElementById('mode-welcome').innerHTML = `Willkommen zurück, <strong>${name}</strong>! Wähle einen Modus:`;
+    // Show user chip in header
+    const chip = document.getElementById('user-chip');
+    chip.style.display = 'flex';
+    document.getElementById('user-name').textContent = name.split(' ')[0];
+    if (currentUser.photoURL) document.getElementById('user-avatar').src = currentUser.photoURL;
+    // Unlock competition mode tag
+    document.getElementById('comp-mode-tag').textContent = 'TÄGLICH';
+    document.getElementById('comp-mode-tag').style.background = 'rgba(251,191,36,0.1)';
+    document.getElementById('btn-leaderboard').style.display = '';
+    // Show sign-out button on mode screen
+    document.getElementById('btn-mode-signout').style.display = '';
+  } else {
+    document.getElementById('mode-welcome').innerHTML = 'Du spielst als <strong>Gast</strong> – keine Statistiken gespeichert.';
+    document.getElementById('comp-mode-tag').innerHTML = '<span style="color:var(--muted)">NUR ACCOUNTS</span>';
+  }
+}
+
+async function doSignOut() {
+  if (fbAuth) await fbAuth.signOut();
+  currentUser = null; isGuest = true;
+  localStorage.removeItem('mg_user_mode');
+  location.reload();
+}
+
+async function loadCloudStats() {
+  if (!currentUser || !fbDb) return;
+  try {
+    const snap = await fbDb.collection('users').doc(currentUser.uid).get();
+    if (snap.exists) {
+      const d = snap.data();
+      localStorage.setItem('mg_stats', JSON.stringify({ streak: d.streak||0, best: d.best||0, played: d.played||0 }));
+    }
+    updateStatsDisplay();
+  } catch(e) { console.warn('loadCloudStats:', e); }
+}
+
+async function saveCloudStats() {
+  if (!currentUser || !fbDb || isGuest) return;
+  try {
+    const s = getStats();
+    await fbDb.collection('users').doc(currentUser.uid).set({
+      displayName: currentUser.displayName || 'Spieler',
+      photoURL: currentUser.photoURL || null,
+      streak: s.streak, best: s.best, played: s.played,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch(e) { console.warn('saveCloudStats:', e); }
+}
+
+async function submitLeaderboard(score, correct, total) {
+  if (!currentUser || !fbDb) return;
+  try {
+    const ref = fbDb.collection('leaderboard').doc(currentUser.uid);
+    const existing = await ref.get();
+    if (existing.exists) {
+      const prev = existing.data();
+      // Only overwrite if new score is higher
+      if ((prev.score || 0) >= score) {
+        showToast('🏆 Vorheriges Ergebnis war besser!');
+        return;
+      }
+    }
+    await ref.set({
+      uid: currentUser.uid,
+      displayName: currentUser.displayName || 'Spieler',
+      photoURL: currentUser.photoURL || null,
+      score, correct, total,
+      date: getDateKey(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showToast('🏆 Neues Bestresultat gespeichert!');
+  } catch(e) { console.warn('submitLeaderboard:', e); }
+}
+
+let currentLbFilter = 'today';
+
+async function showLeaderboard() {
+  document.getElementById('lb-modal').classList.remove('hidden');
+  loadLeaderboard(currentLbFilter);
+}
+
+async function loadLeaderboard(filter) {
+  currentLbFilter = filter;
+  // Update tabs
+  document.getElementById('lb-tab-today').classList.toggle('active', filter === 'today');
+  document.getElementById('lb-tab-all').classList.toggle('active', filter === 'all');
+
+  const list = document.getElementById('lb-list');
+  list.innerHTML = '<div class="lb-empty">Lade…</div>';
+  if (!fbDb) {
+    list.innerHTML = '<div class="lb-empty">Firebase nicht konfiguriert.<br><small>Richte firebase-config.js ein.</small></div>';
+    return;
+  }
+  try {
+    const snap = await fbDb.collection('leaderboard').orderBy('score','desc').limit(100).get();
+    let docs = snap.docs;
+    if (filter === 'today') {
+      const today = getDateKey();
+      docs = docs.filter(d => d.data().date === today);
+    }
+    docs = docs.slice(0, 20);
+    if (docs.length === 0) {
+      list.innerHTML = `<div class="lb-empty">${filter==='today'?'Heute noch keine Einträge.':'Noch keine Einträge.'}</div>`;
+      return;
+    }
+    list.innerHTML = '';
+    const medals = ['🥇','🥈','🥉'];
+    docs.forEach((d,i) => {
+      const e = d.data(), isMe = currentUser && e.uid === currentUser.uid;
+      const row = document.createElement('div');
+      row.className = 'lb-row' + (isMe ? ' me' : '');
+      const pct = e.total ? Math.round(e.correct/e.total*100) : 0;
+      row.innerHTML = `<span class="lb-rank">${medals[i]||'#'+(i+1)}</span>
+        <span class="lb-name">${e.displayName}${isMe?' (Du)':''}</span>
+        <span class="lb-meta">${e.correct||0}/${e.total||10} · ${pct}%</span>
+        <span class="lb-score">${(e.score||0).toLocaleString()} Pkt.</span>`;
+      list.appendChild(row);
+    });
+  } catch(e) {
+    list.innerHTML = '<div class="lb-empty" style="color:var(--red)">Fehler beim Laden.</div>';
+    console.warn('loadLeaderboard:', e);
+  }
+}
+
+// ── Points system ─────────────────────────────────────────────────────────────
+const POINTS_CORRECT = 1000;
+const POINTS_WRONG   = -100;
+const POINTS_HINT    = -200;
+
+let sessionPoints  = 0;
+let questionPoints = 0; // points delta for current question
+let questionHints  = 0; // hints on current question
+
+function addPoints(delta) {
+  sessionPoints = Math.max(0, sessionPoints + delta);
+  questionPoints += delta;
+  document.getElementById('sess-points').textContent = sessionPoints.toLocaleString();
+  if (gameMode === 'competition') {
+    compScore = Math.max(0, compScore + delta);
+    document.getElementById('comp-pts').textContent = compScore.toLocaleString();
+  }
+}
+
+// ── Hint system ────────────────────────────────────────────────────────────────
+const MAX_HINTS = 2;
+
+function getHintText(q, level) {
+  if (q.type === 'number') {
+    const ans = q.answer, margin = Math.max(Math.round(Math.abs(ans||1) * (level===1?0.3:0.12)), 3);
+    return `Tipp ${level}: Die Antwort liegt zwischen <strong>${ans - margin}</strong> und <strong>${ans + margin}</strong>${q.unit?' '+q.unit:''}.`;
+  } else {
+    const ans = q.answer;
+    if (level === 1) return `Tipp 1: Die Antwort beginnt mit <strong>"${ans[0].toUpperCase()}"</strong>.`;
+    return `Tipp 2: Die Antwort hat <strong>${ans.length} Buchstaben</strong> und enthält in der Mitte ein <strong>"${ans[Math.floor(ans.length/2)].toUpperCase()}"</strong>.`;
+  }
+}
+
+function useHint() {
+  if (questionHints >= MAX_HINTS || finished) return;
+  questionHints++;
+  addPoints(POINTS_HINT);
+  const box = document.getElementById('hint-box');
+  const btn = document.getElementById('hint-btn');
+  box.innerHTML = getHintText(question, questionHints);
+  box.classList.add('show');
+  if (questionHints >= MAX_HINTS) {
+    btn.disabled = true;
+    btn.innerHTML = '✗ Keine Tipps mehr';
+  } else {
+    btn.innerHTML = `💡 Tipp 2 <span class="hint-cost">(-200 Pkt.)</span>`;
+  }
+  showToast('💡 Tipp verwendet – 200 Punkte abgezogen');
+}
+
+function resetHints() {
+  questionHints = 0; questionPoints = 0;
+  const box = document.getElementById('hint-box');
+  const btn = document.getElementById('hint-btn');
+  if (box) { box.classList.remove('show'); box.innerHTML = ''; }
+  if (btn) { btn.disabled = false; btn.innerHTML = '💡 Tipp 1 <span class="hint-cost">(-200 Pkt.)</span>'; }
+}
+
+// ── Game modes ─────────────────────────────────────────────────────────────────
+let gameMode = 'endless';
+const COMP_TOTAL = 10;
+let compIndex = 0, compScore = 0, compCorrect = 0, compOrder = [];
+
+function getDailySeed() {
+  const k = getDateKey(); let h = 0;
+  for (let i=0;i<k.length;i++) h = (h*31 + k.charCodeAt(i)) >>> 0;
+  return h;
+}
+function seededShuffle(arr, seed) {
+  const a = [...arr];
+  for (let i=a.length-1;i>0;i--) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    const j = seed % (i+1); [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function selectMode(mode) {
+  if (mode === 'competition' && isGuest) {
+    showToast('Wettkampfmodus nur für angemeldete Spieler!'); return;
+  }
+  gameMode = mode;
+  document.getElementById('mode-screen').classList.add('hidden');
+  const gw = document.getElementById('game-wrapper');
+  gw.style.display = ''; gw.classList.add('visible');
+
+  if (mode === 'competition') {
+    const saved = localStorage.getItem('mg_comp_'+getDateKey());
+    if (saved) {
+      const d = JSON.parse(saved);
+      showCompEnd(d.score, d.correct, COMP_TOTAL);
+      return;
+    }
+    compIndex=0; compScore=0; compCorrect=0;
+    compOrder = seededShuffle([...Array(allQuestions.length).keys()], getDailySeed()).slice(0, COMP_TOTAL);
+    document.getElementById('comp-bar').classList.add('show');
+    updateCompBar();
+  }
+  loadNextQuestion();
+}
+
+function updateCompBar() {
+  document.getElementById('comp-q-num').textContent   = compIndex + 1;
+  document.getElementById('comp-q-of').textContent    = COMP_TOTAL;
+  document.getElementById('comp-pts').textContent     = compScore.toLocaleString();
+}
+
+function showCompEnd(score, correct, total) {
+  document.getElementById('comp-end').classList.remove('hidden');
+  document.getElementById('ce-score').textContent   = score.toLocaleString();
+  document.getElementById('ce-correct').textContent = correct;
+  document.getElementById('ce-total').textContent   = total;
+  document.getElementById('ce-pct').textContent     = Math.round(correct/total*100)+'%';
+  if (!isGuest && fbDb) {
+    submitLeaderboard(score, correct, total);
+    document.getElementById('ce-lb-note').textContent = 'Punkte werden ins Leaderboard eingetragen…';
+  } else {
+    document.getElementById('ce-lb-note').textContent = 'Melde dich an, um im Leaderboard zu erscheinen!';
+  }
+}
+
+// ── Answer animations ─────────────────────────────────────────────────────────
+function animateCard(type) {
+  const card = document.getElementById('question-text');
+  card.classList.remove('anim-correct','anim-wrong');
+  void card.offsetWidth; // reflow
+  card.classList.add(type === 'correct' ? 'anim-correct' : 'anim-wrong');
+  setTimeout(() => card.classList.remove('anim-correct','anim-wrong'), 700);
+}
+
+// ── Start button ──────────────────────────────────────────────────────────────
+document.getElementById('btn-start-game').addEventListener('click', () => {
+  const splash = document.getElementById('splash');
+  splash.style.transition = 'opacity 0.4s';
+  splash.style.opacity = '0';
+  setTimeout(() => {
+    splash.style.display = 'none';
+    const fbOk = initFirebase();
+    if (fbOk) {
+      // Check if already signed in — unsubscribe after first call to avoid double finishAuth
+      const unsub = fbAuth.onAuthStateChanged(user => {
+        unsub();
+        if (user) {
+          currentUser = user; isGuest = false;
+          loadCloudStats().then(finishAuth);
+        } else {
+          document.getElementById('auth-modal').classList.remove('hidden');
+        }
+      });
+    } else {
+      // No Firebase – go directly to mode (guest only)
+      document.getElementById('auth-modal').classList.remove('hidden');
+    }
+  }, 420);
+});
+
+document.getElementById('btn-google-signin').addEventListener('click', signInGoogle);
+document.getElementById('btn-guest-play').addEventListener('click', playAsGuest);
+
+
+init();
+</script>
+</body>
+</html>

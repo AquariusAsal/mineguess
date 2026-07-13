@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Background gradient: dark Minecraft night sky -->
+    <radialGradient id="bg" cx="50%" cy="40%" r="70%">
+      <stop offset="0%" stop-color="#1a3a5c"/>
+      <stop offset="100%" stop-color="#050d1a"/>
+    </radialGradient>
+    <!-- Green glow for creeper -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <!-- Stars shimmer -->
+    <filter id="sparkle">
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="400" height="400" fill="url(#bg)" rx="24"/>
+
+  <!-- Stars -->
+  <g fill="white" opacity="0.7" filter="url(#sparkle)">
+    <rect x="30"  y="28"  width="2" height="2" rx="1"/>
+    <rect x="80"  y="15"  width="2" height="2" rx="1"/>
+    <rect x="130" y="35"  width="3" height="3" rx="1"/>
+    <rect x="200" y="12"  width="2" height="2" rx="1"/>
+    <rect x="260" y="30"  width="2" height="2" rx="1"/>
+    <rect x="320" y="18"  width="3" height="3" rx="1"/>
+    <rect x="370" y="40"  width="2" height="2" rx="1"/>
+    <rect x="55"  y="60"  width="2" height="2" rx="1"/>
+    <rect x="350" y="70"  width="2" height="2" rx="1"/>
+    <rect x="15"  y="90"  width="2" height="2" rx="1"/>
+    <rect x="385" y="100" width="2" height="2" rx="1"/>
+    <rect x="160" y="22"  width="2" height="2" rx="1"/>
+    <rect x="295" y="55"  width="2" height="2" rx="1"/>
+  </g>
+
+  <!-- Moon -->
+  <circle cx="340" cy="60" r="22" fill="#f0e68c" opacity="0.9"/>
+  <circle cx="350" cy="52" r="18" fill="#1a3a5c"/>
+
+  <!-- Pixelated ground (grass + dirt blocks) -->
+  <rect x="0"   y="340" width="50"  height="60" fill="#5d8a3c"/>
+  <rect x="50"  y="344" width="50"  height="56" fill="#6aaa40"/>
+  <rect x="100" y="338" width="50"  height="62" fill="#5d8a3c"/>
+  <rect x="150" y="342" width="50"  height="58" fill="#6aaa40"/>
+  <rect x="200" y="336" width="50"  height="64" fill="#5d8a3c"/>
+  <rect x="250" y="340" width="50"  height="60" fill="#6aaa40"/>
+  <rect x="300" y="344" width="50"  height="56" fill="#5d8a3c"/>
+  <rect x="350" y="338" width="50"  height="62" fill="#6aaa40"/>
+  <!-- Dirt underlayer -->
+  <rect x="0"   y="360" width="400" height="40" fill="#8B5E3C"/>
+  <!-- Pixel detail on grass -->
+  <rect x="10"  y="340" width="8" height="4" fill="#7dbb4a" opacity="0.5"/>
+  <rect x="70"  y="344" width="8" height="4" fill="#7dbb4a" opacity="0.5"/>
+  <rect x="120" y="338" width="8" height="4" fill="#7dbb4a" opacity="0.5"/>
+  <rect x="220" y="336" width="8" height="4" fill="#7dbb4a" opacity="0.5"/>
+  <rect x="310" y="344" width="8" height="4" fill="#7dbb4a" opacity="0.5"/>
+
+  <!-- ===== CREEPER BODY ===== -->
+  <!-- Body (dark green pixelated) -->
+  <rect x="158" y="246" width="84" height="90" fill="#2d6a2d" rx="2"/>
+  <!-- Body shading -->
+  <rect x="158" y="246" width="42" height="90" fill="#1f4f1f" rx="2"/>
+  <!-- Body pixel detail -->
+  <rect x="166" y="254" width="12" height="12" fill="#236023" opacity="0.6"/>
+  <rect x="222" y="254" width="12" height="12" fill="#3a7a3a" opacity="0.6"/>
+  <rect x="166" y="300" width="12" height="12" fill="#236023" opacity="0.6"/>
+  <rect x="222" y="300" width="12" height="12" fill="#3a7a3a" opacity="0.6"/>
+
+  <!-- Legs -->
+  <rect x="158" y="306" width="36" height="30" fill="#1f4f1f" rx="2"/>
+  <rect x="206" y="306" width="36" height="30" fill="#236023" rx="2"/>
+
+  <!-- Arms / side bumps -->
+  <rect x="130" y="250" width="28" height="50" fill="#1f4f1f" rx="2"/>
+  <rect x="242" y="250" width="28" height="50" fill="#236023" rx="2"/>
+
+  <!-- ===== CREEPER HEAD (? shape) ===== -->
+  <!-- Head background (green block) -->
+  <rect x="140" y="150" width="120" height="100" fill="#3a8a3a" rx="4" filter="url(#glow)"/>
+  <!-- Head shading left -->
+  <rect x="140" y="150" width="60" height="100" fill="#2d6a2d" rx="4"/>
+  <!-- Head top shine -->
+  <rect x="148" y="154" width="104" height="8" fill="#4aaa4a" opacity="0.4" rx="2"/>
+
+  <!-- "?" pixel art on head (white/light pixels) -->
+  <!-- Top curve of ? -->
+  <rect x="176" y="166" width="12" height="8"  fill="#e8f5e8"/>
+  <rect x="188" y="166" width="12" height="8"  fill="#e8f5e8"/>
+  <rect x="200" y="166" width="12" height="8"  fill="#e8f5e8"/>
+  <rect x="212" y="166" width="8"  height="8"  fill="#e8f5e8"/>
+  <!-- Right side curve -->
+  <rect x="220" y="174" width="8"  height="12" fill="#e8f5e8"/>
+  <!-- Curve going left -->
+  <rect x="208" y="186" width="12" height="8"  fill="#e8f5e8"/>
+  <rect x="196" y="186" width="12" height="8"  fill="#e8f5e8"/>
+  <!-- Stem down -->
+  <rect x="196" y="194" width="12" height="8"  fill="#e8f5e8"/>
+  <!-- Gap -->
+  <!-- Dot -->
+  <rect x="196" y="210" width="12" height="10" fill="#e8f5e8"/>
+
+  <!-- Head pixel border detail -->
+  <rect x="140" y="150" width="4" height="100" fill="#1f4f1f" opacity="0.5"/>
+  <rect x="256" y="150" width="4" height="100" fill="#4aaa4a" opacity="0.3"/>
+
+  <!-- Eyes / subtle shine on head -->
+  <rect x="152" y="160" width="6" height="6" fill="#5acc5a" opacity="0.3"/>
+
+  <!-- ===== TEXT ===== -->
+  <text x="200" y="370" font-family="'Segoe UI', Arial, sans-serif" font-size="32" font-weight="900"
+        fill="white" text-anchor="middle" letter-spacing="2"
+        style="text-shadow: 0 2px 8px #000;">
+    MineGuess
+  </text>
+
+  <!-- Green glow line under text -->
+  <rect x="120" y="377" width="160" height="3" fill="#5acc5a" rx="2" opacity="0.8"/>
+</svg>
