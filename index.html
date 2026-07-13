@@ -8736,4 +8736,105 @@ function getHintText(q, level) {
   } else {
     const ans = q.answer;
     if (level === 1) return `Tipp 1: Die Antwort beginnt mit <strong>"${ans[0].toUpperCase()}"</strong>.`;
-    return `Tipp 2: Die Antwort hat <strong>${ans.length} Buchstaben</strong> und enthält in der Mitte ein <strong>"${ans[Math.floor(ans.lengt
+    return `Tipp 2: Die Antwort hat <strong>${ans.length} Buchstaben</strong> und enthält in der Mitte ein <strong>"${ans[Math.floor(ans.length/2)].toUpperCase()}"</strong>.`;
+  }
+}
+
+function resetHints() {
+  questionHints = 0;
+  const btn = document.getElementById('hint-btn');
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '💡 Tipp 1 <span class="hint-cost">(-200 Pkt.)</span>';
+  }
+  const box = document.getElementById('hint-box');
+  if (box) box.innerHTML = '';
+}
+
+function useHint() {
+  if (!question || questionHints >= MAX_HINTS) return;
+  questionHints++;
+  addPoints(POINTS_HINT);
+  const text = getHintText(question, questionHints);
+  document.getElementById('hint-box').innerHTML = text;
+  const btn = document.getElementById('hint-btn');
+  if (questionHints >= MAX_HINTS) {
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = '💡 Tipp 2 <span class="hint-cost">(-200 Pkt.)</span>';
+  }
+}
+
+// ── Competition mode ──────────────────────────────────────────────────────────
+const COMP_TOTAL = 10;
+let gameMode    = 'endless';
+let compScore   = 0;
+let compCorrect = 0;
+let compIndex   = 0;
+let compOrder   = [];
+
+// Seeded shuffle (LCG) so competition questions are the same for everyone today
+function lcgShuffle(arr, seed) {
+  const a = [...arr];
+  let s = seed >>> 0;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
+    const j = s % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateCompBar() {
+  document.getElementById('comp-q-num').textContent = compIndex;
+  document.getElementById('comp-pts').textContent   = compScore.toLocaleString();
+}
+
+function showCompEnd(score, correct, total) {
+  document.getElementById('ce-score').textContent   = score.toLocaleString();
+  document.getElementById('ce-correct').textContent = correct;
+  document.getElementById('ce-total').textContent   = total;
+  document.getElementById('ce-pct').textContent     = Math.round(correct / total * 100) + '%';
+  document.getElementById('comp-end').classList.remove('hidden');
+  if (!isGuest && FIREBASE_ENABLED) submitLeaderboard(score, correct, total);
+}
+
+function selectMode(mode) {
+  document.getElementById('mode-screen').classList.add('hidden');
+  gameMode      = mode;
+  sessionPoints = 0;
+  questionPoints = 0;
+  document.getElementById('sess-points').textContent = '0';
+
+  if (mode === 'competition') {
+    // Already played today?
+    const todayKey = 'mg_comp_' + getDateKey();
+    const saved    = localStorage.getItem(todayKey);
+    if (saved) {
+      try {
+        const d = JSON.parse(saved);
+        showCompEnd(d.score || 0, d.correct || 0, COMP_TOTAL);
+        return;
+      } catch(e) {}
+    }
+    // Seeded question order — same for all players today
+    const seed  = parseInt(getDateKey().replace(/-/g, ''), 10);
+    const allIdx = [...Array(allQuestions.length).keys()];
+    compOrder   = lcgShuffle(allIdx, seed).slice(0, COMP_TOTAL);
+    compIndex   = 0;
+    compScore   = 0;
+    compCorrect = 0;
+    document.getElementById('comp-bar').classList.add('show');
+    updateCompBar();
+  } else {
+    document.getElementById('comp-bar').classList.remove('show');
+  }
+
+  loadNextQuestion();
+}
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
