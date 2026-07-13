@@ -917,7 +917,10 @@
     <div class="sc"><span id="sess-num">#1</span><span>FRAGE</span></div>
   </div>
 
-  <div class="category-pill" id="category-pill">Kategorie</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="category-pill" id="category-pill" style="margin-bottom:0">Kategorie</div>
+    <div id="question-icon" style="display:none;align-items:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:4px 6px"></div>
+  </div>
 
   <div class="question-card" id="question-text">Lade Frage…</div>
 
@@ -988,10 +991,19 @@ const ENTITIES = [
   "Fishing Rod","Angelrute","Bow","Bogen","Crossbow","Armbrust"
 ];
 
+// ── Minecraft Wiki icon helper ─────────────────────────────────────────────────
+function getMinecraftIcon(name) {
+  // Try Invicon (inventory icon) format first — works for items & blocks
+  const n = name.trim().replace(/ /g,'_');
+  return `https://minecraft.wiki/images/Invicon_${n}.png`;
+}
+
 // ── Config ───────────────────────────────────────────────────────────────────
 const MAX_ATTEMPTS = 6;
 const CLOSE_THRESHOLD_PERCENT = 0.15;
-const TIMER_SECONDS = 40;
+const TIMER_SECONDS_NUMBER = 40;
+const TIMER_SECONDS_ENTITY = 70;
+let   TIMER_SECONDS        = 40; // set dynamically per question type
 const CIRCUMFERENCE = 2 * Math.PI * 24; // r=24 → ~150.8
 
 // ── State ────────────────────────────────────────────────────────────────────
@@ -1216,6 +1228,7 @@ function buildShareText(won) {
 function startTimer() {
   if (finished) return;
   clearInterval(timerInterval);
+  TIMER_SECONDS = question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER;
   timerLeft = TIMER_SECONDS;
 
   const wrap = document.getElementById('timer-wrap');
@@ -1307,13 +1320,15 @@ function buildInput() {
       activeIdx = -1;
       if (!val) { droplist.style.display = 'none'; return; }
 
-      const matches = ENTITIES.filter(e => e.toLowerCase().includes(val)).slice(0, 10);
+      const matches = ENTITIES.filter(e => e.toLowerCase().includes(val)).slice(0, 12);
       if (!matches.length) { droplist.style.display = 'none'; return; }
 
       matches.forEach((m, i) => {
         const li = document.createElement('li');
-        li.textContent = m;
-        li.addEventListener('mousedown', () => { inp.value = m; droplist.style.display = 'none'; });
+        li.style.cssText = 'display:flex;align-items:center;gap:8px';
+        const iconUrl = getMinecraftIcon(m);
+        li.innerHTML = `<img src="${iconUrl}" width="20" height="20" style="image-rendering:pixelated;flex-shrink:0" onerror="this.style.display='none'"><span>${m}</span>`;
+        li.addEventListener('mousedown', () => { inp.value = m; droplist.style.display = 'none'; submitGuess(); });
         droplist.appendChild(li);
       });
       droplist.style.display = 'block';
@@ -3770,6 +3785,15 @@ async function init() {
   questionOrder = [...Array(questions.length).keys()].sort(() => Math.random() - 0.5);
   currentIndex = 0;
 
+  // Build dynamic ENTITIES from all acceptedAnswers (both languages)
+  const entitySet = new Set(ENTITIES);
+  allQuestions.filter(q => q.type === 'entity').forEach(q => {
+    (q.acceptedAnswers || [q.answer]).forEach(a => entitySet.add(a));
+    entitySet.add(q.answer);
+  });
+  ENTITIES.length = 0;
+  [...entitySet].sort().forEach(e => ENTITIES.push(e));
+
   loadNextQuestion();
 }
 
@@ -3808,6 +3832,18 @@ function loadNextQuestion() {
   const qEl = document.getElementById('question-text');
   qEl.style.opacity = '0';
   qEl.style.transform = 'translateY(8px)';
+
+  // Show icon for entity questions
+  const iconEl = document.getElementById('question-icon');
+  if (question.type === 'entity' && question.answer) {
+    const iconUrl = getMinecraftIcon(question.answer);
+    iconEl.innerHTML = `<img src="${iconUrl}" width="36" height="36" style="image-rendering:pixelated" onerror="this.parentElement.style.display='none'" onload="this.parentElement.style.display='flex'">`;
+    iconEl.style.display = 'none'; // shown onload
+  } else {
+    iconEl.style.display = 'none';
+    iconEl.innerHTML = '';
+  }
+
   qEl.textContent = question.question;
   requestAnimationFrame(() => {
     qEl.style.transition = 'opacity 0.3s ease, transform 0.3s ease';

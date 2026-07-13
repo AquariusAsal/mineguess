@@ -165,6 +165,44 @@
     /* Toast */
     #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:rgba(20,20,20,0.96); border:1px solid var(--border-g); color:var(--text); padding:10px 20px; border-radius:10px; font-size:0.88rem; pointer-events:none; opacity:0; transition:opacity 0.3s; z-index:999; white-space:nowrap; }
 
+    /* ── Game Over Popup ── */
+    #gameover-overlay { position:fixed; inset:0; z-index:800; background:rgba(0,0,0,0.85); backdrop-filter:blur(14px); display:none; align-items:center; justify-content:center; }
+    #gameover-overlay.show { display:flex; }
+    .gameover-card { background:#0a120a; border:1px solid var(--border-g); border-radius:24px; padding:36px 28px; max-width:440px; width:92%; text-align:center; animation:blockAppear 0.35s ease; }
+    @keyframes blockAppear { from{opacity:0;transform:scale(0.92) translateY(20px)} to{opacity:1;transform:none} }
+    .gameover-title { font-family:'Space Mono',monospace; font-size:1.5rem; color:var(--yellow); margin-bottom:6px; }
+    .gameover-sub   { font-size:0.85rem; color:var(--muted2); margin-bottom:22px; }
+    .gameover-scores { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; text-align:left; }
+    .gameover-row { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:10px; padding:10px 14px; }
+    .gameover-btns { display:flex; gap:10px; }
+    .btn-continue { flex:1; padding:13px; border:none; border-radius:12px; font-size:0.9rem; font-weight:700; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg,var(--green-d),#0f7a3a); color:#fff; cursor:pointer; transition:filter 0.15s; }
+    .btn-continue:hover { filter:brightness(1.1); }
+    .btn-ceremony { flex:1; padding:13px; border:1px solid var(--border-g); border-radius:12px; font-size:0.9rem; font-weight:700; font-family:'Space Grotesk',sans-serif; background:rgba(74,222,128,0.07); color:var(--green); cursor:pointer; transition:all 0.15s; }
+    .btn-ceremony:hover { background:rgba(74,222,128,0.14); }
+
+    /* ── Winner Ceremony ── */
+    #ceremony { position:fixed; inset:0; z-index:900; background:linear-gradient(135deg,#0d0d2b 0%,#1a0a2e 50%,#0d1a0d 100%); display:none; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:40px; overflow:hidden; }
+    #ceremony.show { display:flex; }
+    .ceremony-title { font-family:'Space Mono',monospace; font-size:2rem; color:#fff; text-align:center; margin-bottom:8px; position:absolute; top:40px; text-shadow:0 0 30px rgba(74,222,128,0.5); }
+    .ceremony-sub { font-size:0.9rem; color:var(--muted2); text-align:center; position:absolute; top:88px; }
+    .podium-wrap { display:flex; align-items:flex-end; justify-content:center; gap:12px; width:100%; max-width:500px; padding:0 16px; }
+    .podium-slot { display:flex; flex-direction:column; align-items:center; gap:0; flex:1; }
+    .podium-name { font-weight:700; font-size:0.85rem; text-align:center; margin-bottom:6px; padding:0 4px; word-break:break-word; }
+    .podium-score { font-family:'Space Mono',monospace; font-size:0.8rem; color:var(--muted2); margin-bottom:6px; }
+    .podium-medal { font-size:2.2rem; margin-bottom:4px; }
+    .podium-bar { width:100%; border-radius:8px 8px 0 0; display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:1.4rem; font-weight:700; color:#fff; padding:12px 0; }
+    .podium-1 { background:linear-gradient(180deg,#f6c900,#b8950a); height:160px; }
+    .podium-2 { background:linear-gradient(180deg,#c0c0c0,#888); height:120px; }
+    .podium-3 { background:linear-gradient(180deg,#cd7f32,#8b5a1a); height:90px; }
+    .ceremony-other { margin-top:24px; display:flex; flex-direction:column; gap:8px; width:100%; max-width:500px; padding:0 16px; }
+    .ceremony-other-row { display:flex; align-items:center; gap:12px; background:rgba(255,255,255,0.05); border-radius:10px; padding:10px 14px; }
+    .btn-play-again { margin-top:28px; padding:13px 36px; border:none; border-radius:14px; font-size:1rem; font-weight:700; font-family:'Space Grotesk',sans-serif; background:linear-gradient(135deg,var(--green-d),#0f7a3a); color:#fff; cursor:pointer; transition:filter 0.2s; }
+    .btn-play-again:hover { filter:brightness(1.12); }
+
+    /* Confetti */
+    .confetti-piece { position:absolute; width:10px; height:10px; border-radius:2px; animation:confettiFall linear forwards; }
+    @keyframes confettiFall { 0%{transform:translateY(-20px) rotate(0deg);opacity:1} 100%{transform:translateY(110vh) rotate(720deg);opacity:0} }
+
     /* Animations */
     @keyframes buzzerWon { 0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)} }
     .buzz-won-anim { animation:buzzerWon 0.4s ease; }
@@ -305,6 +343,29 @@
 </div>
 
 </main>
+
+<!-- ── GAME OVER POPUP ──────────────────────────────────────────────────────── -->
+<div id="gameover-overlay">
+  <div class="gameover-card">
+    <div class="gameover-title">🏁 10 Runden vorbei!</div>
+    <div class="gameover-sub">Hier ist die Endabrechnung:</div>
+    <div class="gameover-scores" id="gameover-scores"></div>
+    <div class="gameover-btns">
+      <button class="btn-continue" onclick="continueGame()">🔄 Weiterspielen</button>
+      <button class="btn-ceremony" onclick="showCeremony()">🏆 Siegerehrung</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── WINNER CEREMONY ──────────────────────────────────────────────────────── -->
+<div id="ceremony">
+  <div class="ceremony-title">🏆 Siegerehrung</div>
+  <div class="ceremony-sub" id="ceremony-sub"></div>
+  <div class="podium-wrap" id="podium-wrap"></div>
+  <div class="ceremony-other" id="ceremony-other"></div>
+  <button class="btn-play-again" onclick="playAgain()">▶ Neues Spiel</button>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -631,6 +692,102 @@ socket.on('result', ({ answer, funFact, scores, nextIn, winnerId }) => {
     else el('next-in').textContent = `Nächste Frage in ${secs}…`;
   }, 1000);
 });
+
+// ── Game Over ─────────────────────────────────────────────────────────────────
+let finalScores = [];
+
+socket.on('game_over', ({ scores, rounds }) => {
+  finalScores = scores;
+  myPhase = 'idle';
+
+  const list = el('gameover-scores');
+  list.innerHTML = '';
+  const medals = ['🥇','🥈','🥉'];
+  scores.forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'gameover-row';
+    row.innerHTML = `<span style="font-size:1.2rem;width:28px">${medals[i]||'#'+(i+1)}</span>
+      <span style="flex:1;font-weight:600">${p.id===myId?'<strong>':''}${p.name}${p.id===myId?'</strong>':''}</span>
+      <span style="font-family:'Space Mono',monospace;color:var(--green);font-weight:700">${p.score} Pkt.</span>`;
+    list.appendChild(row);
+  });
+
+  el('gameover-overlay').classList.add('show');
+  showToast('🏁 10 Runden abgeschlossen!');
+});
+
+function continueGame() {
+  el('gameover-overlay').classList.remove('show');
+  socket.emit('continue_game');
+}
+
+function showCeremony() {
+  el('gameover-overlay').classList.remove('show');
+  buildCeremony(finalScores);
+  el('ceremony').classList.add('show');
+  spawnConfetti();
+}
+
+function playAgain() {
+  el('ceremony').classList.remove('show');
+  continueGame();
+}
+
+// ── Ceremony ──────────────────────────────────────────────────────────────────
+function buildCeremony(scores) {
+  const podium = el('podium-wrap');
+  const other  = el('ceremony-other');
+  podium.innerHTML = '';
+  other.innerHTML  = '';
+
+  const winner = scores[0];
+  el('ceremony-sub').textContent = winner ? `Glückwunsch, ${winner.name}! 🎉` : '';
+
+  // Podium order: 2nd, 1st, 3rd
+  const podiumOrder = [scores[1], scores[0], scores[2]].filter(Boolean);
+  const podiumClass = scores[1] ? ['podium-2','podium-1','podium-3'] : ['podium-1'];
+  const podiumNum   = scores[1] ? [2,1,3] : [1];
+
+  podiumOrder.forEach((p, i) => {
+    const isMe  = p.id === myId;
+    const rank  = podiumNum[i];
+    const cls   = podiumClass[i];
+    const medal = ['🥇','🥈','🥉'][rank-1];
+    const slot  = document.createElement('div');
+    slot.className = 'podium-slot';
+    slot.style.animationDelay = (i * 0.15)+'s';
+    slot.innerHTML = `
+      <div class="podium-medal">${medal}</div>
+      <div class="podium-name" style="color:${isMe?'var(--green)':'#fff'}">${p.name}${isMe?' (Du)':''}</div>
+      <div class="podium-score">${p.score} Pkt.</div>
+      <div class="podium-bar ${cls}">#${rank}</div>`;
+    podium.appendChild(slot);
+  });
+
+  // Rest (4th+)
+  scores.slice(3).forEach((p, i) => {
+    const row = document.createElement('div');
+    row.className = 'ceremony-other-row';
+    row.innerHTML = `<span style="font-family:'Space Mono',monospace;color:var(--muted2);width:28px">#${i+4}</span>
+      <span style="flex:1;font-weight:600">${p.id===myId?'<strong>':''}${p.name}${p.id===myId?'</strong>':''}</span>
+      <span style="font-family:'Space Mono',monospace;color:var(--muted2)">${p.score} Pkt.</span>`;
+    other.appendChild(row);
+  });
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function spawnConfetti() {
+  const colors = ['#4ade80','#fbbf24','#f87171','#60a5fa','#a78bfa','#fff','#fb923c'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.cssText = `left:${Math.random()*100}vw;top:-20px;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*10}px;height:${6+Math.random()*10}px;animation-duration:${2+Math.random()*3}s;animation-delay:0s;border-radius:${Math.random()>0.5?'50%':'2px'}`;
+      el('ceremony').appendChild(c);
+      setTimeout(() => c.remove(), 5000);
+    }, i * 60);
+  }
+}
 
 // ── Connection ────────────────────────────────────────────────────────────────
 socket.on('connect',       () => showToast('🟢 Verbunden!'));

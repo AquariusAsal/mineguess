@@ -29,12 +29,13 @@ function shuffle(arr) {
 }
 
 // ── Konstanten ────────────────────────────────────────────────────────────────
-const BUZZER_TIME  = 30; // Sekunden zum Buzzern
-const ANSWER_TIME  = 15; // Sekunden zum Antworten nach Buzzer
-const RESULT_TIME  = 6;  // Sekunden Ergebnisanzeige
+const BUZZER_TIME  = 30;
+const ANSWER_TIME  = 15;
+const RESULT_TIME  = 6;
 const MAX_PLAYERS  = 8;
+const MAX_ROUNDS   = 10;
 const PTS_CORRECT  = 150;
-const PTS_SPEED    = 50;  // max Speedbonus
+const PTS_SPEED    = 50;
 
 // ── Raum-Verwaltung ───────────────────────────────────────────────────────────
 const rooms = {};
@@ -197,7 +198,19 @@ function revealResult(room, winnerId) {
   });
 
   broadcastLobby(room);
-  setTimeout(() => { if (Object.keys(room.players).length > 0) nextQuestion(room); }, RESULT_TIME * 1000);
+
+  // Check if game over (10 rounds)
+  if (room.roundNum >= MAX_ROUNDS) {
+    setTimeout(() => {
+      io.to(room.id).emit('game_over', {
+        scores: Object.values(room.players).map(p=>({id:p.id,name:p.name,score:p.score})).sort((a,b)=>b.score-a.score),
+        rounds: room.roundNum,
+      });
+      room.phase = 'game_over';
+    }, RESULT_TIME * 1000);
+  } else {
+    setTimeout(() => { if (Object.keys(room.players).length > 0) nextQuestion(room); }, RESULT_TIME * 1000);
+  }
 }
 
 // ── Socket.io ─────────────────────────────────────────────────────────────────
@@ -287,6 +300,17 @@ io.on('connection', (socket) => {
     } else {
       handleWrongAnswer(room, socket.id, answer);
     }
+  });
+
+  // Weiterspielen ──────────────────────────────────────────────────────────────
+  socket.on('continue_game', () => {
+    if (!currentRoom) return;
+    const room = rooms[currentRoom];
+    if (!room || room.phase !== 'game_over') return;
+    // Reset scores and round counter
+    Object.values(room.players).forEach(p => { p.score = 0; });
+    room.roundNum = 0;
+    nextQuestion(room);
   });
 
   // Disconnect ─────────────────────────────────────────────────────────────────
