@@ -17,9 +17,17 @@ app.use(express.static(path.join(__dirname)));
 // ── Fragen laden ──────────────────────────────────────────────────────────────
 let allQuestions = [];
 try {
-  const html  = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-  const match = html.match(/const questions = (\[[\s\S]*?\]);\s*\/\/ Shuffle/);
-  if (match) { allQuestions = JSON.parse(match[1]); console.log(`✅ ${allQuestions.length} Fragen geladen.`); }
+  // Questions are now in game.html (index.html is the landing page)
+  const html  = fs.readFileSync(path.join(__dirname, 'game.html'), 'utf8');
+  const match = html.match(/const questions = (\[[\s\S]*?\]);[\s\S]{0,200}allQuestions/);
+  if (match) {
+    allQuestions = JSON.parse(match[1]);
+    console.log(`✅ ${allQuestions.length} Fragen geladen.`);
+  } else {
+    // Fallback: try any JSON array after "const questions ="
+    const m2 = html.match(/const questions = (\[[\s\S]*?\n  \]);/);
+    if (m2) { allQuestions = JSON.parse(m2[1]); console.log(`✅ ${allQuestions.length} Fragen (fallback).`); }
+  }
 } catch (e) { console.error('❌ Fragen laden fehlgeschlagen:', e.message); }
 
 function shuffle(arr) {
@@ -40,18 +48,29 @@ const PTS_SPEED    = 50;
 // ── Raum-Verwaltung ───────────────────────────────────────────────────────────
 const rooms = {};
 
-function createRoom({ roomId, displayName, isPublic, password }) {
+function createRoom({ roomId, displayName, isPublic, password, categories }) {
+  // Build question pool — filtered by categories if host is Premium
+  let pool = [...Array(allQuestions.length).keys()];
+  if (categories && categories.length > 0) {
+    const catSet = new Set(categories);
+    pool = allQuestions
+      .map((q, i) => catSet.has(q.category) ? i : -1)
+      .filter(i => i !== -1);
+    if (pool.length < 5) pool = [...Array(allQuestions.length).keys()]; // fallback
+  }
   return {
     id:            roomId,
     displayName:   displayName || roomId,
     isPublic:      !!isPublic,
     password:      password || null,
+    categories:    categories || null,
     players:       {},          // socketId → { id, name, score }
-    questionOrder: shuffle([...Array(allQuestions.length).keys()]),
+    ready:         new Set(),   // socketIds who pressed Ready
+    questionOrder: shuffle(pool),
     currentIndex:  0,
     question:      null,
     // ── Buzzer state ──
-    phase:         'waiting',   // waiting | buzzer | answering | result
+    phase:         'waiting',   // waiting | buzzer | answering | result | game_over
     timerLeft:     BUZZER_TIME,
     currentBuzzer: null,        // socketId who buzzed
     lockedOut:     new Set(),   // socketIds who answered wrong this round
@@ -70,8 +89,8 @@ function getPublicRooms() {
 function broadcastPublicRooms() { io.emit('public_rooms_update', getPublicRooms()); }
 
 function broadcastLobby(room) {
-  const players = Object.values(room.players).map(p => ({ id:p.id, name:p.name, score:p.score }));
-  io.to(room.id).emit('room_state', { players, phase: room.phase, lockedOut: [...room.lockedOut], currentBuzzer: room.currentBuzzer });
+  const players = Object.values(room.players).map(p => ({ id:p.id, name:p.name, score:p.score, ready: room.ready.has(p.id) }));
+  io.to(room.id).emit('room_state', { players, phase: room.phase, lockedOut: [...room.lockedOut], currentBuzzer: room.currentBuzzer, readyCount: room.ready.size, totalCount: Object.keys(room.players).length });
   broadcastPublicRooms();
 }
 
@@ -83,7 +102,13 @@ function nextQuestion(room) {
   room.currentBuzzer = null;
 
   if (room.currentIndex >= room.questionOrder.length) {
-    room.questionOrder = shuffle([...Array(allQuestions.length).keys()]);
+    let pool = [...Array(allQuestions.length).keys()];
+    if (room.categories && room.categories.length > 0) {
+      const catSet = new Set(room.categories);
+      const filtered = allQuestions.map((q,i)=>catSet.has(q.category)?i:-1).filter(i=>i!==-1);
+      if (filtered.length >= 5) pool = filtered;
+    }
+    room.questionOrder = shuffle(pool);
     room.currentIndex  = 0;
   }
   room.question     = allQuestions[room.questionOrder[room.currentIndex++]];
@@ -219,18 +244,18 @@ io.on('connection', (socket) => {
   console.log('🔌', socket.id);
 
   // Raum erstellen ─────────────────────────────────────────────────────────────
-  socket.on('create_room', ({ playerName, displayName, isPublic, password }) => {
+  socket.on('create_room', ({ playerName, displayName, isPublic, password, categories }) => {
     const words = ['epic','cool','wild','dark','fire','iron','diamond','golden','creeper','zombie','blaze','wither','steve','alex'];
     const rid   = words[Math.floor(Math.random()*words.length)] + words[Math.floor(Math.random()*words.length)] + Math.floor(Math.random()*100);
-    const room  = createRoom({ roomId: rid, displayName: displayName||rid, isPublic, password });
+    const room  = createRoom({ roomId: rid, displayName: displayName||rid, isPublic, password, categories });
     rooms[rid]  = room;
     currentRoom = rid;
     room.players[socket.id] = { id: socket.id, name: playerName||'Host', score: 0 };
     socket.join(rid);
-    socket.emit('joined', { playerId: socket.id, roomId: rid, displayName: room.displayName, playerName: room.players[socket.id].name, isPublic: room.isPublic });
+    socket.emit('joined', { playerId: socket.id, roomId: rid, displayName: room.displayName, playerName: room.players[socket.id].name, isPublic: room.isPublic, categories: room.categories });
     broadcastLobby(room);
-    console.log(`🏠 Raum: ${rid}`);
-    setTimeout(() => nextQuestion(room), 3000);
+    console.log(`🏠 Raum: ${rid}${room.categories ? ' ['+room.categories.join(',')+']' : ''}`);
+    // Game starts only when all players press Ready
   });
 
   // Raum beitreten ─────────────────────────────────────────────────────────────
@@ -246,11 +271,37 @@ io.on('connection', (socket) => {
     socket.emit('joined', { playerId: socket.id, roomId: rid, displayName: room.displayName, playerName: room.players[socket.id].name, isPublic: room.isPublic });
     broadcastLobby(room);
     console.log(`➕ ${room.players[socket.id].name} → ${rid}`);
-    if (room.phase === 'waiting') setTimeout(() => nextQuestion(room), 2000);
+    // Don't auto-start — wait for all players to press Ready
   });
 
   // Öffentliche Räume ──────────────────────────────────────────────────────────
   socket.on('get_public_rooms', () => socket.emit('public_rooms_update', getPublicRooms()));
+
+  // READY ──────────────────────────────────────────────────────────────────────
+  socket.on('player_ready', () => {
+    if (!currentRoom) return;
+    const room = rooms[currentRoom];
+    if (!room || room.phase !== 'waiting') return;
+    const player = room.players[socket.id];
+    if (!player) return;
+
+    // Toggle ready state
+    if (room.ready.has(socket.id)) {
+      room.ready.delete(socket.id);
+    } else {
+      room.ready.add(socket.id);
+    }
+    broadcastLobby(room);
+    console.log(`✅ Ready: ${room.ready.size}/${Object.keys(room.players).length} in ${currentRoom}`);
+
+    // Start game when ALL players are ready (min 1)
+    const total = Object.keys(room.players).length;
+    if (total > 0 && room.ready.size === total) {
+      console.log(`🎮 Alle bereit — Spiel startet in ${currentRoom}`);
+      room.ready.clear();
+      setTimeout(() => nextQuestion(room), 1500);
+    }
+  });
 
   // BUZZER ─────────────────────────────────────────────────────────────────────
   socket.on('buzz', () => {
@@ -274,15 +325,15 @@ io.on('connection', (socket) => {
     startAnswerCountdown(room);
   });
 
-  // ANTWORT ────────────────────────────────────────────────────────────────────
+  // ANTWORT ──────────────────────────────────────────────────────
   socket.on('submit_answer', ({ answer }) => {
     if (!currentRoom) return;
     const room = rooms[currentRoom];
     if (!room || room.phase !== 'answering' || room.currentBuzzer !== socket.id) return;
 
     clearInterval(room.timerIv);
-    const result    = checkAnswer(answer, room);
-    const player    = room.players[socket.id];
+    const result     = checkAnswer(answer, room);
+    const player     = room.players[socket.id];
     const speedBonus = Math.round(room.timerLeft / ANSWER_TIME * PTS_SPEED);
 
     if (result.correct) {
@@ -307,10 +358,12 @@ io.on('connection', (socket) => {
     if (!currentRoom) return;
     const room = rooms[currentRoom];
     if (!room || room.phase !== 'game_over') return;
-    // Reset scores and round counter
+    // Reset scores, round counter, and ready state
     Object.values(room.players).forEach(p => { p.score = 0; });
     room.roundNum = 0;
-    nextQuestion(room);
+    room.ready.clear();
+    room.phase = 'waiting';
+    broadcastLobby(room);
   });
 
   // Disconnect ─────────────────────────────────────────────────────────────────
@@ -322,6 +375,7 @@ io.on('connection', (socket) => {
     if (room.currentBuzzer === socket.id) handleWrongAnswer(room, socket.id, null, true);
     delete room.players[socket.id];
     room.lockedOut.delete(socket.id);
+    room.ready.delete(socket.id);
     console.log(`➖ ${name} hat verlassen`);
     broadcastLobby(room);
     if (Object.keys(room.players).length === 0) { clearInterval(room.timerIv); delete rooms[currentRoom]; }
@@ -330,3 +384,4 @@ io.on('connection', (socket) => {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`🚀 http://localhost:${PORT}`));
+.log(`🚀 http://localhost:${PORT}`));
