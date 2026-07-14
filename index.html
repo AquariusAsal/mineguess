@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MineGuess — Teste dein Minecraft-Wissen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #0c0c0c;
+  --bg1:     #111111;
+  --bg2:     #161616;
+  --border:  #222222;
+  --green:   #22c55e;
+  --green2:  #16a34a;
+  --text:    #f5f5f5;
+  --muted:   #737373;
+  --muted2:  #525252;
+  --yellow:  #eab308;
+  --blue:    #3b82f6;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+  background: rgba(12,12,12,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: 'Space Mono', monospace;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-logo span { color: var(--green); }
+.nav-links {
+  display: flex; align-items: center; gap: 8px;
+}
+.nav-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.nav-link:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+.btn-nav {
+  background: var(--green);
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 700;
+  padding: 7px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-nav:hover { background: var(--green2); transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+  position: relative;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 0%, rgba(34,197,94,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.2);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+.hero-tag::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.hero-title .accent { color: var(--green); }
+.hero-sub {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  color: var(--muted);
+  max-width: 520px;
+  margin: 0 auto 40px;
+  line-height: 1.6;
+}
+.hero-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--green);
+  color: #000;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 13px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover {
+  background: var(--green2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(34,197,94,0.25);
+}
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.btn-secondary:hover { border-color: #444; background: rgba(255,255,255,0.04); }
+
+/* ── STATS BAR ── */
+.stats-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin: 56px auto 0;
+  max-width: 640px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg1);
+}
+.stat-item {
+  flex: 1;
+  padding: 20px 16px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.stat-item:last-child { border-right: none; }
+.stat-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--green);
+  display: block;
+}
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+/* ── SECTION ── */
+section { padding: 80px 24px; max-width: 1100px; margin: 0 auto; }
+
+.section-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--green);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.section-sub {
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 480px;
+  line-height: 1.6;
+  margin-bottom: 48px;
+}
+
+/* ── MODES GRID ── */
+.modes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.mode-card {
+  background: var(--bg1);
+  padding: 28px 24px;
+  transition: background 0.15s;
+  position: relative;
+}
+.mode-card:hover { background: var(--bg2); }
+.mode-icon {
+  font-size: 1.5rem;
+  margin-bottom: 14px;
+  display: block;
+}
+.mode-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+.mode-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.mode-badge {
+  position: absolute;
+  top: 16px; right: 16px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.badge-new  { background: rgba(34,197,94,0.12); color: var(--green);  border: 1px solid rgba(34,197,94,0.2); }
+.badge-daily{ background: rgba(234,179,8,0.10); color: var(--yellow); border: 1px solid rgba(234,179,8,0.2); }
+.badge-multi{ background: rgba(59,130,246,0.10); color: var(--blue);  border: 1px solid rgba(59,130,246,0.2); }
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+.feature-item {
+  padding: 24px;
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.feature-icon {
+  font-size: 1.2rem;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.feature-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+.feature-desc {
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ── CATEGORIES ── */
+.cats-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cat-chip {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s, color 0.15s;
+  cursor: default;
+}
+.cat-chip:hover { border-color: #444; color: var(--text); }
+
+/* ── PREMIUM ── */
+.premium-card {
+  border: 1px solid rgba(234,179,8,0.25);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(234,179,8,0.04) 0%, rgba(234,179,8,0.01) 100%);
+  padding: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: center;
+}
+.premium-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(234,179,8,0.1);
+  border: 1px solid rgba(234,179,8,0.25);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+.premium-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.premium-price {
+  font-family: 'Space Mono', monospace;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--yellow);
+  margin-bottom: 4px;
+}
+.premium-price span {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-weight: 400;
+  font-family: 'Inter', sans-serif;
+}
+.premium-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+.premium-perks {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.premium-perks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.premium-perks li::before {
+  content: '✓';
+  color: var(--yellow);
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.btn-premium {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--yellow);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.15s;
+}
+.btn-premium:hover { filter: brightness(0.9); transform: translateY(-1px); }
+
+/* ── FOOTER ── */
+.footer-wrap {
+  border-top: 1px solid var(--border);
+}
+footer {
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.footer-copy { font-size: 0.82rem; color: var(--muted2); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a {
+  font-size: 0.82rem;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-links a:hover { color: var(--muted); }
+
+/* ── DIVIDER ── */
+.divider {
+  height: 1px;
+  background: var(--border);
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .nav-links .nav-link { display: none; }
+  .modes-grid { grid-template-columns: 1fr; }
+  .features-grid { grid-template-columns: 1fr; }
+  .premium-card { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="/"><span>Mine</span>Guess</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#modi">Modi</a>
+    <a class="nav-link" href="#features">Features</a>
+    <a class="nav-link" href="#premium">Premium</a>
+    <a class="btn-nav" href="game.html">&#9654; Spielen</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">648 Fragen &middot; Täglich aktualisiert</div>
+  <h1 class="hero-title">
+    Wie gut kennst du<br>
+    <span class="accent">Minecraft</span>?
+  </h1>
+  <p class="hero-sub">
+    Teste dein Wissen über Mobs, Blöcke, Enchantments, Redstone und mehr —
+    allein oder gegen Freunde im Multiplayer.
+  </p>
+  <div class="hero-cta">
+    <a class="btn-primary" href="game.html">&#9654;&nbsp; Jetzt spielen</a>
+    <a class="btn-secondary" href="#modi">Mehr erfahren</a>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num">648</span>
+      <span class="stat-label">Fragen</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">9</span>
+      <span class="stat-label">Kategorien</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Spielmodi</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">&#8734;</span>
+      <span class="stat-label">Wiederspielwert</span>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- MODI -->
+<section id="modi">
+  <div class="section-label">Spielmodi</div>
+  <h2 class="section-title">Drei Wege zu spielen</h2>
+  <p class="section-sub">Ob solo zum Lernen, täglich als Challenge oder mit Freunden im Multiplayer.</p>
+
+  <div class="modes-grid">
+    <div class="mode-card">
+      <span class="mode-icon">&#9854;</span>
+      <div class="mode-name">Endlosmodus</div>
+      <p class="mode-desc">Unbegrenzte Fragen aus allen Kategorien. Antworte so oft du willst — ohne Zeitdruck außer dem Timer pro Frage.</p>
+    </div>
+    <div class="mode-card">
+      <span class="mode-badge badge-daily">Täglich</span>
+      <span class="mode-icon">&#127937;</span>
+      <div class="mode-name">Wettkampf</div>
+      <p class="mode-desc">10 Fragen alle 12 Stunden — dieselben für alle Spieler. 3 Versuche, dann landet dein Score im Leaderboard.</p>
+    </div>
+    <div class="mode-card">
+      <span class="mode-badge badge-multi">Multiplayer</span>
+      <span class="mode-icon">&#9889;</span>
+      <div class="mode-name">Multiplayer</div>
+      <p class="mode-desc">Buzzer-System: Wer zuerst drückt, darf antworten. Öffentliche und private Räume für bis zu 8 Spieler.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-label">Features</div>
+  <h2 class="section-title">Was MineGuess besonders macht</h2>
+  <p class="section-sub">Mehr als nur ein Quiz.</p>
+
+  <div class="features-grid">
+    <div class="feature-item">
+      <div class="feature-icon">&#128161;</div>
+      <div>
+        <div class="feature-title">Tipp-System</div>
+        <p class="feature-desc">Bis zu 2 Tipps pro Frage — gegen Punkteabzug. Der erste Tipp verrät den Anfangsbuchstaben, der zweite gibt mehr Kontext.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#128444;</div>
+      <div>
+        <div class="feature-title">Minecraft Texturen</div>
+        <p class="feature-desc">Jeder Mob, Block und jedes Item im Autocomplete zeigt seine originale Minecraft-Textur als Icon aus dem Wiki.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#127760;</div>
+      <div>
+        <div class="feature-title">Deutsch &amp; Englisch</div>
+        <p class="feature-desc">Antworten werden auf Deutsch und Englisch akzeptiert. "Creeper" und "Creeper" — beide sind korrekt.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#127942;</div>
+      <div>
+        <div class="feature-title">Leaderboard</div>
+        <p class="feature-desc">Tägliches und Allzeit-Ranking. Login mit Google, um deinen Score zu speichern und mit anderen zu vergleichen.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#128218;</div>
+      <div>
+        <div class="feature-title">Fun Facts</div>
+        <p class="feature-desc">Nach jeder Frage gibt es einen interessanten Fakt zur richtigen Antwort — lerne nebenbei mehr über Minecraft.</p>
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">&#127881;</div>
+      <div>
+        <div class="feature-title">Siegerehrung</div>
+        <p class="feature-desc">Nach 10 Multiplayer-Runden: Podium mit Gold, Silber, Bronze und Konfetti-Regen für den Gewinner.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- KATEGORIEN -->
+<section>
+  <div class="section-label">Kategorien</div>
+  <h2 class="section-title">648 Fragen über alles</h2>
+  <p class="section-sub">Von einfach bis hardcore — für Anfänger und Veteranen.</p>
+
+  <div class="cats-grid">
+    <div class="cat-chip">&#129503; Mobs &amp; HP</div>
+    <div class="cat-chip">&#129521; Blöcke</div>
+    <div class="cat-chip">&#9876; Items &amp; Waffen</div>
+    <div class="cat-chip">&#10024; Verzauberungen</div>
+    <div class="cat-chip">&#129514; Tränke &amp; Brauen</div>
+    <div class="cat-chip">&#128295; Crafting-Rezepte</div>
+    <div class="cat-chip">&#128308; Redstone</div>
+    <div class="cat-chip">&#127794; Biome &amp; Strukturen</div>
+    <div class="cat-chip">&#127744; Dimensionen</div>
+    <div class="cat-chip">&#9935; Erze &amp; Ressourcen</div>
+    <div class="cat-chip">&#127830; Essen &amp; Nahrung</div>
+    <div class="cat-chip">&#128196; Geschichte &amp; Updates</div>
+    <div class="cat-chip">&#129504; Hardcore-Wissen</div>
+    <div class="cat-chip">&#9881; Gameplay-Mechaniken</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PREMIUM -->
+<section id="premium" style="padding-bottom: 100px;">
+  <div class="premium-card">
+    <div>
+      <div class="premium-badge">&#11088; Premium</div>
+      <h2 class="premium-title">Das volle Erlebnis</h2>
+      <p class="premium-desc">
+        Für alle die mehr wollen: XP-Boost, exklusive Multiplayer-Features
+        und benutzerdefinierte Fragenkategorien.
+      </p>
+      <ul class="premium-perks">
+        <li>+50 % XP bei jeder richtigen Antwort</li>
+        <li>Eigene Kategorien im Multiplayer wählen (nur Redstone, nur Tränke…)</li>
+        <li>Priorität beim Erstellen öffentlicher Räume</li>
+        <li>Premium-Badge beim Benutzernamen</li>
+        <li>Früher Zugang zu neuen Fragen &amp; Features</li>
+      </ul>
+    </div>
+    <div style="text-align:center;">
+      <div class="premium-price">5&#8364; <span>/ Monat</span></div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:24px;">Jederzeit kündbar &middot; Kein Abo-Stress</p>
+      <a class="btn-premium" href="game.html">&#11088;&nbsp; Premium holen</a>
+      <p style="font-size:0.75rem;color:var(--muted2);margin-top:12px;">Kommt bald — trag dich ein um benachrichtigt zu werden</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer-wrap">
+  <footer>
+    <div class="footer-copy">&copy; 2025 MineGuess &middot; Kein offizielles Mojang-Produkt</div>
+    <div class="footer-links">
+      <a href="game.html">Spielen</a>
+      <a href="multiplayer.html">Multiplayer</a>
+      <a href="#premium">Premium</a>
+    </div>
+  </footer>
+</div>
+
+</body>
+</html>

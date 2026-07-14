@@ -1,0 +1,1559 @@
+[
+  {
+    "id": 1,
+    "type": "number",
+    "question": "Wie viele Blocks weit kann ein Redstone-Signal ohne Repeater übertragen werden?",
+    "answer": 15,
+    "unit": "Blocks",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Redstone-Signal verliert pro Block Stärke und erlischt bei 0. Repeater setzen es wieder auf volle Stärke 15 zurück."
+  },
+  {
+    "id": 2,
+    "type": "entity",
+    "question": "Welcher Mob gibt dir unendlich Pilzsuppe, wenn du ihn mit einer Schüssel melkst?",
+    "answer": "Mooshroom",
+    "acceptedAnswers": [
+      "Mooshroom",
+      "Pilzkuh",
+      "Mushroom Cow"
+    ],
+    "category": "Mobs",
+    "funFact": "Mooshrooms spawnen nur in Pilzfeld-Biomen – einem der seltensten Biome in Minecraft."
+  },
+  {
+    "id": 3,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Creeper?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ein geladener Creeper (vom Blitz getroffen) hat dieselben HP, macht aber doppelten Explosionsschaden."
+  },
+  {
+    "id": 4,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zombie?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zombies verbrennen im Sonnenlicht, es sei denn, sie tragen einen Helm oder stehen im Schatten."
+  },
+  {
+    "id": 5,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Skelett?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Skelette weichen Wölfen aus. Sie können Bögen mit bis zu Unendlichkeit III tragen und damit schiessen."
+  },
+  {
+    "id": 6,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Enderman?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Endermen nehmen Schaden durch Wasser und Regen. Sie teleportieren sich, wenn sie nass werden."
+  },
+  {
+    "id": 7,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Blaze?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Blazes nehmen Schaden durch Schneebälle – jeder Treffer macht 3 Schaden (1,5 Herzen)."
+  },
+  {
+    "id": 8,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Ghast?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Man kann Ghast-Feuerbälle zurückschlagen und den Ghast damit töten – Achievement: Return to Sender."
+  },
+  {
+    "id": 9,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Witherskelett?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Witherskelette hinterlassen den Wither-Effekt beim Treffer. Ihr Kopf ist nötig, um den Wither zu beschwören."
+  },
+  {
+    "id": 10,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Wither (Boss)?",
+    "answer": 600,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Wither ist der einzige Boss, den man selbst beschwören kann. Er erzeugt eine massive Explosion beim Erscheinen."
+  },
+  {
+    "id": 11,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat der Ender-Drache?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Ender-Drache wird durch End-Kristalle auf den Obsidiansäulen geheilt. Zerstöre sie zuerst!"
+  },
+  {
+    "id": 12,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Elder Guardian?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Elder Guardian gibt dem Spieler beim Annähern den Mining-Fatigue-III-Effekt für 5 Minuten."
+  },
+  {
+    "id": 13,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Warden?",
+    "answer": 500,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Warden ist blind und orientiert sich nur durch Vibrationen. Ein Schlag auf Normal macht 30 Herzen Schaden."
+  },
+  {
+    "id": 14,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Iron Golem?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Iron Golems können sich selbst heilen, indem man sie mit Eisenbarren anklickt (25 HP pro Barren)."
+  },
+  {
+    "id": 15,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Ravager?",
+    "answer": 200,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ravager kann von Bees, Wolves und Iron Golems angegriffen werden und betäubt Spieler beim Aufprall."
+  },
+  {
+    "id": 16,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Strider?",
+    "answer": 40,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Strider sind die einzigen Mobs, die auf Lava laufen. Man reitet sie mit einem Warped Fungus on a Stick."
+  },
+  {
+    "id": 17,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Hoglin?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hoglins fürchten sich vor Krimsonpilzen. Sie droppen rohes Schweinefleisch und Leder."
+  },
+  {
+    "id": 18,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Witch (Hexe)?",
+    "answer": 52,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hexen trinken Tränke zur Selbstheilung und werfen Tränke auf Spieler. Sie spawnen in Hexenhütten in Sümpfen."
+  },
+  {
+    "id": 19,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Slime (groß)?",
+    "answer": 16,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Große Slimes teilen sich beim Tod in mittlere (4 HP), diese in kleine (1 HP). Kleine Slimes droppen Slimeballs."
+  },
+  {
+    "id": 20,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Magma Cube (groß)?",
+    "answer": 16,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Magma Cubes sind immun gegen Fallschaden und Feuer. Kleine Magma Cubes droppen Magmacreme."
+  },
+  {
+    "id": 21,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Shulker?",
+    "answer": 60,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Shulker-Projektile verursachen Levitation für 10 Sekunden. Shulker können sich teleportieren, wenn sie angegriffen werden."
+  },
+  {
+    "id": 22,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Pillager?",
+    "answer": 24,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Tötet man einen Pillager-Anführer (mit Banner), bekommt man den Bad-Omen-Effekt, der einen Raid auslöst."
+  },
+  {
+    "id": 23,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Evoker?",
+    "answer": 48,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Evoker beschwören Vexes und Fang-Attacken. Sie sind die einzige Quelle für Totems der Unsterblichkeit."
+  },
+  {
+    "id": 24,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Bee (Biene)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Nach dem Stechen verliert die Biene ihren Stachel und stirbt nach kurzer Zeit. Sie hinterlässt Gift beim Spieler."
+  },
+  {
+    "id": 25,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Phantom?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Phantome spawnen, wenn man 3+ Minecraft-Tage (72 Minuten real) nicht geschlafen hat. Katzen vertreiben sie."
+  },
+  {
+    "id": 26,
+    "type": "number",
+    "question": "Wie viele verschiedene Biome gibt es in Minecraft Java Edition 1.20?",
+    "answer": 61,
+    "unit": "Biome",
+    "tolerance": 3,
+    "category": "Weltgenerierung",
+    "funFact": "Zu den seltensten Biomen zählen Modified Jungle Edge und Mushroom Fields Shore."
+  },
+  {
+    "id": 27,
+    "type": "number",
+    "question": "Wie viele Blöcke ist ein Chunk breit (X-Achse)?",
+    "answer": 16,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Chunks sind 16x16 Blöcke groß und 384 Blöcke hoch (von Y=-64 bis Y=320). Ein Chunk hat 98.304 Blöcke."
+  },
+  {
+    "id": 28,
+    "type": "number",
+    "question": "Auf welchem Y-Level spawnt Diamanterz am häufigsten (seit 1.18)?",
+    "answer": -58,
+    "unit": "Y-Level",
+    "tolerance": 5,
+    "category": "Weltgenerierung",
+    "funFact": "Seit Caves & Cliffs (1.18) ist Y=-58 das Optimum. Diamant generiert von Y=-64 bis Y=16, häuft sich aber tief unten."
+  },
+  {
+    "id": 29,
+    "type": "number",
+    "question": "Wie viele XP gibt der Ender-Drache beim ersten Kill?",
+    "answer": 12000,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Das ist mit Abstand die meiste XP, die ein Mob geben kann. Weitere Kills geben nur noch 500 XP."
+  },
+  {
+    "id": 30,
+    "type": "number",
+    "question": "Wie viele XP gibt das Töten eines Withers?",
+    "answer": 50,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Obwohl der Wither sehr stark ist, gibt er nur 50 XP – deutlich weniger als der Ender-Drache."
+  },
+  {
+    "id": 31,
+    "type": "number",
+    "question": "Wie lange dauert es, einen Obsidian-Block mit einer Diamant-Spitzhacke abzubauen (Sekunden)?",
+    "answer": 9.4,
+    "unit": "Sekunden",
+    "tolerance": 0.5,
+    "category": "Blöcke",
+    "funFact": "Mit Effizienz V und Netherit-Spitzhacke dauert es nur noch ca. 1,15 Sekunden."
+  },
+  {
+    "id": 32,
+    "type": "number",
+    "question": "Wie lange dauert es, einen Obsidian-Block mit den bloßen Händen abzubauen (Sekunden)?",
+    "answer": 250,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Blöcke",
+    "funFact": "Obsidian mit der Hand abzubauen dauert über 4 Minuten – und der Block fällt dabei nicht mal als Item!"
+  },
+  {
+    "id": 33,
+    "type": "number",
+    "question": "Wie viele Fackeln kann man mit einem Stöckchen und einer Kohle herstellen?",
+    "answer": 4,
+    "unit": "Fackeln",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Holzkohle funktioniert genauso wie Kohle zum Fackeln-Herstellen. Pro Rezept gibt es immer 4 Fackeln."
+  },
+  {
+    "id": 34,
+    "type": "number",
+    "question": "Wie viele Pfeile kann man mit 1 Flint, 1 Stöckchen und 1 Feder herstellen?",
+    "answer": 4,
+    "unit": "Pfeile",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Pfeile können auch von Skeletten gedroppt werden. Mit Plünderung III bis zu 5 pro Kill."
+  },
+  {
+    "id": 35,
+    "type": "number",
+    "question": "Wie viele Bretter (Planks) erhält man aus einem Holzblock?",
+    "answer": 4,
+    "unit": "Bretter",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Holzbretter sind eines der grundlegendsten Ressourcen – fast alle frühen Werkzeuge und Möbel benötigen sie."
+  },
+  {
+    "id": 36,
+    "type": "number",
+    "question": "Wie viele Stöcke (Sticks) erhält man aus 2 Holzbrettern?",
+    "answer": 4,
+    "unit": "Stöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Stöcke sind das universelle Werkzeug-Ingredient – für Schwerter, Spitzhacken, Schaufeln, Äxte, Bögen und mehr."
+  },
+  {
+    "id": 37,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Schärfe (Sharpness) maximal?",
+    "answer": 5,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Schärfe V erhöht den Schaden um 3 zusätzliche halbe Herzen. Mit einem Netherit-Schwert: insgesamt 13 Schaden."
+  },
+  {
+    "id": 38,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Schutz (Protection) maximal?",
+    "answer": 4,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Schutz IV reduziert 16 Prozent des eingehenden Schadens. Vier volle Rüstungsteile mit Schutz IV = 64 Prozent Schadensreduktion."
+  },
+  {
+    "id": 39,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Glück (Fortune) maximal?",
+    "answer": 3,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Fortune III kann Diamantausbeute von 1 auf bis zu 4 pro Erz erhöhen."
+  },
+  {
+    "id": 40,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Effizienz (Efficiency) maximal?",
+    "answer": 5,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Effizienz V mit einer Netherit-Spitzhacke und Hasten II ist die schnellstmögliche Abbaugeschwindigkeit im Vanilla-Spiel."
+  },
+  {
+    "id": 41,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Reparatur (Mending) maximal?",
+    "answer": 1,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Mending kann nicht über Verzauberungstische erhalten werden – nur aus Beute, Handel oder Angeln."
+  },
+  {
+    "id": 42,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Unendlichkeit (Infinity) maximal?",
+    "answer": 1,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Infinity erfordert mindestens 1 Pfeil im Inventar, erzeugt aber unendlich viele. Unvereinbar mit Mending."
+  },
+  {
+    "id": 43,
+    "type": "number",
+    "question": "Wie viele Stufen hat die Verzauberung Plünderung (Looting) maximal?",
+    "answer": 3,
+    "unit": "Stufen",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Looting III erhöht die maximale Drop-Anzahl seltener Items um 3. Essentiell für Witherskelet-Köpfe zu farmen."
+  },
+  {
+    "id": 44,
+    "type": "number",
+    "question": "Wie lange brennt eine Kohle als Ofenbrennstoff (Sekunden)?",
+    "answer": 80,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Eine Kohle schmelzt 8 Items. Ein Kohlenstoß (9 Kohlen) schmelzt 72 Items."
+  },
+  {
+    "id": 45,
+    "type": "number",
+    "question": "Wie lange brennt ein Kohlenstoß (Block of Coal) als Ofenbrennstoff (Sekunden)?",
+    "answer": 800,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Kohlenstoß schmelzt 80 Items – 10x mehr als eine Einzelkohle."
+  },
+  {
+    "id": 46,
+    "type": "number",
+    "question": "Wie lange dauert es, ein Item in einem normalen Ofen zu schmelzen (Sekunden)?",
+    "answer": 10,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Hochofen schmelzt Erze doppelt so schnell (5 Sek.), verbraucht aber auch doppelt so viel Brennstoff."
+  },
+  {
+    "id": 47,
+    "type": "number",
+    "question": "Welche Lichtstärke hat eine Fackel?",
+    "answer": 14,
+    "unit": "Lichtstärke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Fackeln haben Lichtstärke 14. Die maximale Lichtstärke (15) haben z.B. Glowstone, Lanterns und Seegurken."
+  },
+  {
+    "id": 48,
+    "type": "number",
+    "question": "Welche minimale Lichtstärke verhindert das Spawnen von Monstern (seit 1.18)?",
+    "answer": 1,
+    "unit": "Lichtstärke",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Seit 1.18 spawnen Monster nur noch bei Lichtstärke 0. Davor war es Lichtstärke 7."
+  },
+  {
+    "id": 49,
+    "type": "number",
+    "question": "Wie viele Slots hat das Spieler-Inventar insgesamt (inkl. Hotbar, Rüstung, Offhand)?",
+    "answer": 41,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "27 Hauptinventar + 9 Hotbar + 4 Rüstung + 1 Offhand = 41 Slots."
+  },
+  {
+    "id": 50,
+    "type": "number",
+    "question": "Wie viele Items passen maximal in einen Stack?",
+    "answer": 64,
+    "unit": "Items",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Werkzeuge, Rüstung und einige Items stapeln nicht oder nur bis 16. Boote stapeln nur bis 1."
+  },
+  {
+    "id": 51,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Schnelligkeit II (Sekunden)?",
+    "answer": 90,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Schnelligkeit II erhöht die Bewegungsgeschwindigkeit um 20 Prozent. Schnelligkeit I dauert 180 Sekunden."
+  },
+  {
+    "id": 52,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Stärke I (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Stärke I erhöht den Nahkampfschaden um 3 (1,5 Herzen). Stärke II erhöht um 6 Herzen, dauert aber nur 90 Sek."
+  },
+  {
+    "id": 53,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Regeneration I (Sekunden)?",
+    "answer": 45,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Regeneration I heilt alle 2,5 Sekunden 1 HP. Regeneration II heilt jede Sekunde 1 HP."
+  },
+  {
+    "id": 54,
+    "type": "number",
+    "question": "Wie lange dauert ein Trank der Feuerresistenz (Sekunden)?",
+    "answer": 180,
+    "unit": "Sekunden",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Feuerresistenz schützt vor Lava, Feuer und Blaze-Bällen – essenziell für Nether-Erkundungen."
+  },
+  {
+    "id": 55,
+    "type": "entity",
+    "question": "Welche Zutat verwandelt einen Splaschtrank in einen anhaltenden Trank (Lingering Potion)?",
+    "answer": "Drachenhauch",
+    "acceptedAnswers": [
+      "Drachenhauch",
+      "Dragon Breath",
+      "Dragons Breath"
+    ],
+    "category": "Tränke",
+    "funFact": "Drachenhauch sammelt man mit einer leeren Flasche, indem man die Säure-Wolke des Ender-Drachen damit auffängt."
+  },
+  {
+    "id": 56,
+    "type": "entity",
+    "question": "Welcher Mob droppt Blaze Rods (Blazestäbe)?",
+    "answer": "Blaze",
+    "acceptedAnswers": [
+      "Blaze",
+      "Lohe"
+    ],
+    "category": "Mobs",
+    "funFact": "Blazestäbe sind für Brauständer und Eyes of Ender unerlässlich. Ohne sie ist der Endkampf nicht erreichbar."
+  },
+  {
+    "id": 57,
+    "type": "entity",
+    "question": "Welcher Mob droppt Ender Pearls (Enderperlen)?",
+    "answer": "Enderman",
+    "acceptedAnswers": [
+      "Enderman",
+      "Endermen"
+    ],
+    "category": "Mobs",
+    "funFact": "Enderperlen haben eine Drop-Chance von 50 Prozent pro Enderman. Mit Plünderung III bis zu 4 pro Kill."
+  },
+  {
+    "id": 58,
+    "type": "entity",
+    "question": "Welcher Mob droppt Schleim (Slimeballs)?",
+    "answer": "Slime",
+    "acceptedAnswers": [
+      "Slime",
+      "Schleim"
+    ],
+    "category": "Mobs",
+    "funFact": "Slimes spawnen in Sümpfen bei Vollmond oder in Slime Chunks unter Y=40. Slimeballs sind für Kolben nötig."
+  },
+  {
+    "id": 59,
+    "type": "entity",
+    "question": "Welcher Mob droppt Ghast Tears (Ghasttränen)?",
+    "answer": "Ghast",
+    "acceptedAnswers": [
+      "Ghast"
+    ],
+    "category": "Mobs",
+    "funFact": "Ghasttränen sind die Basis für Regenerations-Tränke. Die Drop-Chance beträgt nur 30 Prozent, mit Plünderung III bis zu 4."
+  },
+  {
+    "id": 60,
+    "type": "entity",
+    "question": "Welcher Mob droppt Magmacreme (Magma Cream)?",
+    "answer": "Magma Cube",
+    "acceptedAnswers": [
+      "Magma Cube",
+      "Magmawürfel"
+    ],
+    "category": "Mobs",
+    "funFact": "Magmacreme ist nötig für Feuerresistenz-Tränke. Nur kleine und mittlere Magma Cubes droppen sie."
+  },
+  {
+    "id": 61,
+    "type": "number",
+    "question": "Wie viele Ancient Debris braucht man für einen Netherit-Barren?",
+    "answer": 4,
+    "unit": "Ancient Debris",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "4 Ancient Debris -> 4 Netherit-Schrott -> 4 Schrott + 4 Goldbarren = 1 Netherit-Barren."
+  },
+  {
+    "id": 62,
+    "type": "number",
+    "question": "Wie viele Netherit-Barren braucht man für eine vollständige Netherit-Rüstung?",
+    "answer": 4,
+    "unit": "Netherit-Barren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Jedes Rüstungsteil benötigt 1 Netherit-Barren + das entsprechende Diamant-Stück im Schmiedetisch."
+  },
+  {
+    "id": 63,
+    "type": "number",
+    "question": "Wie viele Rüstungspunkte gibt eine Diamant-Brustplatte?",
+    "answer": 8,
+    "unit": "Rüstungspunkte",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Die Brustplatte gibt die meisten Rüstungspunkte. Helm: 3, Hose: 6, Stiefel: 3, Brustplatte: 8."
+  },
+  {
+    "id": 64,
+    "type": "number",
+    "question": "Wie viele Eyes of Ender braucht man für einen vollständigen End-Portal-Rahmen?",
+    "answer": 12,
+    "unit": "Eyes of Ender",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "In Strongholds sind 0-12 Eyes bereits eingesetzt (zufällig). Manchmal braucht man nur wenige zu platzieren."
+  },
+  {
+    "id": 65,
+    "type": "number",
+    "question": "Wie viele Strongholds gibt es in einer Minecraft-Welt (Java Edition)?",
+    "answer": 128,
+    "unit": "Strongholds",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Strongholds spawnen in Ringen um den Weltmittelpunkt. Die ersten 3 sind am nächsten, bis zu 128 insgesamt."
+  },
+  {
+    "id": 66,
+    "type": "number",
+    "question": "Wie hoch ist das Verhältnis: 1 Block im Nether = ? Blöcke in der Overworld (X/Z-Achse)?",
+    "answer": 8,
+    "unit": "Overworld-Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Das 1:8-Verhältnis macht den Nether zur perfekten Autobahn. 1000 Blöcke Nether = 8000 Blöcke Overworld-Distanz!"
+  },
+  {
+    "id": 67,
+    "type": "number",
+    "question": "Wie viele Blöcke hoch ist die Overworld-Welt insgesamt (tiefste bis höchste Y-Ebene)?",
+    "answer": 384,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Von Y=-64 (tiefstes Bedrock) bis Y=320 (höchste Baumöglichkeit) = 384 Blöcke Höhe. Vor 1.18 waren es nur 256."
+  },
+  {
+    "id": 68,
+    "type": "entity",
+    "question": "Welcher Block ist im Survival-Modus unzerstörbar?",
+    "answer": "Bedrock",
+    "acceptedAnswers": [
+      "Bedrock",
+      "Grundgestein"
+    ],
+    "category": "Blöcke",
+    "funFact": "Bedrock ist im Survival-Modus unzerstörbar. Es existiert am Boden der Overworld, des Nethers und überall im End."
+  },
+  {
+    "id": 69,
+    "type": "number",
+    "question": "Wie viele Schichten Bedrock gibt es am Boden der Overworld?",
+    "answer": 5,
+    "unit": "Schichten",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Die 5 Bedrock-Schichten (Y=-64 bis Y=-60) sind zufällig verteilt."
+  },
+  {
+    "id": 70,
+    "type": "number",
+    "question": "Wie viele Bücherregale muss man für maximale Verzauberungen um einen Tisch platzieren?",
+    "answer": 15,
+    "unit": "Bücherregale",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Die Bücherregale müssen 1 Block Abstand vom Tisch haben. Blöcke dazwischen blockieren den Bonus."
+  },
+  {
+    "id": 71,
+    "type": "number",
+    "question": "Wie viele Bücher braucht man für ein Bücherregal?",
+    "answer": 3,
+    "unit": "Bücher",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Ein Bücherregal = 6 Holzbretter + 3 Bücher. Für 15 Bücherregale braucht man 45 Bücher = 135 Papier + 45 Leder."
+  },
+  {
+    "id": 72,
+    "type": "number",
+    "question": "Wie viele Lapis Lazuli kostet die teuerste Verzauberung im Verzauberungstisch?",
+    "answer": 3,
+    "unit": "Lapis",
+    "tolerance": 0,
+    "category": "Verzauberungen",
+    "funFact": "Die teuerste Verzauberung kostet 3 Lapis Lazuli und 30 Erfahrungslevel."
+  },
+  {
+    "id": 73,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für eine Diamant-Spitzhacke?",
+    "answer": 3,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Diamant-Spitzhacke hat 1561 Haltbarkeit. Netherit-Spitzhacke: 2031. Beide können Obsidian abbauen."
+  },
+  {
+    "id": 74,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für ein Diamantschwert?",
+    "answer": 2,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Diamantschwert macht 7 Schaden (3,5 Herzen). Netherit-Schwert macht 8 Schaden (4 Herzen)."
+  },
+  {
+    "id": 75,
+    "type": "number",
+    "question": "Wie viele verschiedene Dorfbewohner-Berufe gibt es?",
+    "answer": 13,
+    "unit": "Berufe",
+    "tolerance": 0,
+    "category": "Dorfbewohner",
+    "funFact": "13 Berufe: Armorer, Butcher, Cartographer, Cleric, Farmer, Fisherman, Fletcher, Leatherworker, Librarian, Mason, Shepherd, Toolsmith, Weaponsmith."
+  },
+  {
+    "id": 76,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Bibliothekar-Dorfbewohner (Librarian) verwendet?",
+    "answer": "Lectern",
+    "acceptedAnswers": [
+      "Lectern",
+      "Lesepult",
+      "Bücherlesepult"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Das Lesepult ermöglicht auch das Teilen von beschriebenen Büchern mit mehreren Spielern."
+  },
+  {
+    "id": 77,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Pfarrer (Cleric) verwendet?",
+    "answer": "Braustand",
+    "acceptedAnswers": [
+      "Braustand",
+      "Brewing Stand",
+      "Brauerei"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Pfarrer handeln mit Rotstein-Staub, Lapis Lazuli, Glowstone, Netherwarzen und Totems der Unsterblichkeit."
+  },
+  {
+    "id": 78,
+    "type": "number",
+    "question": "Wie viele Netherwarzen braucht man als Basis für jeden Trank?",
+    "answer": 1,
+    "unit": "Netherwarzen",
+    "tolerance": 0,
+    "category": "Tränke",
+    "funFact": "Netherwarzen im Braustand mit Wasser ergeben Awkward Potions – die Basis für ALLE nützlichen Tränke."
+  },
+  {
+    "id": 79,
+    "type": "number",
+    "question": "Wie lange dauert ein Minecraft-Tag insgesamt (in echten Minuten)?",
+    "answer": 20,
+    "unit": "Minuten",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "1 Minecraft-Tag = 20 Minuten real: 10 Min. Tag, 1,5 Min. Morgendämmerung, 7 Min. Nacht."
+  },
+  {
+    "id": 80,
+    "type": "number",
+    "question": "Wie weit kann Wasser auf flacher Ebene fließen (Blöcke)?",
+    "answer": 8,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Wasser fließt maximal 8 Blöcke weit. In eine Vertiefung fließt es unbegrenzt hinein."
+  },
+  {
+    "id": 81,
+    "type": "number",
+    "question": "Wie weit fließt Lava auf einer flachen Ebene in der Overworld (Blöcke)?",
+    "answer": 4,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Im Nether fließt Lava 8 Blöcke weit (wie Wasser in der Overworld)."
+  },
+  {
+    "id": 82,
+    "type": "number",
+    "question": "Wie weit spawnen Mobs minimal vom Spieler entfernt (Blöcke)?",
+    "answer": 24,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Mobs spawnen zwischen 24 und 128 Blöcken vom Spieler. Näher als 24: kein Spawn. Weiter als 128: despawnen sofort."
+  },
+  {
+    "id": 83,
+    "type": "entity",
+    "question": "Auf welchem Block müssen Netherwarzen gepflanzt werden?",
+    "answer": "Seelensand",
+    "acceptedAnswers": [
+      "Seelensand",
+      "Soul Sand"
+    ],
+    "category": "Blöcke",
+    "funFact": "Netherwarzen wachsen nur auf Seelensand – egal ob im Nether oder in der Overworld."
+  },
+  {
+    "id": 84,
+    "type": "number",
+    "question": "Wie viele Zuckerrohre braucht man für 1 Papier?",
+    "answer": 3,
+    "unit": "Zuckerrohre",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "3 Zuckerrohre nebeneinander im Crafting-Tisch = 3 Papier. Papier wird für Karten, Bücher und Feuerwerke benötigt."
+  },
+  {
+    "id": 85,
+    "type": "number",
+    "question": "Wie hoch wächst Zuckerrohr maximal (Blöcke)?",
+    "answer": 3,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Zuckerrohr wächst nur auf Grass, Dirt, Sand oder Red Sand direkt neben Wasser."
+  },
+  {
+    "id": 86,
+    "type": "number",
+    "question": "Wie viele verschiedene Farben gibt es für Wolle (Wool) in Minecraft?",
+    "answer": 16,
+    "unit": "Farben",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Die 16 Farben entsprechen den 16 Farbstoff-Varianten: Weiß, Orange, Magenta, Hellblau, Gelb, Limettengrün, Pink, Grau, Hellgrau, Türkis, Lila, Blau, Braun, Grün, Rot, Schwarz."
+  },
+  {
+    "id": 87,
+    "type": "number",
+    "question": "Wie viele verschiedene Musikdisketten (Music Discs) gibt es in Minecraft Java Edition 1.20?",
+    "answer": 15,
+    "unit": "Disketten",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Die 15 Discs: 13, cat, blocks, chirp, far, mall, mellohi, stal, strad, ward, 11, wait, otherside, 5 und Pigstep."
+  },
+  {
+    "id": 88,
+    "type": "entity",
+    "question": "Wie bekommt man eine Musikdiskette von einem Creeper gedroppt?",
+    "answer": "Skelett tötet Creeper",
+    "acceptedAnswers": [
+      "Skelett tötet Creeper",
+      "Skeleton kills Creeper",
+      "Creeper von Skelett getötet",
+      "Skeleton"
+    ],
+    "category": "Mobs",
+    "funFact": "Wenn ein Skelett-Pfeil einen Creeper tötet, droppen 13 verschiedene Discs (zufällig)."
+  },
+  {
+    "id": 89,
+    "type": "number",
+    "question": "Wie viele Blöcke kann ein Kolben (Piston) in einer Linie schieben?",
+    "answer": 12,
+    "unit": "Blöcke",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Kolben kann maximal 12 Blöcke schieben. Mit Schleimblöcken können Strukturen als Einheit bewegt werden."
+  },
+  {
+    "id": 90,
+    "type": "number",
+    "question": "Wie viele Redstone-Ticks dauert ein Repeater auf maximaler Verzögerung?",
+    "answer": 4,
+    "unit": "Redstone-Ticks",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Ein Redstone-Tick = 2 Game-Ticks = 0,1 Sekunden. Ein Repeater auf Stufe 4 verzögert das Signal um 0,4 Sekunden."
+  },
+  {
+    "id": 91,
+    "type": "number",
+    "question": "Wie viele Slots hat ein Trichter (Hopper)?",
+    "answer": 5,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Trichter transportieren Items mit 2,5 Items pro Sekunde. Sie können nach unten oder seitwärts gerichtet werden."
+  },
+  {
+    "id": 92,
+    "type": "number",
+    "question": "Wie hoch ist die maximale Build Height in Minecraft (Y-Level)?",
+    "answer": 320,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Build Height: Y=320. Wolken befinden sich bei Y=192. Vor 1.18 war die maximale Höhe Y=255."
+  },
+  {
+    "id": 93,
+    "type": "number",
+    "question": "Wie viele Meeresschuppen braucht man für einen Schildkröten-Helm?",
+    "answer": 5,
+    "unit": "Meeresschuppen",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Der Schildkröten-Helm gibt 2 Rüstungspunkte und +10 Sekunden Wasseratmung."
+  },
+  {
+    "id": 94,
+    "type": "entity",
+    "question": "Was droppen Baby-Schildkröten, wenn sie erwachsen werden?",
+    "answer": "Meeresschuppe",
+    "acceptedAnswers": [
+      "Meeresschuppe",
+      "Scute",
+      "Turtle Scute"
+    ],
+    "category": "Mobs",
+    "funFact": "5 Meeresschuppen = 1 Schildkröten-Helm. Er gibt Konduit-Effekt wenn im Wasser."
+  },
+  {
+    "id": 95,
+    "type": "number",
+    "question": "Wie viele Goldbarren braucht man für einen normalen Goldenen Apfel?",
+    "answer": 8,
+    "unit": "Goldbarren",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Goldbarren + 1 Apfel = Goldener Apfel. Der verzauberte (Notch-Apfel) ist nicht mehr herstellbar."
+  },
+  {
+    "id": 96,
+    "type": "number",
+    "question": "Wie viele Goldblöcke brauchte man früher für einen verzauberten Goldenen Apfel (Notch Apple)?",
+    "answer": 8,
+    "unit": "Goldblöcke",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Goldblöcke (72 Goldbarren!) + 1 Apfel = Notch-Apfel. Seit 1.9 ist das Rezept entfernt."
+  },
+  {
+    "id": 97,
+    "type": "entity",
+    "question": "Welcher Mob wird durch einen Blitz in ein Zombie Piglin verwandelt?",
+    "answer": "Schwein",
+    "acceptedAnswers": [
+      "Schwein",
+      "Pig"
+    ],
+    "category": "Mobs",
+    "funFact": "Blitzeinschläge verwandeln Schweine in Zombie Piglins, Dorfbewohner in Hexen und Creeper in geladene Creeper."
+  },
+  {
+    "id": 98,
+    "type": "number",
+    "question": "Wie lange sind Zombie Piglins feindselig nach einem Angriff (Sekunden)?",
+    "answer": 20,
+    "unit": "Sekunden",
+    "tolerance": 5,
+    "category": "Mobs",
+    "funFact": "Wenn man einen Zombie Piglin angreift, werden ALLE Zombie Piglins in 35 Blöcken Umkreis feindselig."
+  },
+  {
+    "id": 99,
+    "type": "number",
+    "question": "Wie viele Obsidian-Blöcke braucht man mindestens für ein Nether-Portal?",
+    "answer": 10,
+    "unit": "Obsidian",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Das Mini-Portal ist 4x5 Blöcke. Die Ecken sind optional – deshalb 10 statt 14."
+  },
+  {
+    "id": 100,
+    "type": "number",
+    "question": "Wie viele Diamanten braucht man für eine vollständige Diamantrüstung?",
+    "answer": 24,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "Helm: 5, Brustplatte: 8, Hose: 7, Stiefel: 4 = 24 Diamanten."
+  },
+  {
+    "id": 101,
+    "type": "number",
+    "question": "Wie viele Slots hat eine Doppelkiste?",
+    "answer": 54,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Eine Doppelkiste fasst 54x64 = 3456 Items (maximal). Sie entsteht automatisch, wenn man 2 Truhen nebeneinander platziert."
+  },
+  {
+    "id": 102,
+    "type": "number",
+    "question": "Wie viele Slots hat eine Ender-Kiste (Ender Chest)?",
+    "answer": 27,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Der Inhalt einer Ender-Kiste ist spielerbezogen und von überall auf der Welt zugänglich."
+  },
+  {
+    "id": 103,
+    "type": "number",
+    "question": "Wie viele Obsidian-Blöcke braucht man für eine Ender-Kiste?",
+    "answer": 8,
+    "unit": "Obsidian",
+    "tolerance": 0,
+    "category": "Crafting",
+    "funFact": "8 Obsidian + 1 Auge des Enders = Ender-Kiste. Sie hat denselben Explosionsschutz wie Obsidian."
+  },
+  {
+    "id": 104,
+    "type": "entity",
+    "question": "Welches Item braucht man, um einen Strider im Nether zu reiten?",
+    "answer": "Warped Fungus on a Stick",
+    "acceptedAnswers": [
+      "Warped Fungus on a Stick",
+      "Verwelkter Pilz auf Stange",
+      "Pilz auf Stange"
+    ],
+    "category": "Items",
+    "funFact": "Man kombiniert einen Fishing Rod mit einem Warped Fungus. Der Strider läuft in Richtung des gehaltenen Pilzes."
+  },
+  {
+    "id": 105,
+    "type": "number",
+    "question": "Wie weit kann man mit einer Enderperle teleportieren (Blöcke)?",
+    "answer": 32,
+    "unit": "Blöcke",
+    "tolerance": 2,
+    "category": "Items",
+    "funFact": "Enderperlen verursachen 2,5 Herzen Fallschaden beim Landen. Federfall IV negiert diesen Schaden."
+  },
+  {
+    "id": 106,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Axolotl?",
+    "answer": 28,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Axolotls spielen tote, wenn sie Schaden nehmen. Sie greifen Guardian-Mobs an!"
+  },
+  {
+    "id": 107,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Kamel (Camel)?",
+    "answer": 64,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Kamele spawnen in Wüstendörfern, können 2 Spieler tragen und machen einen Dash-Sprung über 2 Blöcke breite Lücken."
+  },
+  {
+    "id": 108,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat eine Ziege (Goat)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ziegen rammen Spieler und Mobs. Schreiende Ziegen (Screaming Goats) sind seltener."
+  },
+  {
+    "id": 109,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Piglin Brute?",
+    "answer": 100,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Piglin-Brutes greifen immer an – auch wenn man goldene Rüstung trägt."
+  },
+  {
+    "id": 110,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zoglin?",
+    "answer": 80,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zoglins entstehen, wenn Hoglins in die Overworld oder den End teleportiert werden. Sie greifen alles außer Creeper an."
+  },
+  {
+    "id": 111,
+    "type": "number",
+    "question": "Wie viele Farb-Varianten hat ein Axolotl?",
+    "answer": 5,
+    "unit": "Varianten",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Axolotl-Farben: Leucas (weiß), Wild (braun), Gold (gelb), Cyan und selten Blue (1:1200 Chance beim Züchten)."
+  },
+  {
+    "id": 112,
+    "type": "number",
+    "question": "Wie viele Frosch-Varianten gibt es in Minecraft 1.19+?",
+    "answer": 3,
+    "unit": "Varianten",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "3 Frosch-Farben: Temperate (orange), Warm (weiß), Cold (grün). Die Farbe bestimmt das Biom, in dem der Kaulquapp aufwächst."
+  },
+  {
+    "id": 113,
+    "type": "entity",
+    "question": "Welcher seltene Block entsteht, wenn ein kleiner Magma Cube von einem Frosch gefressen wird?",
+    "answer": "Froschlicht",
+    "acceptedAnswers": [
+      "Froschlicht",
+      "Froglight",
+      "Frog Light"
+    ],
+    "category": "Blöcke",
+    "funFact": "Es gibt 3 Froschlicht-Farben (Purpur, Grünlich, Gelb), je nach Frosch-Variante. Alle haben Lichtstärke 15."
+  },
+  {
+    "id": 114,
+    "type": "number",
+    "question": "Wie viel Schaden macht ein Warden-Angriff auf Normal (halbe Herzen)?",
+    "answer": 30,
+    "unit": "Schaden",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Warden macht auf Normal 30 Schaden (15 Herzen). Auf Hard: 45 Schaden!"
+  },
+  {
+    "id": 115,
+    "type": "number",
+    "question": "Wie weit kann der Warden seinen Sonic Boom schießen (Blöcke)?",
+    "answer": 15,
+    "unit": "Blöcke",
+    "tolerance": 2,
+    "category": "Mobs",
+    "funFact": "Der Sonic Boom durchdringt Rüstung und Schilde vollständig! Er macht 10 Schaden unabhängig von Rüstung."
+  },
+  {
+    "id": 116,
+    "type": "number",
+    "question": "Wie viele Shrieks muss man im Deep Dark auslösen, bevor ein Warden spawnt?",
+    "answer": 3,
+    "unit": "Shrieks",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Erst nach 3 Shriek-Ereignissen (je 90 Ticks Abstand) erscheint ein Warden. Schleichen verhindert Vibrations."
+  },
+  {
+    "id": 117,
+    "type": "entity",
+    "question": "Welcher Block kann Vibrationen blockieren und Sculk-Sensoren blind machen?",
+    "answer": "Wollblock",
+    "acceptedAnswers": [
+      "Wolle",
+      "Wollblock",
+      "Wool",
+      "Wool Block"
+    ],
+    "category": "Blöcke",
+    "funFact": "Wollblöcke absorbieren Vibrationssignale und verhindern, dass Sculk-Sensoren Geräusche durch sie hindurch erkennen."
+  },
+  {
+    "id": 118,
+    "type": "number",
+    "question": "Wie viel Schaden macht der Wither-Effekt pro Sekunde (halbe Herzen)?",
+    "answer": 1,
+    "unit": "Schaden/s",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Wither-Effekt kann bis zum Tod töten und wirkt auf Untote. Milch heilt ihn sofort."
+  },
+  {
+    "id": 119,
+    "type": "number",
+    "question": "Wie hoch sind die maximalen Y-Koordinaten von Ancient Debris-Spawns?",
+    "answer": 119,
+    "unit": "Y-Level",
+    "tolerance": 5,
+    "category": "Weltgenerierung",
+    "funFact": "Ancient Debris spawnt zwischen Y=8 und Y=119, am häufigsten bei Y=15."
+  },
+  {
+    "id": 120,
+    "type": "number",
+    "question": "Wie viel Schaden macht ein Magma Block pro Sekunde beim Draufstehen (halbe Herzen)?",
+    "answer": 1,
+    "unit": "Schaden/s",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Magmablöcke schaden 1 HP alle 0,5 Sek. Schleichen auf Magmablöcken verhindert den Schaden."
+  },
+  {
+    "id": 121,
+    "type": "entity",
+    "question": "Welcher Block bildet den Boden des End und kann nicht durch Explosionen zerstört werden?",
+    "answer": "Endstein",
+    "acceptedAnswers": [
+      "Endstein",
+      "End Stone",
+      "Endstone"
+    ],
+    "category": "Blöcke",
+    "funFact": "Endstein ist der Haupt-Baublock des End. Mit Endstein-Ziegelsteinen und -Mauern gibt es viele dekorative Varianten."
+  },
+  {
+    "id": 122,
+    "type": "number",
+    "question": "Wie viele Feuerbälle schießt ein Blaze in einer Angriffsserie?",
+    "answer": 3,
+    "unit": "Feuerbälle",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Blazes schießen immer 3 Feuerbälle in schneller Folge, pausieren dann kurz. Schneebälle sind die günstigste Gegenmaßnahme."
+  },
+  {
+    "id": 123,
+    "type": "number",
+    "question": "Wie viele verschiedene Banner-Muster (Patterns) gibt es in Minecraft?",
+    "answer": 42,
+    "unit": "Muster",
+    "tolerance": 3,
+    "category": "Items",
+    "funFact": "Banner können mit Farbstoffen, Blumen und speziellen Mustern dekoriert werden. Shields können Banner aufnehmen."
+  },
+  {
+    "id": 124,
+    "type": "entity",
+    "question": "Welches Item findet man in einer Truhenboot (Chest Boat)?",
+    "answer": "Truhe",
+    "acceptedAnswers": [
+      "Truhe",
+      "Chest",
+      "Kiste"
+    ],
+    "category": "Items",
+    "funFact": "Seit 1.19 kann man eine Truhe mit einem Boot kombinieren. Das Truhenboot hat 27 Inventarslots."
+  },
+  {
+    "id": 125,
+    "type": "number",
+    "question": "Wie viele Herzen Absorption gibt ein normaler Goldener Apfel?",
+    "answer": 4,
+    "unit": "Herzen",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Ein normaler Goldener Apfel gibt Regeneration II (5 Sek.) und Absorption I (2 Min. = 4 extra Herzen)."
+  },
+  {
+    "id": 126,
+    "type": "entity",
+    "question": "Welcher blaue hilfreiche Mob aus 1.19 gewann die Mob-Abstimmung 2021?",
+    "answer": "Allay",
+    "acceptedAnswers": [
+      "Allay"
+    ],
+    "category": "Mobs",
+    "funFact": "Der Allay sammelt Items für den Spieler und tanzt bei Musik-Blocks. Er kann mit einer Amethyst-Scherbe dupliziert werden."
+  },
+  {
+    "id": 127,
+    "type": "number",
+    "question": "Wie weit greifen Zombie Piglins in der Gruppe an, wenn man einen angreift (Blöcke)?",
+    "answer": 35,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Mobs",
+    "funFact": "Zombie Piglins sind neutraler Mob bis man angreift. Sie droppen Gold-Nuggets und manchmal Gold-Barren."
+  },
+  {
+    "id": 128,
+    "type": "number",
+    "question": "Wie viele Ticks pro Sekunde (TPS) hat ein normaler Minecraft-Server?",
+    "answer": 20,
+    "unit": "TPS",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Ein Game Tick dauert 0,05 Sekunden. Redstone-Repeater arbeiten in Vielfachen von 1 Tick (0,1s pro Tick-Delay)."
+  },
+  {
+    "id": 129,
+    "type": "number",
+    "question": "Wie viele Slots hat ein Dispenser (Werfer)?",
+    "answer": 9,
+    "unit": "Slots",
+    "tolerance": 0,
+    "category": "Redstone",
+    "funFact": "Dispenser können fast alle Items werfen oder verwenden: Pfeile schiessen, Eimer leeren/füllen, Tränke schütten."
+  },
+  {
+    "id": 130,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Sniffer?",
+    "answer": 30,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Der Sniffer gewann die Mob-Abstimmung 2022. Er gräbt antike Samenkörner (Torchflower, Pitcher Plant) aus."
+  },
+  {
+    "id": 131,
+    "type": "number",
+    "question": "Wie viele Smaragde kostet eine Rüstungsverzauberung beim Armorer-Dorfbewohner (Meister-Level) ca.?",
+    "answer": 14,
+    "unit": "Smaragde",
+    "tolerance": 5,
+    "category": "Dorfbewohner",
+    "funFact": "Armorer-Meister können Diamant-Rüstung mit zufälligen Verzauberungen verkaufen."
+  },
+  {
+    "id": 132,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Vindicator (Bestraferer)?",
+    "answer": 24,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Bestraferer sind die gefährlichsten Plünderer-Mobs. Mit einer Axt machen sie auf Hard bis zu 19 Schaden pro Treffer."
+  },
+  {
+    "id": 133,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Drowned (Ertrunkener)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Ertrunkene spawnen im Wasser oder entstehen, wenn Zombies zu lange unter Wasser sind. Sie droppen manchmal Dreizack."
+  },
+  {
+    "id": 134,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Husk (Hüllenzombie)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Hüllenzombies spawnen nur in Wüsten. Ihr Angriff verursacht Hunger-Effekt statt direkten Schaden."
+  },
+  {
+    "id": 135,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Stray (Irrlicht)?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Irrlichter sind Skelett-Varianten aus Schneebiomen. Ihre Pfeile verursachen Verlangsamung I für 30 Sekunden."
+  },
+  {
+    "id": 136,
+    "type": "number",
+    "question": "Wie viele halbe Herzen hat ein Zombie Villager?",
+    "answer": 20,
+    "unit": "HPs",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Zombie-Dorfbewohner können mit einem Schwächetrank und Goldenem Apfel geheilt werden (2-5 Minuten)."
+  },
+  {
+    "id": 137,
+    "type": "number",
+    "question": "Wie viele Knochen braucht man durchschnittlich, um einen Wolf zu zähmen?",
+    "answer": 3,
+    "unit": "Knochen",
+    "tolerance": 2,
+    "category": "Mobs",
+    "funFact": "Die Erfolgswahrscheinlichkeit pro Knochen beträgt 1/3. Durchschnittlich 3 Knochen, aber es kann auch 1 oder 10 dauern."
+  },
+  {
+    "id": 138,
+    "type": "number",
+    "question": "Wie viele XP benötigt man für Level 1?",
+    "answer": 7,
+    "unit": "XP",
+    "tolerance": 0,
+    "category": "Spielmechanik",
+    "funFact": "Die XP-Kosten pro Level steigen: Level 1-16 kosten jeweils 7-17 XP. Ab Level 31 braucht man über 100 XP pro Level."
+  },
+  {
+    "id": 139,
+    "type": "number",
+    "question": "Welche Lichtstärke hat ein Glowstone-Block?",
+    "answer": 15,
+    "unit": "Lichtstärke",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Lichtstärke 15 ist das Maximum in Minecraft. Glowstone, Leuchtende Laterne, Lagerfeuer und Seegurke haben alle 15."
+  },
+  {
+    "id": 140,
+    "type": "number",
+    "question": "Wie viele Weizenähren braucht man, um 2 Kühe zu züchten?",
+    "answer": 2,
+    "unit": "Weizenähren",
+    "tolerance": 0,
+    "category": "Mobs",
+    "funFact": "Kühe, Schafe und Pilzkühe werden mit Weizen gezüchtet. Das Kälbchen wird erwachsen nach 20 Minuten."
+  },
+  {
+    "id": 141,
+    "type": "number",
+    "question": "Wie viele Kakaofrüchte bekommt man aus einer reifen Kakaopflanze?",
+    "answer": 3,
+    "unit": "Kakaofrüchte",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Kakaopflanzen wachsen nur auf Dschungelholz und haben 3 Reifestufen. Im reifen Zustand sind sie braun."
+  },
+  {
+    "id": 142,
+    "type": "entity",
+    "question": "Welcher Block erzeugt eine aufsteigende Luftblase-Spalte unter Wasser?",
+    "answer": "Seelensand",
+    "acceptedAnswers": [
+      "Seelensand",
+      "Soul Sand"
+    ],
+    "category": "Blöcke",
+    "funFact": "Seelensand erzeugt aufsteigende Luftblasen. Magmablock erzeugt eine absinkende Wasserströmung – ideal für Aufzüge!"
+  },
+  {
+    "id": 143,
+    "type": "number",
+    "question": "Wie viele Schichten hat ein Kuchen (Cake) insgesamt?",
+    "answer": 7,
+    "unit": "Schichten",
+    "tolerance": 0,
+    "category": "Items",
+    "funFact": "Jede Kuchenschicht gibt 2 Hunger-Punkte. Ein ganzer Kuchen gibt 14 Hunger-Punkte."
+  },
+  {
+    "id": 144,
+    "type": "entity",
+    "question": "Welcher Mob droppt Federn (Feathers)?",
+    "answer": "Huhn",
+    "acceptedAnswers": [
+      "Huhn",
+      "Chicken"
+    ],
+    "category": "Mobs",
+    "funFact": "Hühner droppen 0-2 Federn beim Tod. Mit Plünderung III bis zu 5 Federn. Federn werden für Pfeile benötigt."
+  },
+  {
+    "id": 145,
+    "type": "number",
+    "question": "Wie hoch ist die Nether-Welt maximal (Y-Level)?",
+    "answer": 128,
+    "unit": "Y-Level",
+    "tolerance": 0,
+    "category": "Weltgenerierung",
+    "funFact": "Der Nether ist von Y=0 bis Y=127 bewohnbar. Über Y=128 gibt es eine begehbare Bedrock-Fläche."
+  },
+  {
+    "id": 146,
+    "type": "number",
+    "question": "Wie weit sucht ein Dorfbewohner nach seinem Arbeitsblock (Blöcke)?",
+    "answer": 48,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Dorfbewohner",
+    "funFact": "Dorfbewohner suchen in einem Radius von 48 Blöcken nach einem freien Arbeitsblock."
+  },
+  {
+    "id": 147,
+    "type": "entity",
+    "question": "Welcher Arbeitsblock wird vom Rüstungsschmied (Armorer) verwendet?",
+    "answer": "Hochofen",
+    "acceptedAnswers": [
+      "Hochofen",
+      "Blast Furnace"
+    ],
+    "category": "Dorfbewohner",
+    "funFact": "Der Hochofen schmelzt Erze doppelt so schnell wie ein normaler Ofen, kann aber keine Nahrung kochen."
+  },
+  {
+    "id": 148,
+    "type": "number",
+    "question": "Wie viele Diamanten droppt maximal ein Diamanterz-Block (ohne Verzauberung)?",
+    "answer": 1,
+    "unit": "Diamanten",
+    "tolerance": 0,
+    "category": "Blöcke",
+    "funFact": "Mit Glück III kann ein einziger Diamant-Erz-Block bis zu 4 Diamanten droppen."
+  },
+  {
+    "id": 149,
+    "type": "number",
+    "question": "Wie viele Haltbarkeitspunkte hat ein Netherit-Schwert?",
+    "answer": 2031,
+    "unit": "Haltbarkeit",
+    "tolerance": 10,
+    "category": "Items",
+    "funFact": "Netherit-Schwert: 2031. Diamant: 1561. Mit Reparatur (Mending) kann ein Schwert theoretisch ewig halten."
+  },
+  {
+    "id": 150,
+    "type": "number",
+    "question": "Wie viele Blöcke weit kann ein Bogen (vollständig gespannt) maximal schießen?",
+    "answer": 52,
+    "unit": "Blöcke",
+    "tolerance": 5,
+    "category": "Items",
+    "funFact": "Ein vollständig gespannter Bogen macht 9 Schaden (4,5 Herzen). Mit Kraft V: 12,5 Schaden."
+  }
+]

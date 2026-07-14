@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "123665696444",
+    "firebase_url": "https://mineguessv1-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "mineguessv1",
+    "storage_bucket": "mineguessv1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:123665696444:android:eeb064614b15374730f2b9",
+        "android_client_info": {
+          "package_name": "Mine.Guess"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "123665696444-jqdaqs24ar1nb0r4dnb4hb167me9v79f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDvuiKERdW5MOj7XZm9nr3vCmZVugkTLYo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "123665696444-jqdaqs24ar1nb0r4dnb4hb167me9v79f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
