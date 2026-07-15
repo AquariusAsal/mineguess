@@ -368,6 +368,7 @@ io.on('connection', (socket) => {
 
   // Disconnect ─────────────────────────────────────────────────────────────────
   socket.on('disconnect', () => {
+    setTimeout(ensurePublicRooms, 100);
     if (!currentRoom || !rooms[currentRoom]) return;
     const room = rooms[currentRoom];
     const name = room.players[socket.id]?.name;
@@ -383,4 +384,39 @@ io.on('connection', (socket) => {
 });
 
 const PORT = process.env.PORT || 3000;
+
+// ── 5 Permanent Public Rooms ─────────────────────────────────────────────────
+function makePermanentRoom(i) {
+  const id = 'public-' + i;
+  const pool = [...Array(allQuestions.length).keys()];
+  rooms[id] = {
+    id,
+    displayName: 'Raum #' + i,
+    isPublic: true,
+    password: null,
+    categories: null,
+    players: {},
+    ready: new Set(),
+    questionOrder: shuffle([...pool]),
+    currentIndex: 0,
+    question: null,
+    phase: 'waiting',
+    roundNum: 0,
+    isPermanent: true
+  };
+}
+
+function createPublicRooms() {
+  for (let i = 1; i <= 5; i++) makePermanentRoom(i);
+  console.log('Created 5 permanent public rooms');
+}
+
+function ensurePublicRooms() {
+  for (let i = 1; i <= 5; i++) {
+    if (!rooms['public-' + i]) makePermanentRoom(i);
+  }
+}
+
+createPublicRooms();
+
 server.listen(PORT, () => console.log(`🚀 http://localhost:${PORT}`));

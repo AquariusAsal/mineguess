@@ -468,13 +468,28 @@ footer {
   .premium-card { grid-template-columns: 1fr; }
   footer { flex-direction: column; gap: 16px; text-align: center; }
 }
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] { --bg:#f4f4f5;--bg1:#fff;--bg2:#f0f0f1;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--green:#16a34a; }
+[data-theme="light"] nav { background: rgba(244,244,245,0.95); }
+[data-theme="light"] #block-rain-canvas { opacity: 0.05; }
 </style>
 </head>
 <body>
+<script>
+(function(){
+  const t=localStorage.getItem('mg_theme');
+  if(t==='light') document.documentElement.setAttribute('data-theme','light');
+})();
+</script>
+
 
 <!-- NAV -->
 <nav>
-  <a class="nav-logo" href="/"><span>Mine</span>Guess</a>
+  <a class="nav-logo" href="/">
+    <img src="logo-transparent.png" alt="MineGuess" style="height:32px;width:32px;object-fit:contain;vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'"/>
+    <span>Mine</span>Guess
+  </a>
   <div class="nav-links">
     <a class="nav-link" href="#modi">Modi</a>
     <a class="nav-link" href="#features">Features</a>
@@ -668,6 +683,65 @@ footer {
     </div>
   </footer>
 </div>
+
+
+<canvas id="block-rain-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.07;"></canvas>
+
+<script>
+(function() {
+  const canvas = document.getElementById('block-rain-canvas');
+  const ctx = canvas.getContext('2d');
+  const BLOCKS = ['🟩','🟦','🟫','⬛','🟧','🟥','⬜','🟨',
+                  '🧱','💎','🪨','🌿','❄️','🔥','🌊','🪵'];
+  let W, H, drops = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function spawnDrop() {
+    return {
+      x: Math.random() * W,
+      y: -50 - Math.random() * H,
+      size: 16 + Math.random() * 24,
+      speed: 1.2 + Math.random() * 2.5,
+      char: BLOCKS[Math.floor(Math.random() * BLOCKS.length)],
+      opacity: 0.4 + Math.random() * 0.6,
+      rotation: Math.random() * 0.3 - 0.15
+    };
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    while (drops.length < 40) drops.push(spawnDrop());
+    drops = drops.filter(d => d.y < H + 60);
+    for (const d of drops) {
+      d.y += d.speed;
+      ctx.save();
+      ctx.globalAlpha = d.opacity;
+      ctx.translate(d.x, d.y);
+      ctx.rotate(d.rotation);
+      ctx.font = d.size + 'px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(d.char, 0, 0);
+      ctx.restore();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  resize();
+  window.addEventListener('resize', resize);
+  // Pre-seed drops across full height
+  for (let i = 0; i < 35; i++) {
+    const d = spawnDrop();
+    d.y = Math.random() * H;
+    drops.push(d);
+  }
+  tick();
+})();
+</script>
 
 </body>
 </html>

@@ -206,12 +206,25 @@
     /* Animations */
     @keyframes buzzerWon { 0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)} }
     .buzz-won-anim { animation:buzzerWon 0.4s ease; }
-  </style>
+  
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg: #f4f4f5; --bg1: #ffffff; --bg2: #f0f0f1;
+  --border: #e4e4e7; --border2: #d4d4d8;
+  --text: #18181b; --muted: #71717a;
+  --green: #16a34a; --yellow: #ca8a04;
+}
+[data-theme="light"] body { background: var(--bg); }
+[data-theme="light"] header { background: rgba(244,244,245,0.92) !important; }
+[data-theme="light"] .mp-card { background: #fff; border-color: #e4e4e7; }
+</style>
 </head>
 <body>
 
 <header>
-  <h1><span class="logo-icon">⛏</span> Mine<span style="color:rgba(74,222,128,0.7)">Guess</span> <span class="beta-chip">BETA</span></h1>
+  <h1><span class="logo-icon" style="background:none;box-shadow:none;padding:0;width:28px;height:28px;display:inline-flex">
+      <img src="logo-transparent.png" alt="" style="width:28px;height:28px;object-fit:contain;" onerror="this.style.display='none'"/>
+    </span> Mine<span style="color:rgba(74,222,128,0.7)">Guess</span> <span class="beta-chip">BETA</span></h1>
   <div class="header-right">
     <span class="room-status" id="room-status">Multiplayer</span>
     <a href="index.html" class="btn-back">← Solo</a>
@@ -390,6 +403,13 @@
 <div id="toast"></div>
 
 <script>
+
+// ── Theme init ────────────────────────────────────────────────────────────────
+(function() {
+  const t = localStorage.getItem('mg_theme');
+  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+})();
+
 const SERVER_URL = (typeof MULTIPLAYER_SERVER !== 'undefined' && MULTIPLAYER_SERVER)
   ? MULTIPLAYER_SERVER : window.location.origin;
 const socket = io(SERVER_URL);
@@ -454,8 +474,10 @@ let myPremium  = false; // set via URL param or localStorage
 let selectedCats = new Set();
 
 const ALL_CATEGORIES = [
-  'Redstone','Crafting','Verzauberungen','Tränke','Dimensionen',
-  'Mobs','Blöcke','Items','Mechaniken','Geschichte','Biome','Essen','Erze'
+  'Mobs','Blöcke','Items','Crafting','Redstone','Verzauberungen',
+  'Tränke','Dimensionen','Biome','Essen & Nahrung','Erze & Ressourcen',
+  'Strukturen','Gameplay','Spielmechanik','Geschichte & Updates',
+  'Weltgenerierung','Hardcore-Wissen','Dorfbewohner'
 ];
 
 function initPremiumUI() {

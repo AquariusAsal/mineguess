@@ -638,7 +638,7 @@ main {
 /* ── MODE SCREEN ── */
 #mode-screen {
   width: 100%;
-  max-width: 600px;
+  max-width: 900px;
   padding: 48px 16px;
   display: flex;
   flex-direction: column;
@@ -661,22 +661,23 @@ main {
 }
 .mode-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   width: 100%;
 }
 .mode-card {
   background: var(--bg1);
-  padding: 22px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px 20px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: border-color 0.2s, transform 0.2s, background 0.15s;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.mode-card:hover { background: var(--bg2); }
+.mode-card:hover { background: var(--bg2); border-color: var(--border2); transform: translateY(-2px); }
 .mode-icon { font-size: 1.5rem; margin-bottom: 10px; display: block; }
 .mode-name {
   font-weight: 700;
@@ -942,6 +943,10 @@ main {
   .stat span:first-child { display: block; }
   main { padding: 16px 12px 60px; }
 }
+@media (max-width: 700px) {
+  .mode-grid { grid-template-columns: 1fr; }
+  #mode-screen { max-width: 500px; }
+}
 
 /* ── SPLASH SCREEN ── */
 #splash-screen {
@@ -1054,6 +1059,8 @@ main {
   --yellow: #ca8a04;
 }
 [data-theme="light"] header { background: rgba(244,244,245,0.92); }
+[data-theme="light"] .mode-card { background: #fff; border-color: #e4e4e7; }
+[data-theme="light"] .mode-card:hover { background: #f9f9fa; border-color: #d4d4d8; }
 [data-theme="light"] #bg-canvas { opacity: 0.06; }
 
 .theme-btn {
@@ -1152,12 +1159,8 @@ main {
     <div class="sb sb7"></div><div class="sb sb8"></div><div class="sb sb9"></div>
   </div>
   <div class="splash-logo">
-    <div class="splash-icon">
-      <svg width="40" height="40" viewBox="0 0 20 20" fill="none">
-        <path d="M3 3 L9 9 L7 11 L1 5 Z" fill="rgba(0,0,0,0.4)"/>
-        <rect x="8.5" y="8.5" width="9" height="2.5" rx="1" transform="rotate(45 8.5 8.5)" fill="rgba(0,0,0,0.35)"/>
-        <text x="10" y="14.5" text-anchor="middle" font-size="12" font-weight="900" font-family="Arial,sans-serif" fill="#000">?</text>
-      </svg>
+    <div class="splash-icon" style="background:none;box-shadow:none;width:120px;height:120px;">
+      <img src="logo-green.png" alt="MineGuess" style="width:120px;height:120px;object-fit:contain;" onerror="this.style.display='none'"/>
     </div>
     <div class="splash-title">Mine<span>Guess</span></div>
   </div>
@@ -1172,12 +1175,8 @@ main {
     <div class="sb sb7"></div><div class="sb sb8"></div><div class="sb sb9"></div>
   </div>
   <div class="splash-logo">
-    <div class="splash-icon">
-      <svg width="40" height="40" viewBox="0 0 20 20" fill="none">
-        <path d="M3 3 L9 9 L7 11 L1 5 Z" fill="rgba(0,0,0,0.4)"/>
-        <rect x="8.5" y="8.5" width="9" height="2.5" rx="1" transform="rotate(45 8.5 8.5)" fill="rgba(0,0,0,0.35)"/>
-        <text x="10" y="14.5" text-anchor="middle" font-size="12" font-weight="900" font-family="Arial,sans-serif" fill="#000">?</text>
-      </svg>
+    <div class="splash-icon" style="background:none;box-shadow:none;width:120px;height:120px;">
+      <img src="logo-green.png" alt="MineGuess" style="width:120px;height:120px;object-fit:contain;" onerror="this.style.display='none'"/>
     </div>
     <div class="splash-title">Mine<span>Guess</span></div>
   </div>
@@ -1266,14 +1265,8 @@ main {
 <div id="game-wrapper" style="display:none;width:100%;display:none">
 <header>
   <h1>
-    <span class="logo-icon">
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- Pickaxe silhouette -->
-        <path d="M3 3 L9 9 L7 11 L1 5 Z" fill="rgba(0,0,0,0.4)"/>
-        <rect x="8.5" y="8.5" width="9" height="2.5" rx="1" transform="rotate(45 8.5 8.5)" fill="rgba(0,0,0,0.35)"/>
-        <!-- Question mark -->
-        <text x="10" y="14.5" text-anchor="middle" font-size="12" font-weight="900" font-family="Arial,sans-serif" fill="#000">?</text>
-      </svg>
+    <span class="logo-icon" style="background:none;box-shadow:none;padding:0;width:32px;height:32px;">
+      <img src="logo-transparent.png" alt="MineGuess" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
     </span>
     Mine<span style="color:var(--green)">Guess</span>
   </h1>
