@@ -8727,7 +8727,7 @@ function initFirebase() {
   } catch(e) { console.warn('Firebase init:', e); return false; }
 }
 
-async function signInGoogle() {
+async async function signInGoogle() {
   if (!fbAuth) { showToast('Firebase nicht konfiguriert'); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
@@ -9047,6 +9047,13 @@ function selectMode(mode) {
   loadNextQuestion();
 }
 
+
+// ── Auth button listeners ─────────────────────────────────────────────────────
+document.getElementById('btn-google-signin').addEventListener('click', signInGoogle);
+document.getElementById('btn-guest-play').addEventListener('click', function() {
+  isGuest = true;
+  finishAuth();
+});
 
 // ── Auto-start auth (no splash on game.html) ─────────────────────────────────
 (function() {
