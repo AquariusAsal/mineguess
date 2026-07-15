@@ -8727,7 +8727,7 @@ function initFirebase() {
   } catch(e) { console.warn('Firebase init:', e); return false; }
 }
 
-async async function signInGoogle() {
+async function signInGoogle() {
   if (!fbAuth) { showToast('Firebase nicht konfiguriert'); return; }
   try {
     const provider = new firebase.auth.GoogleAuthProvider();
