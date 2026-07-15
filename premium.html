@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MineGuess Premium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0c0c0c;
+  --bg1: #111111;
+  --bg2: #161616;
+  --border: #222222;
+  --border2: #2a2a2a;
+  --text: #f0f0f0;
+  --muted: #666;
+  --green: #22c55e;
+  --yellow: #eab308;
+  --gold: #f59e0b;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px;
+  height: 56px;
+  background: rgba(12,12,12,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none; color: var(--text);
+  font-size: 1.1rem; font-weight: 700;
+}
+.nav-logo-icon {
+  width: 30px; height: 30px; border-radius: 7px;
+  background: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 12px rgba(34,197,94,0.3);
+}
+.nav-logo-icon svg { width: 18px; height: 18px; }
+.nav-back {
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg1);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+}
+.nav-back:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── HERO ── */
+.hero {
+  text-align: center;
+  padding: 80px 24px 60px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.premium-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(234,179,8,0.1);
+  border: 1px solid rgba(234,179,8,0.3);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+}
+.hero h1 span { color: var(--gold); }
+.hero p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto 40px;
+}
+
+/* ── PRICING ── */
+.pricing-section {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 60px;
+}
+.plan {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.plan:hover { transform: translateY(-3px); border-color: var(--border2); }
+.plan.featured {
+  border-color: rgba(234,179,8,0.4);
+  background: linear-gradient(160deg, rgba(234,179,8,0.06) 0%, var(--bg1) 50%);
+}
+.plan.featured:hover { border-color: rgba(234,179,8,0.6); }
+.plan-badge {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--gold);
+  color: #000;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.plan-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.plan-price {
+  font-family: 'Space Mono', monospace;
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.plan-price span { font-size: 1rem; color: var(--muted); }
+.plan-period { font-size: 0.8rem; color: var(--muted); margin-bottom: 20px; }
+.plan-divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.plan-features li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.9rem; color: var(--muted);
+}
+.plan-features li .check {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.65rem; color: var(--green);
+  margin-top: 1px;
+}
+.plan-features li.gold .check {
+  background: rgba(234,179,8,0.12);
+  border-color: rgba(234,179,8,0.3);
+  color: var(--gold);
+}
+.plan-features li.active { color: var(--text); }
+.plan-features li .x {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.6rem; color: var(--muted);
+  margin-top: 1px;
+}
+.btn-plan {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  display: block;
+  text-decoration: none;
+}
+.btn-plan-free {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-plan-free:hover { border-color: var(--border2); color: var(--text); }
+.btn-plan-premium {
+  background: var(--gold);
+  border: 1px solid var(--gold);
+  color: #000;
+  box-shadow: 0 0 24px rgba(234,179,8,0.25);
+}
+.btn-plan-premium:hover {
+  background: #fbbf24;
+  box-shadow: 0 0 36px rgba(234,179,8,0.4);
+  transform: translateY(-1px);
+}
+
+/* ── FEATURES GRID ── */
+.features-heading {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 32px;
+  color: var(--text);
+}
+.features-heading span { color: var(--gold); }
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 60px;
+}
+.feat-card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+.feat-card:hover { border-color: rgba(234,179,8,0.3); }
+.feat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+.feat-card h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+.feat-card p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+
+/* ── FAQ ── */
+.faq-section {
+  max-width: 600px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+}
+.faq-title {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+}
+.faq-item {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 0;
+}
+.faq-q {
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center;
+  color: var(--text);
+}
+.faq-q .arrow { color: var(--muted); transition: transform 0.2s; font-size: 0.8rem; }
+.faq-item.open .arrow { transform: rotate(180deg); }
+.faq-a {
+  font-size: 0.87rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s;
+}
+.faq-item.open .faq-a { max-height: 200px; padding-top: 10px; }
+
+/* ── CTA ── */
+.cta-section {
+  text-align: center;
+  padding: 60px 24px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, transparent, rgba(234,179,8,0.03));
+}
+.cta-section h2 { font-size: 1.8rem; font-weight: 900; margin-bottom: 12px; letter-spacing: -0.02em; }
+.cta-section h2 span { color: var(--gold); }
+.cta-section p { color: var(--muted); margin-bottom: 28px; }
+.btn-cta {
+  display: inline-block;
+  padding: 15px 36px;
+  background: var(--gold);
+  color: #000;
+  font-weight: 800;
+  font-size: 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 0 30px rgba(234,179,8,0.3);
+  transition: all 0.2s;
+}
+.btn-cta:hover { background: #fbbf24; transform: translateY(-2px); box-shadow: 0 0 50px rgba(234,179,8,0.45); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">
+    <div class="nav-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <path d="M3 3 L9 9 L7 11 L1 5 Z" fill="rgba(0,0,0,0.4)"/>
+        <rect x="8.5" y="8.5" width="9" height="2.5" rx="1" transform="rotate(45 8.5 8.5)" fill="rgba(0,0,0,0.35)"/>
+        <text x="10" y="14.5" text-anchor="middle" font-size="12" font-weight="900" font-family="Arial,sans-serif" fill="#000">?</text>
+      </svg>
+    </div>
+    Mine<span style="color:var(--green)">Guess</span>
+  </a>
+  <a class="nav-back" href="/game.html">← Zurück zum Spiel</a>
+</nav>
+
+<div class="hero">
+  <div class="premium-badge">⭐ Premium</div>
+  <h1>Das ultimative<br><span>Minecraft-Quiz</span><br>Erlebnis</h1>
+  <p>Schalte exklusive Features frei, sammle mehr XP und zeige allen, wer der wahre Minecraft-Experte ist.</p>
+</div>
+
+<div class="pricing-section">
+  <div class="pricing-grid">
+
+    <!-- Free -->
+    <div class="plan">
+      <div class="plan-name">Kostenlos</div>
+      <div class="plan-price">0€<span></span></div>
+      <div class="plan-period">Für immer gratis</div>
+      <hr class="plan-divider"/>
+      <ul class="plan-features">
+        <li class="active"><span class="check">✓</span> Endlosmodus</li>
+        <li class="active"><span class="check">✓</span> Wettkampfmodus</li>
+        <li class="active"><span class="check">✓</span> Leaderboard-Zugang</li>
+        <li class="active"><span class="check">✓</span> Multiplayer (bis 4 Spieler)</li>
+        <li><span class="x">✕</span> XP-Boost (+50%)</li>
+        <li><span class="x">✕</span> Eigene Kategorien im Multiplayer</li>
+        <li><span class="x">✕</span> Premium-Badge</li>
+        <li><span class="x">✕</span> Statistik-Details</li>
+      </ul>
+      <a href="/game.html" class="btn-plan btn-plan-free">Kostenlos spielen</a>
+    </div>
+
+    <!-- Premium -->
+    <div class="plan featured">
+      <div class="plan-badge">Beliebteste Wahl</div>
+      <div class="plan-name">Premium</div>
+      <div class="plan-price">5€<span>/Monat</span></div>
+      <div class="plan-period">Jederzeit kündbar</div>
+      <hr class="plan-divider"/>
+      <ul class="plan-features">
+        <li class="active"><span class="check">✓</span> Alles aus Kostenlos</li>
+        <li class="active gold"><span class="check">⭐</span> XP-Boost +50% auf alle Punkte</li>
+        <li class="active gold"><span class="check">⭐</span> Eigene Kategorien im Multiplayer</li>
+        <li class="active gold"><span class="check">⭐</span> Premium ⭐ Badge im Profil</li>
+        <li class="active gold"><span class="check">⭐</span> Detaillierte Statistiken & Charts</li>
+        <li class="active gold"><span class="check">⭐</span> Früher Zugang zu neuen Features</li>
+        <li class="active gold"><span class="check">⭐</span> Kein Werbe-Banner (future)</li>
+        <li class="active gold"><span class="check">⭐</span> Discord-Premium-Rolle</li>
+      </ul>
+      <a href="#checkout" class="btn-plan btn-plan-premium" id="btn-checkout">⭐ Premium holen — 5€/Monat</a>
+    </div>
+
+  </div>
+
+  <!-- Features Grid -->
+  <h2 class="features-heading">Was du mit <span>Premium</span> bekommst</h2>
+  <div class="features-grid">
+    <div class="feat-card">
+      <div class="feat-icon">⚡</div>
+      <h3>XP-Boost +50%</h3>
+      <p>Jede richtige Antwort bringt 1.5× so viele Punkte. Climb faster, rank higher.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🎯</div>
+      <h3>Custom Kategorien</h3>
+      <p>Erstelle Multiplayer-Räume mit nur Redstone, nur Mobs, oder deiner Lieblingsmischung.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">⭐</div>
+      <h3>Premium Badge</h3>
+      <p>Zeige deinen Status im Leaderboard und beim Multiplayer mit dem goldenen ⭐ Badge.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">📊</div>
+      <h3>Detailstatistiken</h3>
+      <p>Sieh genau wo du Schwächen hast — nach Kategorie, Fragetyp und Zeitraum.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">🚀</div>
+      <h3>Early Access</h3>
+      <p>Neue Modi und Features testen, bevor sie für alle ausgerollt werden.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">💬</div>
+      <h3>Discord-Rolle</h3>
+      <p>Exklusiver Zugang zum Premium-Channel — Feedback, Sneak Peeks, direkte Kommunikation.</p>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+</div>
+
+<div class="faq-section">
+  <div class="faq-title">Häufige Fragen</div>
+
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Wie funktioniert die Bezahlung? <span class="arrow">▾</span></div>
+    <div class="faq-a">Die Bezahlung läuft sicher über Stripe. Du kannst mit Kreditkarte, PayPal oder SEPA-Lastschrift zahlen. Deine Daten werden nie auf unseren Servern gespeichert.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Kann ich jederzeit kündigen? <span class="arrow">▾</span></div>
+    <div class="faq-a">Ja, du kannst jederzeit kündigen — ohne Angabe von Gründen. Dein Premium-Zugang bleibt bis zum Ende der bezahlten Periode aktiv.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Wie bekomme ich den XP-Boost? <span class="arrow">▾</span></div>
+    <div class="faq-a">Nach dem Kauf logge dich in MineGuess ein. Der Boost wird automatisch auf dein Konto angewendet — kein Code, kein Setup nötig.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q" onclick="toggleFaq(this)">Gibt es eine Testversion? <span class="arrow">▾</span></div>
+    <div class="faq-a">Das kostenlose Spiel ist bereits voll funktionsfähig. Premium ist für alle, die das Maximum aus MineGuess rausholen wollen.</div>
+  </div>
+</div>
+
+<div class="cta-section">
+  <h2>Bereit für <span>Premium</span>?</h2>
+  <p>Starte jetzt und sammle 1.5× mehr XP ab der ersten Runde.</p>
+  <a href="#checkout" class="btn-cta" id="btn-cta-bottom">⭐ Jetzt für 5€/Monat starten</a>
+</div>
+
+<!-- Simple checkout modal -->
+<div id="checkout-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:var(--bg1);border:1px solid rgba(234,179,8,0.3);border-radius:16px;padding:32px;max-width:400px;width:90%;text-align:center;">
+    <div style="font-size:2rem;margin-bottom:12px;">⭐</div>
+    <h2 style="font-size:1.3rem;font-weight:800;margin-bottom:8px;">Premium aktivieren</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:24px;">Bezahlung über Stripe — sicher und verschlüsselt</p>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;text-align:left;">
+      <div style="display:flex;justify-content:space-between;font-size:0.9rem;margin-bottom:8px;">
+        <span>MineGuess Premium</span><span style="font-family:'Space Mono',monospace;color:var(--gold);">5,00€</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--muted);">
+        <span>Abonnement / Monat</span><span>jederzeit kündbar</span>
+      </div>
+    </div>
+    <a href="https://buy.stripe.com/placeholder" target="_blank"
+       style="display:block;width:100%;padding:14px;background:var(--gold);color:#000;font-weight:800;border-radius:10px;text-decoration:none;margin-bottom:12px;transition:background 0.2s;"
+       onmouseover="this.style.background='#fbbf24'" onmouseout="this.style.background='var(--gold)'">
+      Jetzt bezahlen →
+    </a>
+    <button onclick="document.getElementById('checkout-modal').style.display='none'"
+            style="background:none;border:none;color:var(--muted);font-size:0.85rem;cursor:pointer;padding:8px;">
+      Abbrechen
+    </button>
+  </div>
+</div>
+
+<script>
+function toggleFaq(el) {
+  const item = el.closest('.faq-item');
+  item.classList.toggle('open');
+}
+
+// Checkout modal
+document.getElementById('btn-checkout').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('checkout-modal').style.display = 'flex';
+});
+document.getElementById('btn-cta-bottom').addEventListener('click', e => {
+  e.preventDefault();
+  document.getElementById('checkout-modal').style.display = 'flex';
+});
+document.getElementById('checkout-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.style.display = 'none';
+});
+</script>
+</body>
+</html>
