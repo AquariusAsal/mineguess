@@ -217,14 +217,36 @@
 [data-theme="light"] body { background: var(--bg); }
 [data-theme="light"] header { background: rgba(244,244,245,0.92) !important; }
 [data-theme="light"] .mp-card { background: #fff; border-color: #e4e4e7; }
+
+/* ── Countdown Overlay ──────────────────────────────────────────────── */
+#mp-countdown{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:1000;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#mp-countdown.active{display:flex}
+#mp-cd-num{font-family:'Space Mono',monospace;font-size:clamp(5rem,22vw,9rem);font-weight:700;line-height:1;color:var(--green);will-change:transform,opacity}
+#mp-cd-num.cd-pop{animation:cdPop2 0.55s cubic-bezier(0.22,1,0.36,1) forwards}
+#mp-cd-num.cd-go{color:#fff;animation:cdGo2 0.6s cubic-bezier(0.22,1,0.36,1) forwards}
+#mp-cd-num.cd-out{animation:cdOut2 0.3s ease-in forwards}
+@keyframes cdPop2{0%{transform:scale(0.3) rotate(-8deg);opacity:0}60%{transform:scale(1.15) rotate(2deg);opacity:1}100%{transform:scale(1) rotate(0);opacity:1}}
+@keyframes cdGo2{0%{transform:scale(0.5);opacity:0}50%{transform:scale(1.3);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes cdOut2{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
+#mp-cd-lbl{font-size:1rem;color:var(--muted);letter-spacing:3px;text-transform:uppercase}
+/* ── Player avatars ────────────────────────────────────────────────── */
+.player-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#16a34a,#0f7a3a);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.player-row.is-me{border-color:rgba(74,222,128,0.35)}
+/* ── Round counter ─────────────────────────────────────────────────── */
+.round-counter{display:inline-flex;align-items:center;gap:6px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:8px;padding:4px 12px;font-size:0.78rem;font-weight:700;color:var(--yellow);letter-spacing:0.5px}
+/* ── Keyboard hint ─────────────────────────────────────────────────── */
+.keyboard-hint{font-size:0.72rem;color:var(--muted);margin-top:6px}
+kbd{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;padding:1px 5px;font-family:'Space Mono',monospace;font-size:0.7rem}
+[data-theme="light"] #mp-countdown{background:rgba(255,255,255,0.97)}
+[data-theme="light"] #mp-cd-num.cd-go{color:#111}
 </style>
 </head>
 <body>
 
 <header>
-  <h1><span class="logo-icon" style="background:none;box-shadow:none;padding:0;width:28px;height:28px;display:inline-flex">
+  <h1><a href="game.html" style="display:inline-flex;align-items:center;gap:8px;color:inherit;text-decoration:none;"><span class="logo-icon" style="background:none;box-shadow:none;padding:0;width:28px;height:28px;display:inline-flex">
       <img src="logo-transparent.png" alt="" style="width:28px;height:28px;object-fit:contain;" onerror="this.style.display='none'"/>
-    </span> Mine<span style="color:rgba(74,222,128,0.7)">Guess</span> <span class="beta-chip">BETA</span></h1>
+    </span> Mine<span style="color:rgba(74,222,128,0.7)">Guess</span></a> <span class="beta-chip">BETA</span></h1>
   <div class="header-right">
     <span class="room-status" id="room-status">Multiplayer</span>
     <a href="index.html" class="btn-back">← Solo</a>
@@ -333,7 +355,10 @@
 
   <!-- Question Card -->
   <div class="card" style="margin-top:14px">
-    <span class="category-pill" id="q-category">Kategorie</span>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+      <span class="category-pill" id="q-category" style="margin-bottom:0">Kategorie</span>
+      <span class="round-counter" id="round-counter" style="display:none">Runde <span id="round-num">1</span>/10</span>
+    </div>
     <div id="question-text">Warte auf Frage…</div>
 
     <!-- Timer -->
@@ -348,7 +373,8 @@
     <!-- BUZZER BUTTON -->
     <div id="buzzer-area">
       <button class="buzzer-btn" id="buzzer-btn" onclick="pressBuzzer()">BUZZ!</button>
-      <div class="buzzer-hint">Drücke zuerst den Buzzer um zu antworten!</div>
+      <div class="buzzer-hint">Drücke den Buzzer um zu antworten!</div>
+      <div class="keyboard-hint">Tipp: <kbd>Space</kbd> = Buzz</div>
     </div>
 
     <!-- Status -->
@@ -398,6 +424,12 @@
   <div class="podium-wrap" id="podium-wrap"></div>
   <div class="ceremony-other" id="ceremony-other"></div>
   <button class="btn-play-again" onclick="playAgain()">▶ Neues Spiel</button>
+</div>
+
+<!-- ── Countdown Overlay ──────────────────────────────────────────────────── -->
+<div id="mp-countdown">
+  <div id="mp-cd-num">3</div>
+  <div id="mp-cd-lbl">SPIEL STARTET</div>
 </div>
 
 <div id="toast"></div>
@@ -582,11 +614,14 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
   lobbyList.innerHTML = '';
   players.forEach(p => {
     const row = document.createElement('div');
-    row.className = 'player-row';
+    row.className = 'player-row' + (p.id===myId ? ' is-me' : '');
+    const initials = p.name.slice(0,2).toUpperCase();
     const readyDot = p.ready
-      ? '<span style="color:var(--green);font-weight:700">✓</span>'
+      ? '<span style="color:var(--green);font-weight:700;font-size:1.1rem">✓</span>'
       : '<span style="color:var(--muted)">○</span>';
-    row.innerHTML = `<span class="player-name">${p.id===myId?'⭐ ':''}${p.name}</span>
+    const youLabel = p.id===myId ? '<span style="font-size:0.7rem;color:var(--green);margin-left:4px">(Du)</span>' : '';
+    row.innerHTML = `<div class="player-avatar">${initials}</div>
+                     <span class="player-name" style="flex:1">${p.name}${youLabel}</span>
                      <span style="display:flex;align-items:center;gap:8px">
                        ${readyDot}
                        <span class="player-score">${p.score} Pkt.</span>
@@ -618,40 +653,82 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
   });
 });
 
+// ── Countdown (shown before first question) ──────────────────────────────────
+function showMpCountdown(callback) {
+  const overlay = el('mp-countdown');
+  const numEl   = el('mp-cd-num');
+  const lblEl   = el('mp-cd-lbl');
+  if (!overlay) { callback(); return; }
+  overlay.classList.add('active');
+  const steps  = ['3','2','1','GO!'];
+  const labels = ['Bereit machen…','Gleich los…','Jetzt!','Viel Spaß! 🎮'];
+  let i = 0;
+  function tick() {
+    numEl.className = '';
+    void numEl.offsetWidth;
+    numEl.textContent = steps[i];
+    lblEl.textContent  = labels[i];
+    numEl.className   = i < 3 ? 'cd-pop' : 'cd-go';
+    if (i < 3) { i++; setTimeout(tick, 850); }
+    else {
+      setTimeout(() => {
+        numEl.className = 'cd-out';
+        setTimeout(() => { overlay.classList.remove('active'); callback(); }, 300);
+      }, 600);
+    }
+  }
+  tick();
+}
+
 // ── Question ──────────────────────────────────────────────────────────────────
+let mpGameStarted = false;
+
 socket.on('question', (q) => {
   currentQ = q; myPhase = 'buzzer'; lockedOutIds = [];
   myReady = false;
   const btn = el('btn-ready');
   if (btn) { btn.textContent = '✓ Bereit'; btn.style.background='var(--green)'; btn.style.opacity='1'; }
 
-  hide('lobby-screen');
-  el('result-panel').classList.remove('show');
-  show('game-screen');
-  el('live-scores').style.display = '';
+  const isFirst = q.roundNum === 1 && !mpGameStarted;
+  mpGameStarted = true;
 
-  el('q-category').textContent   = q.category;
-  el('question-text').textContent = `#${q.roundNum}: ${q.question}`;
+  function displayQuestion() {
+    hide('lobby-screen');
+    el('result-panel').classList.remove('show');
+    show('game-screen');
+    el('live-scores').style.display = '';
 
-  // Reset UI
-  el('feedback-box').className   = 'feedback-box';
-  el('feedback-box').innerHTML   = '';
-  el('buzz-status').className    = 'buzz-status';
-  el('buzz-status').innerHTML    = '';
-  el('answer-area').classList.remove('show');
-  el('answer-input-inner').innerHTML = '';
+    // Round counter
+    const rc = el('round-counter'); const rn = el('round-num');
+    if (rc) rc.style.display = '';
+    if (rn) rn.textContent = q.roundNum;
 
-  // Show buzzer
-  el('buzzer-area').classList.add('show');
-  el('buzzer-btn').disabled = false;
-  el('buzzer-btn').textContent = 'BUZZ!';
+    el('q-category').textContent    = q.category;
+    el('question-text').textContent = q.question;
 
-  // Timer
-  el('timer-num').textContent  = 30;
-  el('timer-num').className    = 'timer-num buzzer-phase';
-  el('timer-bar').style.width  = '100%';
-  el('timer-bar').className    = 'timer-bar buzzer';
-  el('timer-label').textContent = 'zum Buzzern';
+    // Reset UI
+    el('feedback-box').className   = 'feedback-box';
+    el('feedback-box').innerHTML   = '';
+    el('buzz-status').className    = 'buzz-status';
+    el('buzz-status').innerHTML    = '';
+    el('answer-area').classList.remove('show');
+    el('answer-input-inner').innerHTML = '';
+
+    // Show buzzer
+    el('buzzer-area').classList.add('show');
+    el('buzzer-btn').disabled = false;
+    el('buzzer-btn').textContent = 'BUZZ!';
+
+    // Timer
+    el('timer-num').textContent   = 30;
+    el('timer-num').className     = 'timer-num buzzer-phase';
+    el('timer-bar').style.width   = '100%';
+    el('timer-bar').className     = 'timer-bar buzzer';
+    el('timer-label').textContent = 'zum Buzzern';
+  }
+
+  if (isFirst) { showMpCountdown(displayQuestion); }
+  else { displayQuestion(); }
 });
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
@@ -677,6 +754,15 @@ function pressBuzzer() {
   if (lockedOutIds.includes(myId)) return;
   socket.emit('buzz');
 }
+
+// Space bar to buzz
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+    e.preventDefault();
+    const area = el('buzzer-area');
+    if (area && area.classList.contains('show')) pressBuzzer();
+  }
+});
 
 socket.on('buzzer_won', ({ playerId, playerName }) => {
   el('buzzer-area').classList.remove('show');
@@ -842,6 +928,7 @@ socket.on('game_over', ({ scores, rounds }) => {
 function continueGame() {
   el('gameover-overlay').classList.remove('show');
   socket.emit('continue_game');
+  mpGameStarted = false; // reset countdown for next game
   // Go back to lobby so everyone can press Ready again
   hide('game-screen');
   show('lobby-screen');
