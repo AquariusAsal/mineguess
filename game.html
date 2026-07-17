@@ -1279,6 +1279,111 @@ main {
 .cat-stat-bar-wrap{width:90px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .cat-stat-bar-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
 .cat-stat-pct{font-size:.75rem;color:var(--muted);font-family:'Space Mono',monospace;width:36px;text-align:right}
+
+/* ══════════════════ MOBILE RESPONSIVE ══════════════════ */
+@media (max-width: 640px) {
+  /* Header */
+  header { padding: 0 12px; gap: 6px; height: 48px; }
+  header h1 { font-size: 0.85rem; gap: 5px; }
+  header h1 .logo-icon, header h1 img { width: 24px !important; height: 24px !important; }
+  .header-stats { gap: 3px; }
+  .stat { padding: 4px 7px; font-size: 0.6rem; gap: 4px; }
+  .stat span:first-child { font-size: 0.8rem; }
+  /* Hide less-critical stats on mobile */
+  .stat:nth-child(3) { display: none; }
+  .btn-lb-header { padding: 5px 8px; font-size: 0.72rem; }
+  .sound-btn { padding: 4px 7px; font-size: 0.8rem; }
+  #user-menu { right: 8px; min-width: 140px; }
+
+  /* Mode screen */
+  #mode-screen { padding: 16px 14px; max-width: 100%; }
+  .mode-welcome { font-size: 0.8rem; }
+  .mode-title { font-size: 1.2rem; margin-bottom: 12px; }
+  .mode-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mode-card { padding: 14px 10px; }
+  .mode-icon { font-size: 1.6rem; }
+  .mode-name { font-size: 0.85rem; }
+  .mode-desc { font-size: 0.7rem; }
+  .mode-tag { font-size: 0.6rem; padding: 3px 7px; }
+
+  /* Category screen */
+  #cat-screen { padding: 16px 14px; }
+  .cat-chips-grid { gap: 6px; }
+  .cat-chip { font-size: 0.75rem; padding: 6px 10px; }
+
+  /* Game header/session bar */
+  .session-score { gap: 6px; padding: 8px 14px; flex-wrap: wrap; justify-content: center; }
+  .sc { min-width: 56px; }
+  .sc span:first-child { font-size: 1rem; }
+  .sc span:last-child { font-size: 0.55rem; }
+
+  /* Question card */
+  main { padding: 12px 14px; gap: 10px; }
+  .question-card { font-size: 1rem; padding: 16px; border-radius: 14px; }
+
+  /* Attempt dots */
+  .attempt-dot { width: 10px; height: 10px; }
+
+  /* Input area */
+  .answer-input { font-size: 0.95rem; padding: 13px 14px; }
+  .submit-btn { padding: 13px; font-size: 0.95rem; }
+  .autocomplete-list { max-height: 200px; }
+  .ac-item { padding: 10px 12px; font-size: 0.85rem; }
+
+  /* Hint area */
+  .hint-area { gap: 6px; }
+  .btn-hint { padding: 9px 14px; font-size: 0.8rem; }
+  .joker-token { font-size: 1rem; }
+
+  /* Result panel */
+  .result-panel { padding: 14px; gap: 8px; }
+  .result-title { font-size: 1.1rem; }
+  .pts-earned { font-size: 1rem; }
+  .result-answer { font-size: 0.85rem; }
+  .funfact-box { padding: 10px 12px; font-size: 0.8rem; }
+
+  /* Timer */
+  .timer-ring { width: 46px; height: 46px; }
+  .timer-ring svg { width: 46px; height: 46px; }
+  .timer-num { font-size: 0.85rem; }
+
+  /* Comp bar */
+  #comp-bar { padding: 8px 14px; gap: 8px; font-size: 0.65rem; }
+  .cb-item span:first-child { font-size: 1rem; }
+
+  /* Category pill */
+  .category-pill { font-size: 0.65rem; padding: 3px 8px; }
+
+  /* Leaderboard */
+  .lb-card { padding: 16px; max-width: 100%; margin: 8px; border-radius: 16px; }
+  .lb-row { padding: 8px 10px; font-size: 0.78rem; }
+
+  /* Comp-end / blitz-end */
+  .comp-end-card, .blitz-card, .daily-card { padding: 20px 16px; max-width: 100%; margin: 8px; }
+  .ce-score, .blitz-big { font-size: 2.5rem; }
+  .ce-grade { font-size: 3.5rem; }
+
+  /* Toast */
+  #toast { max-width: calc(100% - 32px); text-align: center; font-size: 0.82rem; }
+
+  /* Blitz timer */
+  #blitz-secs-display { font-size: 0.9rem; }
+  #blitz-timer-bar { height: 4px; }
+
+  /* Badge/stats modals */
+  .badge-card, .stats-card, .report-card { margin: 8px; max-width: calc(100% - 16px); }
+  .badge-grid { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+
+  /* Streak badge */
+  #comp-streak-badge { top: 56px; right: 10px; font-size: 0.72rem; padding: 5px 10px; }
+}
+
+@media (max-width: 380px) {
+  .mode-grid { grid-template-columns: 1fr; }
+  .mode-card { padding: 12px; }
+  header h1 span { display: none; } /* hide "Guess" text, keep logo only */
+  .stat:nth-child(2) { display: none; } /* hide BEST stat too */
+}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -1649,10 +1754,51 @@ const ENTITIES = [
 ];
 
 // ── Minecraft Wiki icon helper ─────────────────────────────────────────────────
+// Known mob names (prefer sprite sheet images over Invicon)
+const MOB_NAMES = new Set([
+  'Zombie','Skeleton','Skelett','Creeper','Spider','Spinne','Enderman',
+  'Blaze','Lohe','Ghast','Witch','Hexe','Slime','Guardian','Wächter',
+  'Elder Guardian','Shulker','Wither','Bat','Fledermaus','Cat','Katze',
+  'Chicken','Huhn','Cow','Kuh','Donkey','Esel','Fox','Fuchs','Horse','Pferd',
+  'Llama','Lama','Mule','Maulesel','Ocelot','Ozelot','Panda','Parrot',
+  'Papagei','Pig','Schwein','Polar Bear','Eisbär','Rabbit','Kaninchen',
+  'Sheep','Schaf','Squid','Tintenfisch','Glow Squid','Turtle','Schildkröte',
+  'Wolf','Bee','Biene','Dolphin','Delfin','Drowned','Ertrunkener','Phantom',
+  'Ender Dragon','Ender-Drache','Endermite','Iron Golem','Eisengolem',
+  'Snow Golem','Schneegolem','Villager','Dorfbewohner','Wandering Trader',
+  'Warden','Frog','Frosch','Allay','Vex','Axolotl','Piglin','Hoglin',
+  'Zoglin','Strider','Lurchstrider','Ravager','Verwüster','Pillager',
+  'Evoker','Beschwörer','Vindicator','Bestraferer','Silverfish',
+  'Silberfischchen','Magma Cube','Magmawürfel','Zombie Piglin',
+  'Witherskelett','Witch','Witch','Mooshroom','Pilzkuh','Hüllenträger',
+  'Sniffer','Camel','Kamel','Breeze','Bogged'
+]);
+
 function getMinecraftIcon(name) {
-  // Try Invicon (inventory icon) format first — works for items & blocks
   const n = name.trim().replace(/ /g,'_');
+  // Mobs: use sprite image, not inventory icon
+  if (MOB_NAMES.has(name.trim())) {
+    return `https://minecraft.wiki/images/${n}.png`;
+  }
+  // Items & blocks: Invicon format
   return `https://minecraft.wiki/images/Invicon_${n}.png`;
+}
+
+function setIconWithFallback(imgEl, name) {
+  const n = name.trim().replace(/ /g, '_');
+  const urls = MOB_NAMES.has(name.trim())
+    ? [`https://minecraft.wiki/images/${n}.png`,
+       `https://minecraft.wiki/images/Invicon_${n}.png`]
+    : [`https://minecraft.wiki/images/Invicon_${n}.png`,
+       `https://minecraft.wiki/images/${n}.png`,
+       `https://minecraft.wiki/images/${n}_JE1.png`];
+  let idx = 0;
+  imgEl.src = urls[idx];
+  imgEl.onerror = function() {
+    idx++;
+    if (idx < urls.length) { this.src = urls[idx]; }
+    else { this.style.display = 'none'; }
+  };
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -1845,17 +1991,33 @@ function showResult(won, ptsThisQuestion, speedBonus) {
     ptsEl.className = 'pts-earned';ptsEl.style.color='var(--muted)';
   }
 
-  const answerStr = question.type === 'number'
-    ? `${question.answer}${question.unit ? ' ' + question.unit : ''}`
-    : question.answer;
+  let answerStr;
+  if (question.type === 'number') {
+    answerStr = `${question.answer}${question.unit ? ' ' + question.unit : ''}`;
+  } else {
+    const enName = getEnglishName(question.answer);
+    answerStr = question.answer + (enName ? ` <span style="opacity:.65;font-size:.88em">(${enName})</span>` : '');
+  }
 
-  // Show answer icon in result for entity questions
-  const resultIconHtml = question.type === 'entity'
-    ? `<img src="${getMinecraftIcon(question.answer)}" width="24" height="24" style="image-rendering:pixelated;vertical-align:middle;margin-right:6px" onerror="this.style.display='none'">`
-    : '';
-  document.getElementById('result-answer').innerHTML =
-    won ? `Antwort: ${resultIconHtml}<strong>${answerStr}</strong>`
-        : `Richtige Antwort: ${resultIconHtml}<strong>${answerStr}</strong>`;
+  // Show answer icon in result for entity/block questions
+  let resultIconHtml = '';
+  if (question.type === 'entity' || question.category === 'Blöcke' || question.category === 'Items') {
+    const img = new Image();
+    img.width = 28; img.height = 28;
+    img.style.cssText = 'image-rendering:pixelated;vertical-align:middle;margin-right:6px;border-radius:4px';
+    setIconWithFallback(img, question.answer);
+    const iconWrap = document.createElement('span');
+    iconWrap.appendChild(img);
+    // We use a placeholder span and replace later
+    resultIconHtml = `<span id="_res_icon"></span>`;
+    setTimeout(() => {
+      const slot = document.getElementById('_res_icon');
+      if (slot) slot.replaceWith(img);
+    }, 0);
+  }
+
+  const raEl = document.getElementById('result-answer');
+  raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
   document.getElementById('funfact-text').textContent = question.funFact;
   document.getElementById('input-area').style.display = 'none';
@@ -2035,22 +2197,35 @@ function buildInput() {
       currentMatches = [];
       if (val.length < 1) return;
 
-      currentMatches = ENTITIES.filter(e => e.toLowerCase().includes(val)).slice(0, 10);
+      // Use crafting entities for crafting questions, regular entities otherwise
+      const isCrafting = question && question.category === 'Crafting';
+      const pool = isCrafting
+        ? [...(window.CRAFTING_ENTITIES || []), ...ENTITIES]
+        : ENTITIES;
+      currentMatches = pool.filter(e => e.toLowerCase().includes(val)).slice(0, 10);
       currentMatches.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'ac-item';
-        const iconUrl = getMinecraftIcon(m);
         const img = document.createElement('img');
-        img.src   = iconUrl;
-        img.alt   = '';
-        img.onerror = function() { this.style.display='none'; };
+        img.alt = '';
+        img.style.imageRendering = 'pixelated';
+        img.width = 24; img.height = 24;
+        // Only show icon for non-recipe entries
+        if (!m.includes('+') && !m.match(/^\d/)) {
+          setIconWithFallback(img, m);
+        } else {
+          img.style.display = 'none';
+        }
         const label = document.createElement('span');
-        label.textContent = m;
+        // Add English name in brackets for known DE terms
+        const enName = getEnglishName(m);
+        label.textContent = m + (enName ? ' (' + enName + ')' : '');
+        label.dataset.value = m; // keep raw value for submission
         item.appendChild(img);
         item.appendChild(label);
         item.addEventListener('mousedown', e => {
           e.preventDefault();
-          inp.value = m;
+          inp.value = label.dataset.value || m; // use raw DE/EN name, not "Schaf (Sheep)"
           droplist.innerHTML = '';
           submitGuess();
         });
@@ -2072,7 +2247,8 @@ function buildInput() {
         items.forEach((el,i) => el.classList.toggle('selected', i === activeIdx));
       } else if (e.key === 'Enter') {
         if (activeIdx >= 0 && items[activeIdx]) {
-          inp.value = items[activeIdx].querySelector('span').textContent;
+          const spanEl = items[activeIdx].querySelector('span');
+          inp.value = spanEl.dataset.value || spanEl.textContent.split(' (')[0];
           droplist.innerHTML = '';
           submitGuess();
         } else {
@@ -9213,15 +9389,54 @@ async function init() {
   questionOrder = [...Array(questions.length).keys()].sort(() => Math.random() - 0.5);
   currentIndex = 0;
 
-  // Build dynamic ENTITIES from all acceptedAnswers (both languages)
-  const entitySet = new Set(ENTITIES);
-  allQuestions.filter(q => q.type === 'entity').forEach(q => {
-    (q.acceptedAnswers || [q.answer]).forEach(a => entitySet.add(a));
-    entitySet.add(q.answer);
+  // Build dynamic ENTITIES and separate crafting answers
+  const entitySet = new Set();
+  const craftingSet = new Set();
+
+  allQuestions.forEach(q => {
+    if (q.category === 'Crafting') {
+      // Crafting answers (recipe strings) go into separate set
+      (q.acceptedAnswers || [q.answer]).forEach(a => craftingSet.add(a));
+    } else if (q.type === 'entity') {
+      (q.acceptedAnswers || [q.answer]).forEach(a => entitySet.add(a));
+      entitySet.add(q.answer);
+    }
   });
+  // Add base ENTITIES
+  ENTITIES.forEach(e => entitySet.add(e));
   ENTITIES.length = 0;
   [...entitySet].sort().forEach(e => ENTITIES.push(e));
+
+  // Build DE→EN map from question data
+  window.DE_EN_MAP = {};
+  allQuestions.forEach(q => {
+    if (q.type === 'number') return;
+    const ans = q.acceptedAnswers || [];
+    // acceptedAnswers pattern: [DE, de_lower, EN, en_lower]  (or just DE/de)
+    if (ans.length >= 3) {
+      const de = ans[0], en = ans[2];
+      if (de && en && de.toLowerCase() !== en.toLowerCase() && !/\d/.test(de)) {
+        window.DE_EN_MAP[de.toLowerCase()] = en;
+      }
+    }
+    // Also map answer directly if it has a different English form
+    if (q.answer) {
+      const de = q.answer;
+      const found = ans.find(a => a && a.toLowerCase() !== de.toLowerCase() && /^[A-Z]/.test(a) && !/[äöüÄÖÜ]/.test(a));
+      if (found && !/\d/.test(de)) window.DE_EN_MAP[de.toLowerCase()] = found;
+    }
+  });
+
+  // Build CRAFTING_ENTITIES (separate from main entities)
+  window.CRAFTING_ENTITIES = [...craftingSet].sort();
+
   // Game starts when user selects a mode via selectMode()
+}
+
+function getEnglishName(name) {
+  if (!name || !window.DE_EN_MAP) return null;
+  const en = window.DE_EN_MAP[name.toLowerCase()];
+  return (en && en !== name) ? en : null;
 }
 
 // ── Load next question ────────────────────────────────────────────────────────
@@ -9271,10 +9486,24 @@ function loadNextQuestion() {
   qEl.style.opacity = '0';
   qEl.style.transform = 'translateY(8px)';
 
-  // Hide icon during question (showing it would spoil entity answers)
+  // For entity questions: hide icon (would spoil answer)
+  // For block/item questions that show category texture: could show, but keep hidden for now
   const iconEl = document.getElementById('question-icon');
   iconEl.style.display = 'none';
   iconEl.innerHTML = '';
+  // Show category emoji as small decoration
+  const catEmojis = {
+    'Mobs':'🧟','Blöcke':'🧱','Items':'⚔','Crafting':'🛠','Redstone':'🔴',
+    'Verzauberungen':'✨','Tränke':'🧪','Dimensionen':'🌀','Biome':'🌲',
+    'Essen & Nahrung':'🍎','Erze & Ressourcen':'💎','Strukturen':'🏰',
+    'Gameplay':'🎮','Spielmechanik':'⚙','Geschichte & Updates':'📜',
+    'Weltgenerierung':'🗺','Hardcore-Wissen':'💀','Dorfbewohner':'👨‍🌾'
+  };
+  const catPill = document.getElementById('category-pill');
+  if (catPill && question.category) {
+    const emoji = catEmojis[question.category] || '';
+    catPill.textContent = (emoji ? emoji + ' ' : '') + question.category;
+  }
 
   qEl.textContent = question.question;
   qEl.style.opacity = '';
@@ -10359,10 +10588,4 @@ initBgCanvas();
   });
 })();
 
-// ── Service Worker registration (Offline support) ─────────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
-</script>
-</body>
-</html>
+// ── Service Worker
