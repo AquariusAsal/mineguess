@@ -1195,6 +1195,90 @@ main {
 .ce-pb-banner{font-size:.82rem;font-weight:700;color:var(--yellow);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:7px 14px;width:100%;text-align:center}
 .ce-speed-bonus{font-size:.8rem;color:var(--muted);margin-top:4px}
 [data-theme="light"] #comp-streak-badge{background:rgba(202,138,4,.12);border-color:rgba(202,138,4,.35);color:#92400e}
+
+/* ── Blitz Mode ─────────────────────────────────────────────────────────── */
+#blitz-end{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:24px}
+#blitz-end.show{display:flex}
+.blitz-card{background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+.blitz-icon{font-size:3.5rem;animation:popIn .4s ease}
+.blitz-title{font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700}
+.blitz-big{font-family:'Space Mono',monospace;font-size:3.5rem;font-weight:700;color:var(--green);line-height:1}
+.blitz-sub{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.blitz-stats{display:flex;gap:16px;justify-content:center}
+.blitz-stat{display:flex;flex-direction:column;gap:2px;align-items:center}
+.blitz-stat .v{font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;color:var(--text)}
+.blitz-stat .l{font-size:.65rem;color:var(--muted);font-weight:600;letter-spacing:.06em}
+.blitz-pb{font-size:.82rem;font-weight:700;color:var(--yellow);background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:7px 14px;width:100%;text-align:center;display:none}
+#blitz-timer-bar{height:5px;background:var(--border2);border-radius:3px;overflow:hidden;margin-bottom:4px}
+#blitz-timer-fill{height:100%;background:var(--green);width:100%;transition:width .5s linear}
+#blitz-secs-display{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;text-align:center;color:var(--green);transition:color .3s}
+#blitz-secs-display.warn{color:var(--yellow)}
+#blitz-secs-display.danger{color:#f87171;animation:pulse .5s ease infinite alternate}
+@keyframes pulse{to{opacity:.5}}
+
+/* ── Daily Mode ─────────────────────────────────────────────────────────── */
+#daily-end{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);backdrop-filter:blur(12px);align-items:center;justify-content:center;flex-direction:column;gap:16px;padding:24px}
+#daily-end.show{display:flex}
+.daily-card{background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
+.daily-title{font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700}
+.daily-streak-display{font-family:'Space Mono',monospace;font-size:3rem;font-weight:700;color:var(--yellow);line-height:1}
+.daily-calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;width:100%}
+.dcal-cell{aspect-ratio:1;border-radius:5px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--muted)}
+.dcal-cell.done{background:rgba(34,197,94,.3);color:var(--green);font-size:.7rem}
+.dcal-cell.today{background:var(--green);color:#000;font-weight:700}
+.dcal-cell.missed{background:rgba(239,68,68,.2);color:#f87171}
+.daily-next{font-size:.8rem;color:var(--muted);font-weight:500}
+#daily-countdown-txt{font-weight:700;color:var(--text);font-family:'Space Mono',monospace}
+
+/* ── Joker Tokens ──────────────────────────────────────────────────────── */
+.joker-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.joker-label{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.joker-tokens{display:flex;gap:4px}
+.joker-token{font-size:1.2rem;cursor:default;transition:opacity .3s;line-height:1}
+.joker-token.used{opacity:.2;filter:grayscale(1)}
+
+/* ── Sound Toggle ──────────────────────────────────────────────────────── */
+.sound-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;font-size:.95rem;color:var(--muted);transition:border-color .2s,color .2s}
+.sound-btn:hover,.sound-btn.on{border-color:rgba(34,197,94,.3);color:var(--green)}
+
+/* ── Report Button ─────────────────────────────────────────────────────── */
+.report-btn{position:absolute;top:8px;right:8px;background:transparent;border:none;cursor:pointer;font-size:.8rem;color:var(--muted);opacity:.4;transition:opacity .2s;z-index:10}
+.report-btn:hover{opacity:1;color:#f87171}
+#report-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);align-items:center;justify-content:center}
+#report-modal.show{display:flex}
+.report-card{background:var(--bg1);border:1px solid var(--border2);border-radius:16px;padding:24px;max-width:320px;width:90%;display:flex;flex-direction:column;gap:12px}
+.report-card h3{font-size:1rem;font-weight:700;margin:0}
+.report-opt{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:.85rem;transition:border-color .2s}
+.report-opt:hover{border-color:rgba(239,68,68,.4);color:#f87171}
+.report-cancel{background:transparent;border:1px solid var(--border);border-radius:10px;padding:10px;cursor:pointer;color:var(--muted);font-size:.85rem;width:100%}
+
+/* ── Achievement Badges ─────────────────────────────────────────────────── */
+#badge-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);align-items:center;justify-content:center}
+#badge-modal.show{display:flex}
+.badge-card{background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:24px;max-width:420px;width:90%;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.badge-card h2{font-size:1.1rem;font-weight:700;margin:0}
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.badge-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:1px solid var(--border);border-radius:12px;text-align:center;transition:border-color .2s}
+.badge-item.earned{border-color:rgba(234,179,8,.4);background:rgba(234,179,8,.05)}
+.badge-item.locked{opacity:.4;filter:grayscale(.8)}
+.badge-item .bi-icon{font-size:1.8rem;line-height:1}
+.badge-item .bi-name{font-size:.65rem;font-weight:700;color:var(--text);line-height:1.3}
+.badge-item .bi-desc{font-size:.55rem;color:var(--muted);line-height:1.3}
+.badge-item.earned .bi-name{color:var(--yellow)}
+.badge-unlock-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(234,179,8,.15);border:1px solid rgba(234,179,8,.4);color:var(--yellow);padding:10px 20px;border-radius:12px;font-size:.85rem;font-weight:700;z-index:500;pointer-events:none;animation:slideUp .4s ease;white-space:nowrap}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Stats per category ─────────────────────────────────────────────────── */
+#stats-modal{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.8);align-items:center;justify-content:center}
+#stats-modal.show{display:flex}
+.stats-card{background:var(--bg1);border:1px solid var(--border2);border-radius:20px;padding:24px;max-width:420px;width:90%;max-height:80vh;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.stats-card h2{font-size:1.1rem;font-weight:700;margin:0}
+.cat-stat-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.cat-stat-row:last-child{border-bottom:none}
+.cat-stat-name{flex:1;font-size:.82rem;font-weight:600}
+.cat-stat-bar-wrap{width:90px;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.cat-stat-bar-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s ease}
+.cat-stat-pct{font-size:.75rem;color:var(--muted);font-family:'Space Mono',monospace;width:36px;text-align:right}
 </style>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -1274,9 +1358,23 @@ main {
       <div class="mode-desc">Spiele gegen andere Spieler in Echtzeit. Öffentliche oder private Räume.</div>
       <div class="mode-tag" style="background:rgba(96,165,250,0.1);color:#60a5fa">ECHTZEIT</div>
     </div>
+    <div class="mode-card" style="--mc:#f87171" onclick="selectMode('blitz')">
+      <div class="mode-icon">⚡</div>
+      <div class="mode-name">Blitz-Modus</div>
+      <div class="mode-desc">60 Sekunden, so viele Fragen wie möglich. Bonus für Schnelligkeit!</div>
+      <div class="mode-tag" style="background:rgba(248,113,113,0.1);color:#f87171">SPEED</div>
+    </div>
+    <div class="mode-card" style="--mc:#a78bfa" onclick="selectMode('daily')">
+      <div class="mode-icon">📅</div>
+      <div class="mode-name">Tägliche Challenge</div>
+      <div class="mode-desc">5 Fragen täglich – gleiche Fragen für alle. Baue deine Streak auf!</div>
+      <div class="mode-tag" id="daily-mode-tag" style="background:rgba(167,139,250,0.1);color:#a78bfa">TÄGLICH</div>
+    </div>
   </div>
   <div style="display:flex;gap:10px;margin-top:8px;justify-content:center;flex-wrap:wrap">
     <button class="btn-lb-header" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    <button class="btn-lb-header" onclick="showBadges()">🎖 Abzeichen</button>
+    <button class="btn-lb-header" onclick="showCatStats()">📊 Kategorien</button>
     <button class="btn-lb-header" id="btn-mode-signout" onclick="doSignOut()" style="display:none;opacity:0.7">↩ Abmelden</button>
   </div>
 </div>
@@ -1341,6 +1439,76 @@ main {
   </div>
 </div>
 
+<!-- ── Blitz End Screen ─────────────────────────────────────────────────── -->
+<div id="blitz-end">
+  <div class="blitz-card">
+    <div class="blitz-icon">⚡</div>
+    <div class="blitz-title">Zeit abgelaufen!</div>
+    <div class="blitz-big" id="blitz-score">0</div>
+    <div class="blitz-sub">PUNKTE</div>
+    <div id="blitz-pb" class="blitz-pb">🎉 Neuer Rekord!</div>
+    <div class="blitz-stats">
+      <div class="blitz-stat"><span class="v" id="blitz-correct">0</span><span class="l">RICHTIG</span></div>
+      <div class="blitz-stat"><span class="v" id="blitz-answered">0</span><span class="l">BEANTWORTET</span></div>
+      <div class="blitz-stat"><span class="v" id="blitz-pct">0%</span><span class="l">QUOTE</span></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:4px;width:100%">
+      <button class="btn-ce-lb" onclick="showLeaderboard()" style="flex:1">🏆 Board</button>
+      <button class="btn-ce-home" onclick="location.reload()" style="flex:1">🏠 Neu</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Daily End Screen ─────────────────────────────────────────────────── -->
+<div id="daily-end">
+  <div class="daily-card">
+    <div style="font-size:2.5rem">📅</div>
+    <div class="daily-title">Tagesaufgabe erledigt!</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+      <div class="daily-streak-display" id="daily-streak-num">1</div>
+      <div style="font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Tage in Folge 🔥</div>
+    </div>
+    <div class="blitz-stats">
+      <div class="blitz-stat"><span class="v" id="daily-correct-num">0</span><span class="l">RICHTIG</span></div>
+      <div class="blitz-stat"><span class="v">5</span><span class="l">FRAGEN</span></div>
+      <div class="blitz-stat"><span class="v" id="daily-pct-num">0%</span><span class="l">QUOTE</span></div>
+    </div>
+    <div class="daily-calendar" id="daily-calendar"></div>
+    <div class="daily-next">Nächste Challenge in: <span id="daily-countdown-txt">--:--:--</span></div>
+    <button class="btn-ce-home" onclick="location.reload()" style="width:100%;margin-top:4px">🏠 Zurück</button>
+  </div>
+</div>
+
+<!-- ── Report Modal ─────────────────────────────────────────────────────── -->
+<div id="report-modal">
+  <div class="report-card">
+    <h3>🚩 Frage melden</h3>
+    <div class="report-opt" onclick="submitReport('wrong_answer')">❌ Falsche Antwort</div>
+    <div class="report-opt" onclick="submitReport('outdated')">📅 Veraltete Information</div>
+    <div class="report-opt" onclick="submitReport('typo')">✏️ Tippfehler / Grammatik</div>
+    <div class="report-opt" onclick="submitReport('other')">💬 Sonstiges</div>
+    <button class="report-cancel" onclick="document.getElementById('report-modal').classList.remove('show')">Abbrechen</button>
+  </div>
+</div>
+
+<!-- ── Achievement Badge Modal ──────────────────────────────────────────── -->
+<div id="badge-modal">
+  <div class="badge-card">
+    <h2>🎖 Deine Abzeichen</h2>
+    <div class="badge-grid" id="badge-grid"></div>
+    <button class="report-cancel" onclick="document.getElementById('badge-modal').classList.remove('show')">Schließen</button>
+  </div>
+</div>
+
+<!-- ── Category Stats Modal ─────────────────────────────────────────────── -->
+<div id="stats-modal">
+  <div class="stats-card">
+    <h2>📊 Statistiken nach Kategorie</h2>
+    <div id="cat-stat-list"></div>
+    <button class="report-cancel" onclick="document.getElementById('stats-modal').classList.remove('show')">Schließen</button>
+  </div>
+</div>
+
 <div id="game-wrapper" style="display:none;width:100%">
 <header>
   <h1>
@@ -1356,6 +1524,7 @@ main {
     <div class="stat"><span id="best-val">0</span><span>BEST</span></div>
     <div class="stat"><span id="played-val">0</span><span>GESPIELT</span></div>
     <button class="theme-btn" id="theme-toggle" title="Theme wechseln">☀️</button>
+    <button class="sound-btn" id="sound-toggle" title="Sound ein/aus" onclick="toggleSound()">🔊</button>
     <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()" style="display:none">🏆</button>
     <div class="user-chip" id="user-chip" style="display:none" onclick="toggleUserMenu()">
       <img id="user-avatar" src="" alt=""/>
@@ -1387,6 +1556,10 @@ main {
     <div class="sc"><span id="sess-total">0</span><span>GESPIELT</span></div>
     <div class="sc pts"><span id="sess-points">0</span><span>PUNKTE</span></div>
     <div class="sc"><span id="sess-num">#1</span><span>FRAGE</span></div>
+  </div>
+  <div id="blitz-timer-wrap" style="display:none;margin-bottom:6px">
+    <div id="blitz-timer-bar"><div id="blitz-timer-fill"></div></div>
+    <div id="blitz-secs-display">60</div>
   </div>
 
   <div style="display:flex;align-items:center;gap:10px">
@@ -1421,9 +1594,14 @@ main {
   <div class="input-area" id="input-area">
     <!-- dynamically filled -->
   </div>
-  <div class="hint-area">
+  <div class="hint-area" style="position:relative">
+    <button class="report-btn" id="report-btn" onclick="openReport()" title="Frage melden">🚩</button>
+    <div class="joker-row">
+      <span class="joker-label">Joker:</span>
+      <div class="joker-tokens" id="joker-tokens"></div>
+    </div>
     <button class="btn-hint" id="hint-btn" onclick="useHint()">
-      💡 Tipp 1 <span class="hint-cost">(-200 Pkt.)</span>
+      💡 Tipp 1 <span class="hint-cost" id="hint-cost-label">(-200 Pkt.)</span>
     </button>
     <div class="hint-box" id="hint-box"></div>
   </div>
@@ -1684,6 +1862,26 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   document.getElementById('hint-btn').disabled = true;
 
   // Competition mode: check if done
+  if (gameMode === 'blitz') {
+    // In blitz mode, auto-advance after 1.2 seconds
+    if (blitzIv) {
+      nextTimeout = setTimeout(() => {
+        document.getElementById('result-panel').classList.remove('show');
+        questionPoints = 0; questionHints = 0;
+        loadNextQuestion();
+      }, 1200);
+    }
+    return;
+  }
+  if (gameMode === 'daily') {
+    nextTimeout = setTimeout(() => {
+      document.getElementById('result-panel').classList.remove('show');
+      questionPoints = 0; questionHints = 0;
+      loadNextQuestion();
+    }, 2000);
+    if (dailyIndex >= DAILY_TOTAL && won) setTimeout(showDailyEnd, 2200);
+    return;
+  }
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) {
       const _att = (window._compAttemptsUsed || 0) + 1;
@@ -1929,14 +2127,25 @@ function submitGuess() {
       base = Math.round((base + speedBonus) * getStreakMult());
       compSpeedBonus += speedBonus;
       updateStreakBadge();
+    } else if (gameMode === 'blitz') {
+      const bonus = Math.round(blitzTimeLeft / BLITZ_DURATION * 200);
+      base += bonus; speedBonus = bonus;
+      blitzCorrect++;
+      blitzScore += isPremium ? Math.round(base * 1.5) : base;
+    } else if (gameMode === 'daily') {
+      dailyCorrect++;
+      dailyScore += isPremium ? Math.round(base * 1.5) : base;
     }
     const earned = isPremium ? Math.round(base * 1.5) : base;
     addPoints(earned - questionPoints);
     animateCard('correct');
+    playSound('correct');
+    if (gameMode === 'blitz') triggerFlash();
     finished = true;
     stopTimer();
     if (gameMode === 'competition') compCorrect++;
     if (!isGuest) { const s=getStats(); s.played++; const yd=localStorage.getItem('mg_today_'+getYesterdayKey()); const ydS=yd?JSON.parse(yd):null; s.streak=(ydS&&ydS.done)?s.streak+1:1; s.best=Math.max(s.best,s.streak); saveStats(s); saveCloudStats(); updateStatsDisplay(); }
+    recordCatStat(question.category, true);
     showResult(true, Math.max(0, POINTS_CORRECT + questionPoints), speedBonus);
     return;
   }
@@ -1950,8 +2159,11 @@ function submitGuess() {
     stopTimer();
     if (gameMode === 'competition') { stopCompSpeedTimer(); compStreak = 0; updateStreakBadge(); }
     if (!isGuest) { const s=getStats(); s.played++; s.streak=0; saveStats(s); saveCloudStats(); updateStatsDisplay(); }
+    recordCatStat(question ? question.category : null, false);
+    playSound('wrong');
     showResult(false, questionPoints);
   } else {
+    playSound('tick');
     startTimer();
   }
 }
@@ -9029,6 +9241,15 @@ function loadNextQuestion() {
     updateCompBar();
     if (compIndex === COMP_TOTAL) setTimeout(() => showToast('🔥 Letzte Frage! Alles geben!', 2500), 300);
     startCompSpeedTimer();
+  } else if (gameMode === 'blitz') {
+    if (!blitzIv) return; // timer ended
+    question = allQuestions[questionOrder[currentIndex % questionOrder.length]];
+    currentIndex++;
+    blitzAnswered = currentIndex;
+  } else if (gameMode === 'daily') {
+    if (dailyIndex >= DAILY_TOTAL) { showDailyEnd(); return; }
+    question = allQuestions[dailyOrder[dailyIndex]];
+    dailyIndex++;
   } else {
     if (currentIndex >= questionOrder.length) {
       questionOrder = [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
@@ -9258,6 +9479,24 @@ let sessionPoints  = 0;
 let questionPoints = 0; // points delta for current question
 let questionHints  = 0; // hints on current question
 
+// ── Joker tokens ───────────────────────────────────────────────────────────
+const MAX_JOKERS = 3;
+let jokersLeft = MAX_JOKERS;
+
+function renderJokerTokens() {
+  const wrap = document.getElementById('joker-tokens');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  for (let i = 0; i < MAX_JOKERS; i++) {
+    const s = document.createElement('span');
+    s.className = 'joker-token' + (i >= jokersLeft ? ' used' : '');
+    s.textContent = '🃏';
+    wrap.appendChild(s);
+  }
+  const costEl = document.getElementById('hint-cost-label');
+  if (costEl) costEl.textContent = jokersLeft > 0 ? '(Joker!)' : '(-200 Pkt.)';
+}
+
 function addPoints(delta) {
   sessionPoints = Math.max(0, sessionPoints + delta);
   questionPoints += delta;
@@ -9287,24 +9526,177 @@ function resetHints() {
   const btn = document.getElementById('hint-btn');
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = '💡 Tipp 1 <span class="hint-cost">(-200 Pkt.)</span>';
+    btn.innerHTML = '💡 Tipp 1 <span class="hint-cost" id="hint-cost-label">' + (jokersLeft > 0 ? '(Joker!)' : '(-200 Pkt.)') + '</span>';
   }
   const box = document.getElementById('hint-box');
   if (box) box.innerHTML = '';
+  renderJokerTokens();
 }
 
 function useHint() {
   if (!question || questionHints >= MAX_HINTS) return;
   questionHints++;
-  addPoints(POINTS_HINT);
+  if (jokersLeft > 0) {
+    jokersLeft--;
+    playSound('joker');
+    renderJokerTokens();
+    showToast('🃏 Joker eingesetzt – kein Punktabzug!', 1800);
+  } else {
+    addPoints(POINTS_HINT);
+    playSound('wrong');
+  }
   const text = getHintText(question, questionHints);
   document.getElementById('hint-box').innerHTML = text;
   const btn = document.getElementById('hint-btn');
   if (questionHints >= MAX_HINTS) {
     btn.disabled = true;
   } else {
-    btn.innerHTML = '💡 Tipp 2 <span class="hint-cost">(-200 Pkt.)</span>';
+    btn.innerHTML = '💡 Tipp 2 <span class="hint-cost" id="hint-cost-label">' + (jokersLeft > 0 ? '(Joker!)' : '(-200 Pkt.)') + '</span>';
   }
+}
+
+// ── Blitz mode ───────────────────────────────────────────────────────────────
+const BLITZ_DURATION = 60;
+let blitzTimeLeft = BLITZ_DURATION;
+let blitzIv       = null;
+let blitzCorrect  = 0;
+let blitzAnswered = 0;
+let blitzScore    = 0;
+
+function startBlitzTimer() {
+  const wrap = document.getElementById('blitz-timer-wrap');
+  const fill = document.getElementById('blitz-timer-fill');
+  const disp = document.getElementById('blitz-secs-display');
+  if (wrap) wrap.style.display = 'block';
+  blitzTimeLeft = BLITZ_DURATION;
+  if (fill) { fill.style.transition='none'; fill.style.width='100%'; fill.style.background='var(--green)'; }
+  if (disp) { disp.textContent = BLITZ_DURATION; disp.className = ''; }
+  clearInterval(blitzIv);
+  blitzIv = setInterval(() => {
+    blitzTimeLeft--;
+    const pct = blitzTimeLeft / BLITZ_DURATION * 100;
+    if (fill) {
+      fill.style.transition = 'width 1s linear';
+      fill.style.width = pct + '%';
+      fill.style.background = blitzTimeLeft <= 10 ? '#f87171' : blitzTimeLeft <= 20 ? '#fbbf24' : 'var(--green)';
+    }
+    if (disp) {
+      disp.textContent = blitzTimeLeft;
+      disp.className = blitzTimeLeft <= 10 ? 'danger' : blitzTimeLeft <= 20 ? 'warn' : '';
+    }
+    if (blitzTimeLeft <= 0) {
+      clearInterval(blitzIv); blitzIv = null;
+      playSound('end');
+      showBlitzEnd();
+    }
+  }, 1000);
+}
+
+function stopBlitzTimer() {
+  clearInterval(blitzIv); blitzIv = null;
+  const wrap = document.getElementById('blitz-timer-wrap');
+  if (wrap) wrap.style.display = 'none';
+}
+
+function showBlitzEnd() {
+  stopBlitzTimer();
+  document.getElementById('game-wrapper').style.display = 'none';
+  const pct = blitzAnswered > 0 ? Math.round(blitzCorrect / blitzAnswered * 100) : 0;
+  document.getElementById('blitz-score').textContent   = blitzScore.toLocaleString();
+  document.getElementById('blitz-correct').textContent = blitzCorrect;
+  document.getElementById('blitz-answered').textContent = blitzAnswered;
+  document.getElementById('blitz-pct').textContent     = pct + '%';
+  const prev = parseInt(localStorage.getItem('mg_blitz_best') || '0');
+  if (blitzScore > prev) {
+    localStorage.setItem('mg_blitz_best', blitzScore);
+    const pb = document.getElementById('blitz-pb');
+    if (pb) pb.style.display = 'block';
+    playSound('pb');
+  }
+  _trackBlitzGame();
+  document.getElementById('blitz-end').classList.add('show');
+  checkAchievements();
+}
+
+// ── Daily mode ────────────────────────────────────────────────────────────────
+const DAILY_TOTAL = 5;
+let dailyIndex   = 0;
+let dailyOrder   = [];
+let dailyCorrect = 0;
+let dailyScore   = 0;
+
+function getDailyKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function getDailyData() {
+  try { return JSON.parse(localStorage.getItem('mg_daily_' + getDailyKey()) || 'null'); } catch(e) { return null; }
+}
+
+function saveDailyData(data) {
+  localStorage.setItem('mg_daily_' + getDailyKey(), JSON.stringify(data));
+}
+
+function getDailyStreak() {
+  let streak = 0;
+  const now = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = `mg_daily_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    const v = localStorage.getItem(key);
+    if (v) { try { if (JSON.parse(v).done) { streak++; continue; } } catch(e) {} }
+    if (i > 0) break;
+  }
+  return streak;
+}
+
+function buildDailyCalendar() {
+  const cal = document.getElementById('daily-calendar');
+  if (!cal) return;
+  cal.innerHTML = '';
+  const now = new Date();
+  const DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now); d.setDate(d.getDate() - i);
+    const key = `mg_daily_${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+    const v = localStorage.getItem(key);
+    let cls = 'dcal-cell';
+    let lbl = DAYS[(d.getDay()+6)%7];
+    if (i === 0) { cls += ' today'; }
+    else if (v) { try { if (JSON.parse(v).done) cls += ' done'; else cls += ' missed'; } catch(e) { cls += ' missed'; } }
+    const cell = document.createElement('div');
+    cell.className = cls; cell.textContent = lbl;
+    cal.appendChild(cell);
+  }
+}
+
+function startDailyCountdown() {
+  const el = document.getElementById('daily-countdown-txt');
+  if (!el) return;
+  function tick() {
+    const now = new Date();
+    const midnight = new Date(now); midnight.setHours(24,0,0,0);
+    const diff = Math.max(0, midnight - now);
+    const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+    el.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+}
+
+function showDailyEnd() {
+  document.getElementById('game-wrapper').style.display = 'none';
+  const pct = Math.round(dailyCorrect / DAILY_TOTAL * 100);
+  saveDailyData({ done: true, score: dailyScore, correct: dailyCorrect, pct });
+  const streak = getDailyStreak();
+  document.getElementById('daily-streak-num').textContent = streak;
+  document.getElementById('daily-correct-num').textContent = dailyCorrect;
+  document.getElementById('daily-pct-num').textContent = pct + '%';
+  buildDailyCalendar();
+  startDailyCountdown();
+  document.getElementById('daily-end').classList.add('show');
+  checkAchievements();
+  if (streak >= 7) playSound('pb');
 }
 
 // ── Competition mode ──────────────────────────────────────────────────────────
@@ -9555,8 +9947,11 @@ function actualStartMode(mode) {
   questionPoints = 0;
   compStreak     = 0;
   compSpeedBonus = 0;
+  jokersLeft     = MAX_JOKERS;
   stopCompSpeedTimer();
+  stopBlitzTimer();
   updateStreakBadge();
+  renderJokerTokens();
   const _pb = document.getElementById('ce-pb-banner');
   if (_pb) _pb.style.display = 'none';
   document.getElementById('sess-points').textContent = '0';
@@ -9571,6 +9966,11 @@ function actualStartMode(mode) {
     const tagEl = document.getElementById('comp-mode-tag');
     if (tagEl) tagEl.textContent = attemptsUsed >= MAX_COMP_ATTEMPTS
       ? 'GESPERRT' : ('VERSUCH ' + (attemptsUsed+1) + '/3');
+    const dtag = document.getElementById('daily-mode-tag');
+    if (dtag) {
+      const dd = getDailyData();
+      dtag.textContent = dd && dd.done ? '✅ ERLEDIGT' : 'TÄGLICH';
+    }
     if (attemptsUsed >= MAX_COMP_ATTEMPTS && compData) {
       showCompEnd(compData.bestScore || 0, compData.bestCorrect || 0, COMP_TOTAL);
       return;
@@ -9590,6 +9990,24 @@ function actualStartMode(mode) {
     window._maxCompAttempts  = MAX_COMP_ATTEMPTS;
     document.getElementById('comp-bar').classList.add('show');
     updateCompBar();
+  } else if (mode === 'blitz') {
+    document.getElementById('comp-bar').classList.remove('show');
+    blitzCorrect = 0; blitzAnswered = 0; blitzScore = 0;
+    questionOrder = [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
+    currentIndex = 0;
+  } else if (mode === 'daily') {
+    document.getElementById('comp-bar').classList.remove('show');
+    const dd = getDailyData();
+    if (dd && dd.done) {
+      // Already done today — show result directly
+      dailyCorrect = dd.correct || 0;
+      dailyScore   = dd.score || 0;
+      showCountdown(() => { showDailyEnd(); }); return;
+    }
+    dailyIndex = 0; dailyCorrect = 0; dailyScore = 0;
+    const dailySeed = parseInt(getDailyKey().replace(/[^0-9]/g,''), 10);
+    const pool = [...Array(allQuestions.length).keys()];
+    dailyOrder = lcgShuffle(pool, dailySeed).slice(0, DAILY_TOTAL);
   } else {
     document.getElementById('comp-bar').classList.remove('show');
   }
@@ -9597,6 +10015,7 @@ function actualStartMode(mode) {
   // Show 3-2-1 countdown, then start game
   showCountdown(() => {
     document.getElementById('game-wrapper').style.display = 'block';
+    if (mode === 'blitz') startBlitzTimer();
     loadNextQuestion();
   });
 }
@@ -9711,9 +10130,215 @@ document.getElementById('btn-guest-play').addEventListener('click', function() {
   isGuest = true; finishAuth();
 });
 
+// ── Sound engine (Web Audio API) ─────────────────────────────────────────────
+let _audioCtx = null;
+let _soundOn  = JSON.parse(localStorage.getItem('mg_sound') || 'true');
+
+function getAudioCtx() {
+  if (!_audioCtx) {
+    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return _audioCtx;
+}
+
+function playSynthSound(freq, type, duration, vol, delay) {
+  const ctx = getAudioCtx(); if (!ctx || !_soundOn) return;
+  try {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + (delay||0));
+    gain.gain.setValueAtTime(vol || 0.15, ctx.currentTime + (delay||0));
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (delay||0) + (duration||0.3));
+    osc.start(ctx.currentTime + (delay||0));
+    osc.stop(ctx.currentTime + (delay||0) + (duration||0.3));
+  } catch(e) {}
+}
+
+function playSound(type) {
+  if (!_soundOn) return;
+  if (type === 'correct') {
+    playSynthSound(523, 'sine', 0.15, 0.2);
+    playSynthSound(659, 'sine', 0.2, 0.18, 0.12);
+    playSynthSound(784, 'sine', 0.25, 0.22, 0.22);
+  } else if (type === 'wrong') {
+    playSynthSound(220, 'sawtooth', 0.18, 0.15);
+    playSynthSound(180, 'sawtooth', 0.25, 0.15, 0.12);
+  } else if (type === 'joker') {
+    playSynthSound(440, 'triangle', 0.1, 0.12);
+    playSynthSound(550, 'triangle', 0.12, 0.14, 0.1);
+  } else if (type === 'tick') {
+    playSynthSound(900, 'square', 0.05, 0.06);
+  } else if (type === 'pb') {
+    [523,659,784,1047].forEach((f,i)=>playSynthSound(f,'sine',0.2,0.18,i*0.1));
+  } else if (type === 'end') {
+    playSynthSound(440, 'sawtooth', 0.5, 0.15);
+    playSynthSound(330, 'sawtooth', 0.6, 0.15, 0.15);
+  }
+}
+
+function toggleSound() {
+  _soundOn = !_soundOn;
+  localStorage.setItem('mg_sound', JSON.stringify(_soundOn));
+  const btn = document.getElementById('sound-toggle');
+  if (btn) { btn.textContent = _soundOn ? '🔊' : '🔇'; btn.className = 'sound-btn' + (_soundOn ? ' on' : ''); }
+  if (_soundOn) playSound('correct');
+}
+
+// ── Flash effect (blitz correct) ──────────────────────────────────────────────
+function triggerFlash() {
+  const card = document.getElementById('question-text');
+  if (!card) return;
+  card.style.boxShadow = '0 0 0 3px var(--green)';
+  setTimeout(() => card.style.boxShadow = '', 300);
+}
+
+// ── Category stats (local) ────────────────────────────────────────────────────
+function getCatStats() {
+  try { return JSON.parse(localStorage.getItem('mg_cat_stats') || '{}'); } catch(e) { return {}; }
+}
+function saveCatStats(s) { localStorage.setItem('mg_cat_stats', JSON.stringify(s)); }
+
+function recordCatStat(cat, correct) {
+  if (!cat) return;
+  const s = getCatStats();
+  if (!s[cat]) s[cat] = { c: 0, t: 0 };
+  s[cat].t++;
+  if (correct) s[cat].c++;
+  saveCatStats(s);
+}
+
+function showCatStats() {
+  const s = getCatStats();
+  const list = document.getElementById('cat-stat-list');
+  if (!list) return;
+  const cats = Object.keys(s).sort((a,b) => s[b].t - s[a].t);
+  if (cats.length === 0) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:16px">Noch keine Daten – spiel ein paar Runden!</div>';
+  } else {
+    list.innerHTML = cats.map(cat => {
+      const pct = Math.round(s[cat].c / s[cat].t * 100);
+      return `<div class="cat-stat-row">
+        <span class="cat-stat-name">${cat}</span>
+        <div class="cat-stat-bar-wrap"><div class="cat-stat-bar-fill" style="width:${pct}%"></div></div>
+        <span class="cat-stat-pct">${pct}%</span>
+        <span style="font-size:.7rem;color:var(--muted);margin-left:6px">${s[cat].c}/${s[cat].t}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('stats-modal').classList.add('show');
+}
+
+// ── Report system ─────────────────────────────────────────────────────────────
+let _reportedQs = new Set(JSON.parse(localStorage.getItem('mg_reported') || '[]'));
+
+function openReport() {
+  if (!question) return;
+  document.getElementById('report-modal').classList.add('show');
+}
+
+function submitReport(reason) {
+  document.getElementById('report-modal').classList.remove('show');
+  if (!question) return;
+  const qid = question.id || question.question.slice(0,30);
+  if (_reportedQs.has(qid)) { showToast('Bereits gemeldet.', 1500); return; }
+  _reportedQs.add(qid);
+  localStorage.setItem('mg_reported', JSON.stringify([..._reportedQs]));
+  if (FIREBASE_ENABLED && window.fbDb) {
+    try {
+      fbDb.collection('reports').add({
+        questionId: qid,
+        question: question.question,
+        reason,
+        uid: currentUser ? currentUser.uid : 'guest',
+        ts: new Date().toISOString()
+      });
+    } catch(e) {}
+  }
+  showToast('🚩 Danke für dein Feedback!', 2000);
+}
+
+// ── Achievement system ────────────────────────────────────────────────────────
+const ACHIEVEMENTS = [
+  { id:'first_correct',   icon:'🎯', name:'Erster Treffer',    desc:'Erste richtige Antwort',      check: (s,cs) => cs.totalCorrect >= 1 },
+  { id:'mob_expert',      icon:'🧟', name:'Mob-Experte',       desc:'20× Mobs korrekt beantwortet', check: (s,cs) => (cs.cats['Mobs']||0) >= 20 },
+  { id:'nether_lord',     icon:'🔥', name:'Nether-Herr',       desc:'10× Dimensionen richtig',     check: (s,cs) => (cs.cats['Dimensionen']||0) >= 10 },
+  { id:'craft_master',    icon:'🛠', name:'Handwerksmeister',  desc:'15× Crafting richtig',        check: (s,cs) => (cs.cats['Crafting']||0) >= 15 },
+  { id:'redstone_guru',   icon:'🔴', name:'Redstone-Guru',     desc:'10× Redstone richtig',        check: (s,cs) => (cs.cats['Redstone']||0) >= 10 },
+  { id:'potion_master',   icon:'🧪', name:'Trank-Meister',     desc:'10× Tränke richtig',          check: (s,cs) => (cs.cats['Tränke']||0) >= 10 },
+  { id:'blitz_rookie',    icon:'⚡', name:'Blitz-Neuling',     desc:'Blitz-Modus gespielt',        check: (s,cs) => s.blitzGames >= 1 },
+  { id:'daily_3',         icon:'📅', name:'3er Streak',        desc:'3 Tage tägl. Challenge',      check: (s,cs) => getDailyStreak() >= 3 },
+  { id:'daily_7',         icon:'🗓', name:'7er Streak',        desc:'7 Tage tägl. Challenge',      check: (s,cs) => getDailyStreak() >= 7 },
+  { id:'100_played',      icon:'💯', name:'Centurio',          desc:'100 Fragen gespielt',         check: (s,cs) => s.played >= 100 },
+];
+
+function getEarnedBadges() {
+  try { return new Set(JSON.parse(localStorage.getItem('mg_badges') || '[]')); } catch(e) { return new Set(); }
+}
+function saveEarnedBadges(set) { localStorage.setItem('mg_badges', JSON.stringify([...set])); }
+
+function getAchievementStats() {
+  const gs = getStats();
+  const cs_raw = getCatStats();
+  const cats = {};
+  Object.keys(cs_raw).forEach(k => { cats[k] = cs_raw[k].c; });
+  const totalCorrect = Object.values(cs_raw).reduce((a,v) => a + v.c, 0);
+  const blitzGames   = parseInt(localStorage.getItem('mg_blitz_games') || '0');
+  return { ...gs, cats, totalCorrect, blitzGames };
+}
+
+function checkAchievements() {
+  const earned = getEarnedBadges();
+  const s = getAchievementStats();
+  let newOnes = [];
+  ACHIEVEMENTS.forEach(a => {
+    if (!earned.has(a.id) && a.check(s, s)) {
+      earned.add(a.id); newOnes.push(a);
+    }
+  });
+  saveEarnedBadges(earned);
+  newOnes.forEach((a, i) => {
+    setTimeout(() => showBadgeUnlockToast(a), i * 1500);
+  });
+}
+
+function showBadgeUnlockToast(a) {
+  const el = document.createElement('div');
+  el.className = 'badge-unlock-toast';
+  el.textContent = a.icon + ' Abzeichen: ' + a.name + ' freigeschaltet!';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function showBadges() {
+  const earned = getEarnedBadges();
+  const grid = document.getElementById('badge-grid');
+  if (!grid) return;
+  grid.innerHTML = ACHIEVEMENTS.map(a => `
+    <div class="badge-item ${earned.has(a.id) ? 'earned' : 'locked'}">
+      <div class="bi-icon">${a.icon}</div>
+      <div class="bi-name">${a.name}</div>
+      <div class="bi-desc">${a.desc}</div>
+    </div>`).join('');
+  document.getElementById('badge-modal').classList.add('show');
+}
+
+// Track blitz games played
+function _trackBlitzGame() {
+  const n = parseInt(localStorage.getItem('mg_blitz_games') || '0') + 1;
+  localStorage.setItem('mg_blitz_games', n);
+}
+
 // Init theme + canvas on load
 initTheme();
 initBgCanvas();
+
+// Init sound button state
+(function() {
+  const btn = document.getElementById('sound-toggle');
+  if (btn) { btn.textContent = _soundOn ? '🔊' : '🔇'; btn.className = 'sound-btn' + (_soundOn ? ' on' : ''); }
+})();
 
 // ── Auto-start auth (no splash on game.html) ─────────────────────────────────
 (function() {
@@ -9733,6 +10358,11 @@ initBgCanvas();
     }
   });
 })();
+
+// ── Service Worker registration (Offline support) ─────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
