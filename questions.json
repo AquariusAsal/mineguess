@@ -280,7 +280,9 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Das ist mit Abstand die meiste XP, die ein Mob geben kann. Weitere Kills geben nur noch 500 XP."
+    "funFact": "Das ist mit Abstand die meiste XP, die ein Mob geben kann. Weitere Kills geben nur noch 500 XP.",
+    "tolerancePct": 5,
+    "toleranceMin": 0
   },
   {
     "id": 30,
@@ -1409,7 +1411,9 @@
     "unit": "Haltbarkeit",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Goldwerkzeuge sind die zerbrechlichsten (32), aber schnellsten Werkzeuge. Nur mit Glück-Verzauberung lohnen sie sich wirklich."
+    "funFact": "Goldwerkzeuge sind die zerbrechlichsten (32), aber schnellsten Werkzeuge. Nur mit Glück-Verzauberung lohnen sie sich wirklich.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 154,
@@ -1471,7 +1475,9 @@
     "unit": "Haltbarkeit",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Lederrüstung: Helm 55, Brustplatte 80, Beinlinge 75, Stiefel 65 – die schwächste Rüstungsklasse im Spiel."
+    "funFact": "Lederrüstung: Helm 55, Brustplatte 80, Beinlinge 75, Stiefel 65 – die schwächste Rüstungsklasse im Spiel.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 160,
@@ -1479,9 +1485,11 @@
     "question": "Wie viele Schüsse kann ein Bogen abfeuern (ohne Verzauberung)?",
     "answer": 384,
     "unit": "Schüsse",
-    "tolerance": 10,
+    "tolerance": 0,
     "category": "Items",
-    "funFact": "Ein Bogen hat 384 Haltbarkeit. Mit Endlosigkeit schießt man unendlich, braucht aber noch mindestens 1 Pfeil im Inventar."
+    "funFact": "Ein Bogen hat 384 Haltbarkeit. Mit Endlosigkeit schießt man unendlich, braucht aber noch mindestens 1 Pfeil im Inventar.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 164,
@@ -2330,7 +2338,9 @@
     "answer": 1200,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Obsidian ist neben Bedrock der widerstandsfähigste zerstörbare Block."
+    "funFact": "Obsidian ist neben Bedrock der widerstandsfähigste zerstörbare Block.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 314,
@@ -2340,7 +2350,9 @@
     "answer": 9,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Endstein ist widerstandsfähiger als normaler Stein."
+    "funFact": "Endstein ist widerstandsfähiger als normaler Stein.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 315,
@@ -2350,7 +2362,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Stein ist einer der häufigsten Blöcke in der Welt."
+    "funFact": "Stein ist einer der häufigsten Blöcke in der Welt.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 316,
@@ -2360,7 +2374,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Kopfsteinpflaster entsteht wenn Lava auf Wasser trifft."
+    "funFact": "Kopfsteinpflaster entsteht wenn Lava auf Wasser trifft.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 317,
@@ -2370,7 +2386,9 @@
     "answer": 0.5,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Erde kann mit einer Schaufel zu Lehmwegen gemacht werden."
+    "funFact": "Erde kann mit einer Schaufel zu Lehmwegen gemacht werden.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 318,
@@ -2380,7 +2398,9 @@
     "answer": 0.5,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Sand und Kies sind die einzigen Blöcke die Gravitation haben."
+    "funFact": "Sand und Kies sind die einzigen Blöcke die Gravitation haben.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 319,
@@ -2390,7 +2410,9 @@
     "answer": 0.3,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Glas hat den gleichen Sprengwiderstand wie Kies."
+    "funFact": "Glas hat den gleichen Sprengwiderstand wie Kies.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 320,
@@ -2400,7 +2422,9 @@
     "answer": 0.4,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Netherstein ist der häufigste Block im Nether und lässt sich leicht abbauen."
+    "funFact": "Netherstein ist der häufigste Block im Nether und lässt sich leicht abbauen.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 321,
@@ -2410,7 +2434,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Nether-Festungen bestehen hauptsächlich aus Netherziegeln."
+    "funFact": "Nether-Festungen bestehen hauptsächlich aus Netherziegeln.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 322,
@@ -2420,7 +2446,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Prismarin kommt in Ozean-Monumenten vor."
+    "funFact": "Prismarin kommt in Ozean-Monumenten vor.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 323,
@@ -2430,7 +2458,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Granit ist eine der drei dekorativen Steinvarianten."
+    "funFact": "Granit ist eine der drei dekorativen Steinvarianten.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 324,
@@ -2440,7 +2470,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Andesit ist eine hellgraue Steinvariante."
+    "funFact": "Andesit ist eine hellgraue Steinvariante.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 325,
@@ -2450,7 +2482,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Diorit ist eine weiße Steinvariante."
+    "funFact": "Diorit ist eine weiße Steinvariante.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 326,
@@ -2460,7 +2494,9 @@
     "answer": 6,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Tiefenschiefer kann nur unter Y=0 gefunden werden."
+    "funFact": "Tiefenschiefer kann nur unter Y=0 gefunden werden.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 327,
@@ -2470,7 +2506,9 @@
     "answer": 0.75,
     "unit": "",
     "tolerance": 0,
-    "funFact": "Kalzit kommt in Amethyst-Geoden vor."
+    "funFact": "Kalzit kommt in Amethyst-Geoden vor.",
+    "tolerancePct": 20,
+    "toleranceMin": 1
   },
   {
     "id": 329,
@@ -2600,7 +2638,9 @@
     "answer": 59,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Holzwerkzeuge haben die geringste Haltbarkeit aller Werkzeuge."
+    "funFact": "Holzwerkzeuge haben die geringste Haltbarkeit aller Werkzeuge.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 344,
@@ -2610,7 +2650,9 @@
     "answer": 131,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Steinwerkzeuge sind mehr als doppelt so haltbar wie Holzwerkzeuge."
+    "funFact": "Steinwerkzeuge sind mehr als doppelt so haltbar wie Holzwerkzeuge.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 345,
@@ -2620,7 +2662,9 @@
     "answer": 250,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Eisenwerkzeuge sind der Standard für die meisten Spieler."
+    "funFact": "Eisenwerkzeuge sind der Standard für die meisten Spieler.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 346,
@@ -2630,7 +2674,9 @@
     "answer": 32,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Goldwerkzeuge haben die geringste Haltbarkeit aber höchste Effizienz."
+    "funFact": "Goldwerkzeuge haben die geringste Haltbarkeit aber höchste Effizienz.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 347,
@@ -2640,7 +2686,9 @@
     "answer": 1561,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Diamantwerkzeuge halten über 6x länger als Eisenwerkzeuge."
+    "funFact": "Diamantwerkzeuge halten über 6x länger als Eisenwerkzeuge.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 348,
@@ -2650,7 +2698,9 @@
     "answer": 2031,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Netherit-Werkzeuge sind die haltbarsten im Spiel."
+    "funFact": "Netherit-Werkzeuge sind die haltbarsten im Spiel.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 349,
@@ -2660,7 +2710,9 @@
     "answer": 384,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Ein Bogen hält 384 Schüsse bevor er kaputtgeht."
+    "funFact": "Ein Bogen hält 384 Schüsse bevor er kaputtgeht.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 350,
@@ -2670,7 +2722,9 @@
     "answer": 465,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Armbrüste haben weniger Haltbarkeit als Bögen."
+    "funFact": "Armbrüste haben weniger Haltbarkeit als Bögen.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 351,
@@ -2680,7 +2734,9 @@
     "answer": 64,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Feuerstein und Stahl kann 64 Mal benutzt werden."
+    "funFact": "Feuerstein und Stahl kann 64 Mal benutzt werden.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 352,
@@ -2690,7 +2746,9 @@
     "answer": 64,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Angelruten haben nur 64 Haltbarkeit ohne Unzerbrechlichkeit."
+    "funFact": "Angelruten haben nur 64 Haltbarkeit ohne Unzerbrechlichkeit.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 353,
@@ -2700,7 +2758,9 @@
     "answer": 238,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Scheren sind überraschend haltbar für ein einfaches Werkzeug."
+    "funFact": "Scheren sind überraschend haltbar für ein einfaches Werkzeug.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 354,
@@ -2710,7 +2770,9 @@
     "answer": 250,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Dreizacke haben die gleiche Haltbarkeit wie Eisenwerkzeuge."
+    "funFact": "Dreizacke haben die gleiche Haltbarkeit wie Eisenwerkzeuge.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 355,
@@ -2720,7 +2782,9 @@
     "answer": 59,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Holzschwerter haben die gleiche Haltbarkeit wie Holzwerkzeuge."
+    "funFact": "Holzschwerter haben die gleiche Haltbarkeit wie Holzwerkzeuge.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 356,
@@ -2730,7 +2794,9 @@
     "answer": 131,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Steinschwerter sind die erste Alternative für Kämpfe."
+    "funFact": "Steinschwerter sind die erste Alternative für Kämpfe.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 357,
@@ -2740,7 +2806,9 @@
     "answer": 250,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Eisenschwerter sind der Kampfstandard für die meisten Spieler."
+    "funFact": "Eisenschwerter sind der Kampfstandard für die meisten Spieler.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 358,
@@ -2750,7 +2818,9 @@
     "answer": 1561,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Diamantschwerter halten extrem lange und verursachen viel Schaden."
+    "funFact": "Diamantschwerter halten extrem lange und verursachen viel Schaden.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 359,
@@ -2760,7 +2830,9 @@
     "answer": 2031,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Netherit-Schwerter sind die stärksten Schwerter im Spiel."
+    "funFact": "Netherit-Schwerter sind die stärksten Schwerter im Spiel.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 360,
@@ -2770,7 +2842,9 @@
     "answer": 165,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Rüstungsteile haben unterschiedliche Haltbarkeiten pro Slot."
+    "funFact": "Rüstungsteile haben unterschiedliche Haltbarkeiten pro Slot.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 361,
@@ -2780,7 +2854,9 @@
     "answer": 363,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Diamantrüstung hält mehr als doppelt so lang wie Eisenrüstung."
+    "funFact": "Diamantrüstung hält mehr als doppelt so lang wie Eisenrüstung.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 362,
@@ -2790,7 +2866,9 @@
     "answer": 336,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Schilde können Angriffe und Projektile blocken."
+    "funFact": "Schilde können Angriffe und Projektile blocken.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 363,
@@ -2800,7 +2878,9 @@
     "answer": 59,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Holzwerkzeuge alle gleich bei 59 Haltbarkeit."
+    "funFact": "Holzwerkzeuge alle gleich bei 59 Haltbarkeit.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 364,
@@ -2810,7 +2890,9 @@
     "answer": 32,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Goldwerkzeuge sind besonders schnell aber sehr karg in der Haltbarkeit."
+    "funFact": "Goldwerkzeuge sind besonders schnell aber sehr karg in der Haltbarkeit.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 365,
@@ -2820,7 +2902,9 @@
     "answer": 1561,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Diamantäxte sind extrem haltbar und machen viel Schaden."
+    "funFact": "Diamantäxte sind extrem haltbar und machen viel Schaden.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 366,
@@ -2830,7 +2914,9 @@
     "answer": 2031,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Netherit-Äxte sind die stärksten Nahkampfwaffen im Spiel."
+    "funFact": "Netherit-Äxte sind die stärksten Nahkampfwaffen im Spiel.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 367,
@@ -2840,7 +2926,9 @@
     "answer": 225,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Die Eisenhose hat 225 Haltbarkeit."
+    "funFact": "Die Eisenhose hat 225 Haltbarkeit.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 368,
@@ -2850,7 +2938,9 @@
     "answer": 528,
     "unit": "Verwendungen",
     "tolerance": 0,
-    "funFact": "Die Diamant-Brustplatte hat die meiste Haltbarkeit aller Rüstungsteile."
+    "funFact": "Die Diamant-Brustplatte hat die meiste Haltbarkeit aller Rüstungsteile.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 369,
@@ -3601,7 +3691,9 @@
     "answer": 1395,
     "unit": "XP",
     "tolerance": 0,
-    "funFact": "Level 30 ist der maximale Level für die meisten Verzauberungen."
+    "funFact": "Level 30 ist der maximale Level für die meisten Verzauberungen.",
+    "tolerancePct": 5,
+    "toleranceMin": 0
   },
   {
     "id": 465,
@@ -3761,7 +3853,9 @@
     "answer": 5345,
     "unit": "XP",
     "tolerance": 0,
-    "funFact": "Von Level 0 bis Level 50 braucht man insgesamt 5345 Erfahrungspunkte."
+    "funFact": "Von Level 0 bis Level 50 braucht man insgesamt 5345 Erfahrungspunkte.",
+    "tolerancePct": 5,
+    "toleranceMin": 0
   },
   {
     "id": 498,
@@ -3920,7 +4014,7 @@
     "question": "Auf welchem Y-Level spawnt Netherit am häufigsten?",
     "answer": 15,
     "unit": "Y",
-    "tolerance": 1,
+    "tolerance": 5,
     "funFact": "Y=15 im Nether ist der beste Level für antikes Gestein."
   },
   {
@@ -3950,7 +4044,7 @@
     "question": "Auf welchem Y-Level findest du Kupfererz am häufigsten?",
     "answer": 48,
     "unit": "Y",
-    "tolerance": 1,
+    "tolerance": 5,
     "funFact": "Kupfererz ist besonders häufig zwischen Y=48 und dem Meeresspiegel."
   },
   {
@@ -3960,7 +4054,7 @@
     "question": "Auf welchem Y-Level spawnt Eisen am häufigsten (seit 1.18)?",
     "answer": 16,
     "unit": "Y",
-    "tolerance": 1,
+    "tolerance": 5,
     "funFact": "Eisen spawnt am häufigsten bei Y=16."
   },
   {
@@ -3970,7 +4064,7 @@
     "question": "Auf welchem Y-Level spawnt Gold am häufigsten?",
     "answer": -16,
     "unit": "Y",
-    "tolerance": 1,
+    "tolerance": 5,
     "funFact": "Gold spawnt am häufigsten bei Y=-16 in der Oberwelt."
   },
   {
@@ -5056,7 +5150,9 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Man repariert es mit Phantommembran. Die Haltbarkeit ist schnell weg, wenn man ständig gegen Wände rauscht."
+    "funFact": "Man repariert es mit Phantommembran. Die Haltbarkeit ist schnell weg, wenn man ständig gegen Wände rauscht.",
+    "tolerancePct": 10,
+    "toleranceMin": 5
   },
   {
     "id": 667,

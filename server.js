@@ -16,7 +16,7 @@ const MGAnswer   = require('./answer-check.js');
 
 const app    = express();
 const server = http.createServer(app);
-const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 32 * 1024 });
+const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 96 * 1024 });
 
 // ── Statische Dateien (Server-/Config-Dateien nicht ausliefern) ──────────────
 const BLOCKED = [
@@ -78,12 +78,14 @@ const MAX_PLAYERS  = 8;
 const MAX_ROUNDS   = 10;
 const PTS_CORRECT  = 150;
 const PTS_SPEED    = 50;
+const PTS_WRONG    = 50;           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
 const BUZZ_WINDOW  = 120;          // ms: gleichzeitige Buzzes werden latenzbereinigt verglichen
 const GRACE_MS     = 30000;        // Reconnect-Fenster
 const MAX_NAME_LEN = 16;
 const MAX_ANSWER_LEN = 100;
 const MAX_ROOMS    = 300;
-const MAX_SKIN_LEN = 6000;
+const MAX_SKIN_LEN = 24000;      // data-URL-Laenge; dekodiert max. 16 KB
+const MAX_SKIN_BYTES = 16384;
 const OPTION_COUNT = 8;
 
 // ── Eingabe-Hilfen ────────────────────────────────────────────────────────────
@@ -92,7 +94,9 @@ function cleanText(v, max) {
   return String(v).replace(/[\u0000-\u001f\u007f<>"`&​-‏‪-‮⁦-⁩﻿]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 
-// Skin: winziges PNG als data-URL. Nur validieren, nie speichern, nie als HTML ausgeben.
+// Skin: PNG als data-URL (ganzer Skin 64x64/64x32 oder 8x8-Kopf). Nur validieren, nie speichern, nie als HTML ausgeben.
+function validCharacter(c) { return c === 'alex' ? 'alex' : 'steve'; }
+function skinIdOf(s) { return s ? crypto.createHash('sha1').update(s).digest('hex').slice(0, 10) : null; }
 function validSkin(s) {
   const PRE = 'data:image/png;base64,';
   if (typeof s !== 'string' || s.length > MAX_SKIN_LEN || !s.startsWith(PRE)) return null;
@@ -100,11 +104,13 @@ function validSkin(s) {
   if (!b64 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) return null;
   let buf;
   try { buf = Buffer.from(b64, 'base64'); } catch (e) { return null; }
-  if (buf.length < 33 || buf.length > 4500) return null;
+  if (buf.length < 33 || buf.length > MAX_SKIN_BYTES) return null;
   if (buf.readUInt32BE(0) !== 0x89504e47 || buf.readUInt32BE(4) !== 0x0d0a1a0a) return null;
   if (buf.toString('ascii', 12, 16) !== 'IHDR') return null;
   const w = buf.readUInt32BE(16), h = buf.readUInt32BE(20);
-  if (w < 1 || h < 1 || w > 64 || h > 64) return null;
+  const okFull = w === 64 && (h === 64 || h === 32);
+  const okHead = w === 8 && h === 8;
+  if (!okFull && !okHead) return null;
   return s;
 }
 
@@ -156,6 +162,8 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent }
     pending:       new Set(),   // alle setTimeouts des Raums
     buzzQueue:     null,
     answered:      false,
+    lastAnswer:    null,        // { playerId, text, correct, timeout, delta } fuer Snapshot/Sprechblase
+    typingId:      null,
     starting:      false,
     roundNum:      0,
     lastResult:    null,
@@ -212,11 +220,15 @@ function uniqueName(room, base) {
 }
 
 function publicPlayer(p, room) {
-  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, connected: p.connected, ready: room ? room.ready.has(p.id) : false };
+  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, ready: room ? room.ready.has(p.id) : false };
+}
+// Voller Datensatz inkl. Skin: nur einmalig (joined-Roster, player_joined, player_updated)
+function fullPlayer(p) {
+  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected };
 }
 function scoreList(room) {
   return Object.values(room.players)
-    .map(p => ({ id: p.id, name: p.name, score: p.score, skin: p.skin || null, connected: p.connected }))
+    .map(p => ({ id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected }))
     .sort((a, b) => b.score - a.score);
 }
 
@@ -280,6 +292,8 @@ function nextQuestion(room) {
   room.lockedOut     = new Set();
   room.currentBuzzer = null;
   room.answered      = false;
+  room.lastAnswer    = null;
+  room.typingId      = null;
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
     room.questionOrder = shuffle(buildPool(room.categories));
@@ -330,8 +344,16 @@ function handleWrongAnswer(room, socketId, submittedAnswer, timeout = false, fee
   clearInterval(room.timerIv);
   if (socketId) room.lockedOut.add(socketId);
   room.currentBuzzer = null;
+  room.typingId = null;
 
   const player = room.players[socketId];
+  let delta = 0;
+  if (player) {
+    const before = player.score;
+    player.score = Math.max(0, before - PTS_WRONG);
+    delta = player.score - before;                 // 0 .. -PTS_WRONG
+  }
+  room.lastAnswer = { playerId: socketId, text: timeout ? null : (submittedAnswer || ''), correct: false, timeout: !!timeout, delta };
   const remaining = connectedIds(room).filter(id => !room.lockedOut.has(id));
 
   io.to(room.id).emit('answer_broadcast', {
@@ -341,9 +363,18 @@ function handleWrongAnswer(room, socketId, submittedAnswer, timeout = false, fee
     timeout,
     submitted:  submittedAnswer,
     feedback,
+    delta,
+    penalty:    PTS_WRONG,
+    score:      player ? player.score : null,
     lockedOut:  [...room.lockedOut],
     remaining:  remaining.length,
   });
+  if (timeout) {
+    io.to(room.id).emit('answer_timeout', { playerId: socketId, playerName: player ? player.name : '?', delta, penalty: PTS_WRONG, score: player ? player.score : null });
+  } else {
+    io.to(room.id).emit('answer_given', { playerId: socketId, playerName: player ? player.name : '?', text: (submittedAnswer || '').slice(0, 40), correct: false, delta, score: player ? player.score : null, unit: room.question ? (room.question.unit || null) : null });
+  }
+  broadcastLobby(room);
 
   if (remaining.length === 0) {
     room.answered = true;                       // nichts mehr annehmen
@@ -428,12 +459,26 @@ function resolveBuzz(room) {
   room.answered      = false;
   room.timerLeft     = ANSWER_TIME;
 
+  room.typingId = null;
   io.to(room.id).emit('buzzer_won', { playerId: winner.id, playerName: winner.name });
+  io.to(room.id).emit('buzzed', { playerId: winner.id, playerName: winner.name });
   broadcastLobby(room);
   startAnswerCountdown(room);
 }
 
 // ── Snapshot fuer Spaetbeitritt / Reconnect ──────────────────────────────────
+function sceneState(room) {
+  return {
+    phase: room.phase,
+    buzzedId: room.phase === 'answering' ? room.currentBuzzer : null,
+    typingId: room.typingId || null,
+    lockedOut: [...room.lockedOut],
+    speech: room.lastAnswer || null,
+    timerLeft: room.timerLeft,
+    roundNum: room.roundNum,
+  };
+}
+
 function sendSnapshot(socket, room) {
   broadcastLobby(room);
   if (room.phase === 'buzzer' || room.phase === 'answering') {
@@ -448,6 +493,7 @@ function sendSnapshot(socket, room) {
   } else if (room.phase === 'game_over' && room.lastGameOver) {
     socket.emit('game_over', { ...room.lastGameOver, scores: scoreList(room) });
   }
+  socket.emit('scene', sceneState(room));
 }
 
 // ── Socket.io ─────────────────────────────────────────────────────────────────
@@ -481,10 +527,11 @@ io.on('connection', (socket) => {
     return r && !r.dead ? r : null;
   }
 
-  function joinRoomAs(room, name, skin, rejoinPlayer) {
+  function joinRoomAs(room, name, skin, rejoinPlayer, character) {
     let p = rejoinPlayer;
     if (!p) {
-      p = { id: socket.id, name: uniqueName(room, name), score: 0, skin: skin || null,
+      p = { id: socket.id, name: uniqueName(room, name), score: 0, skin: skin || null, skinId: skinIdOf(skin),
+            character: validCharacter(character),
             token: crypto.randomBytes(16).toString('hex'), connected: true, dcTimer: null };
       room.players[socket.id] = p;
     }
@@ -494,7 +541,10 @@ io.on('connection', (socket) => {
       playerId: p.id, roomId: room.id, displayName: room.displayName, playerName: p.name,
       isPublic: room.isPublic, categories: room.categories, skin: p.skin || null,
       token: p.token, rejoined: !!rejoinPlayer,
+      character: p.character,
+      players: Object.values(room.players).map(fullPlayer),
     });
+    if (!rejoinPlayer) socket.to(room.id).emit('player_joined', { player: fullPlayer(p) });
     sendSnapshot(socket, room);
     maybeAutoStart(room);
   }
@@ -515,6 +565,7 @@ io.on('connection', (socket) => {
     const finalize = () => {
       clearTimeout(p.dcTimer);
       delete room.players[p.id];
+      io.to(room.id).emit('player_left', { id: p.id });
       room.lockedOut.delete(p.id);
       room.ready.delete(p.id);
       if (room.currentBuzzer === p.id) room.currentBuzzer = null;
@@ -560,7 +611,7 @@ io.on('connection', (socket) => {
     });
     room.questionOrder = shuffle(buildPool(room.categories));
     rooms[rid] = room;
-    joinRoomAs(room, cleanText(d.playerName, MAX_NAME_LEN) || 'Host', validSkin(d.skin), null);
+    joinRoomAs(room, cleanText(d.playerName, MAX_NAME_LEN) || 'Host', validSkin(d.skin), null, d.character);
     console.log(`Raum: ${rid}${room.categories ? ' [' + room.categories.join(',') + ']' : ''}`);
   });
 
@@ -581,7 +632,7 @@ io.on('connection', (socket) => {
     joinFails = 0;
     if (currentRoom) leaveCurrent(true);
     const name = cleanText(d.playerName, MAX_NAME_LEN) || `Spieler ${playerCount(room) + 1}`;
-    joinRoomAs(room, name, validSkin(d.skin), null);
+    joinRoomAs(room, name, validSkin(d.skin), null, d.character);
     console.log(`+ Spieler -> ${rid}`);
   });
 
@@ -601,7 +652,33 @@ io.on('connection', (socket) => {
     old.id = socket.id; old.connected = true;
     room.players[socket.id] = old;
     if (room.lockedOut.has(oldId)) { room.lockedOut.delete(oldId); room.lockedOut.add(socket.id); }
+    io.to(room.id).emit('player_id_changed', { oldId, newId: socket.id });
+    if (room.currentBuzzer === oldId) room.currentBuzzer = socket.id;
     joinRoomAs(room, old.name, null, old);
+  });
+
+  // Profil (Skin/Charakter) nachtraeglich setzen -> einmalig an alle als player_updated
+  on('set_profile', (d) => {
+    d = d || {};
+    const room = getRoom();
+    if (!room) return;
+    const p = room.players[socket.id];
+    if (!p) return;
+    if (typeof d.character === 'string') p.character = validCharacter(d.character);
+    if (Object.prototype.hasOwnProperty.call(d, 'skin')) { p.skin = validSkin(d.skin); p.skinId = skinIdOf(p.skin); }
+    io.to(room.id).emit('player_updated', { player: fullPlayer(p) });
+  });
+
+  // Tipp-Signal (ohne Inhalt) fuer die Nachdenk-Animation
+  let lastTyping = 0;
+  on('typing', () => {
+    const room = getRoom();
+    if (!room || room.phase !== 'answering' || room.currentBuzzer !== socket.id) return;
+    const now = Date.now();
+    if (now - lastTyping < 700) return;
+    lastTyping = now;
+    room.typingId = socket.id;
+    socket.to(room.id).emit('typing', { playerId: socket.id });
   });
 
   on('leave_room', () => leaveCurrent(true));
@@ -653,11 +730,15 @@ io.on('connection', (socket) => {
     const shown      = cleanText(raw, 60);
 
     if (result.correct) {
-      player.score += PTS_CORRECT + speedBonus;
+      const gain = PTS_CORRECT + speedBonus;
+      player.score += gain;
+      room.typingId = null;
+      room.lastAnswer = { playerId: socket.id, text: shown, correct: true, timeout: false, delta: gain };
       io.to(room.id).emit('answer_broadcast', {
         playerId: socket.id, playerName: player.name, correct: true,
-        submitted: shown, score: player.score, speedBonus,
+        submitted: shown, score: player.score, speedBonus, delta: gain,
       });
+      io.to(room.id).emit('answer_given', { playerId: socket.id, playerName: player.name, text: shown.slice(0, 40), correct: true, delta: gain, score: player.score, unit: room.question.unit || null });
       broadcastLobby(room);
       later(room, () => revealResult(room, socket.id), 2000);
     } else {

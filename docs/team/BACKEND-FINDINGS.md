@@ -50,3 +50,12 @@
 
 ## Nachtrag: sw.js
 - Cache `mineguess-v4`, `mg-icons.js` in ASSETS, `/assets/mc/*` cache-first (zusammen mit allen Bildern/Fonts), HTML/JS/CSS/JSON bleiben network-first.
+
+
+## Runde 3 (A1-A4)
+- **A1 Zeitgewinn bei leerer Eingabe**: `submitGuess` hielt den Timer an (`clearInterval`) und startete ihn bei leerer/ungültiger Eingabe mit vollem Wert neu (`startTimer`). Jetzt wird zuerst validiert; bei leer/ungültig nur Toast, Timer unverändert. Gleiche Funktion für Endlos, Blitz, Daily, Wettkampf, Joker. Server: `answer_invalid` fasst den Antwort-Timer nicht an (geprüft).
+- **A2 Strafpunkte MP**: `PTS_WRONG = 50`, Score nie < 0; gilt für falsche Antwort und Timeout nach Buzz. Events enthalten `delta`/`penalty`/`score`.
+- **A3 Leaderboard**: Ursachen siehe docs/team/FIRESTORE-RULES.md (z-index-Überdeckung durch `#comp-end`/`#blitz-end`/`#daily-end`, verschluckte Fehler, `window.fbDb`-Bug bei Reports, wahrscheinlich fehlende/abgelaufene Firestore-Regeln beim Auftraggeber). Lokaler Fallback `mg_lb_local` (nur dieses Gerät), Fehlerhinweise.
+- **A4 Toleranzen**: `tolerancePct`/`toleranceMin` in `answer-check.js`; angewendet auf 30 Haltbarkeits-Fragen (ids 153, 159, 160, 343-368, 666), 15 Sprengwiderstände (313-327), XP (29, 463, 495). Y-Level-Fragen (28, 522, 527, 530, 531) auf ±5 absolut.
+  - Weitere "unmerkbare" Zahlen, die noch exakt bewertet werden und ggf. ebenfalls Toleranz brauchen (Entscheidung Lead/forscher): Lichtlevel (329-342: Lerninhalt, exakt ok), Haltbarkeits-Ersatz "Wie viele Schüsse..." (160 bereits), Nahrungspunkte (557-576, 1-10, exakt vertretbar), Drop-/Spawn-Chancen in % (14: 0,164 %, 33: 10 %, 43: 80 %, 50: 20 %, 624: 5 %, 621: 0,083 %), Level-Kosten, Piglin-/Dorfbewohner-Distanzen (Blöcke).
+- **Zusatz**: `submitReport` schrieb nie nach Firestore (`window.fbDb` undefined) - behoben.

@@ -31,7 +31,9 @@ header {
   border-bottom: 1px solid var(--border);
   padding: 0 24px;
   position: relative;
-  height: 52px;
+  min-height: 52px;
+  padding-top: 4px; padding-bottom: 4px;
+  gap: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -57,6 +59,9 @@ header h1 a { color: var(--text); text-decoration: none; }
 .header-stats {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
   gap: 4px;
 }
 .stat {
@@ -677,7 +682,7 @@ main {
 
 /* ── LEADERBOARD MODAL ── */
 #lb-modal {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed; inset: 0; z-index: 400;
   background: rgba(0,0,0,0.75);
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
@@ -879,7 +884,7 @@ main {
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
   white-space: nowrap;
-  z-index: 300;
+  z-index: 600;
 }
 #toast.show {
   opacity: 1;
@@ -1291,6 +1296,16 @@ main {
 .lb-meta { color:var(--muted); font-size:.78rem; white-space:nowrap; }
 .lb-score { font-family:var(--font-px); color:var(--green); font-size:.8rem; white-space:nowrap; }
 #bg-canvas { display:none; }
+html { overflow-x:clip; }
+header h1 { flex-shrink:0; }
+@media (max-width:640px) {
+  header { height:auto !important; }
+  #btn-leaderboard { display:none; }
+  .stat:nth-child(2), .stat:nth-child(3) { display:none; }
+  .header-stats { gap:4px; }
+  #user-chip .uname { max-width:56px; }
+}
+@media (max-width:360px) { #user-chip { display:none !important; } }
 .mode-name { display:flex; align-items:center; gap:10px; }
 .caret { width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:6px solid currentColor; opacity:.6; display:inline-block; }
 .theme-btn, .sound-btn { display:inline-flex; align-items:center; justify-content:center; }
@@ -1304,6 +1319,7 @@ main {
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="mg-skin.js"></script>
+<script src="mg-scene.js"></script>
   <script src="mg-icons.js"></script>
   <script src="firebase-config.js" onerror="window.FIREBASE_ENABLED=false;window.FIREBASE_CONFIG=null;"></script>
 </head>
@@ -1527,7 +1543,7 @@ main {
     <span id="hdr-chip"></span>
     <button class="theme-btn" id="theme-toggle" title="Theme wechseln" aria-label="Hell/Dunkel wechseln"></button>
     <button class="sound-btn" id="sound-toggle" title="Ton ein/aus" aria-label="Ton ein oder aus" onclick="toggleSound()"></button>
-    <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()" style="display:none">Rangliste</button>
+    <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()">Rangliste</button>
     <button type="button" class="user-chip" id="user-chip" style="display:none" onclick="toggleUserMenu()" aria-haspopup="true">
       <img id="user-avatar" src="" alt=""/>
       <span class="uname" id="user-name"></span>
@@ -1624,7 +1640,7 @@ main {
 </div><!-- #game-wrapper -->
 
 <footer class="mg-footer">
-  <p>MineGuess ist ein inoffizielles Fan-Projekt und kein Minecraft-Produkt. Nicht von Mojang oder Microsoft.</p>
+  <p>Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden. Minecraft-Texturen und -Namen © Mojang Studios / Microsoft.</p>
   <nav aria-label="Rechtliches und Seiten">
     <a href="index.html">Start</a>
     <a href="multiplayer.html">Multiplayer</a>
@@ -1926,7 +1942,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
   document.getElementById('funfact-text').textContent = question.funFact;
-  document.getElementById('input-area').style.display = 'none';
+  document.getElementById('input-area').style.visibility = 'hidden'; // Höhe behalten, kein Layout-Sprung
   document.getElementById('hint-btn').disabled = true;
 
   // Competition mode: check if done
@@ -2191,14 +2207,14 @@ function buildInput() {
 function submitGuess() {
   if (finished) return;
 
-  clearInterval(timerInterval);
-
   const inp = document.getElementById('answer-input');
   const val = inp.value.trim();
-  if (!val) { startTimer(); showToast('Bitte eine Antwort eingeben!'); return; }
+  // Leere/ungueltige Eingabe: nur Hinweis, Timer laeuft unveraendert weiter (kein Zeitgewinn)
+  if (!val) { showToast('Bitte eine Antwort eingeben!'); return; }
 
   const fb = getFeedback(question, val);
-  if (fb.invalid) { showToast(fb.text); startTimer(); return; }
+  if (fb.invalid) { showToast(fb.text); return; }
+  clearInterval(timerInterval);
   addGuessRow(val, question.type === 'number' ? question.unit : '', fb);
   markDot(attempts, fb.correct ? 'correct' : 'used');
   attempts++;
@@ -2357,6 +2373,7 @@ function loadNextQuestion() {
   document.getElementById('result-panel').classList.remove('show');
   document.getElementById('next-countdown').innerHTML = '';
   document.getElementById('guesses-list').innerHTML   = '';
+  document.getElementById('input-area').style.visibility = '';
   document.getElementById('input-area').style.display = '';
 
   resetHints();
@@ -2492,6 +2509,7 @@ function finishAuth() {
     // Unlock competition mode tag
     document.getElementById('comp-mode-tag').textContent = 'Alle 12 Std.';
     document.getElementById('btn-leaderboard').style.display = '';
+    setTimeout(function () { if (window.MGSkin) MGSkin.ensureCharacter(); }, 600);
     // Show sign-out button on mode screen
     document.getElementById('btn-mode-signout').style.display = '';
   } else {
@@ -2555,7 +2573,36 @@ async function submitLeaderboard(score, correct, total) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     showToast('Neues Bestresultat gespeichert.');
-  } catch(e) { console.warn('submitLeaderboard:', e); }
+  } catch(e) {
+    console.warn('submitLeaderboard:', e);
+    showToast(lbErrorText(e), 5000);
+  }
+}
+
+// ── Leaderboard: lokaler Fallback (nur auf diesem Geraet) ────────────────────
+const LB_LOCAL_KEY = 'mg_lb_local';
+function lbErrorText(e) {
+  const c = e && e.code ? String(e.code) : '';
+  if (c.indexOf('permission-denied') >= 0) return 'Bestenliste online nicht erreichbar: keine Berechtigung (Firestore-Regeln).';
+  if (c.indexOf('unavailable') >= 0 || c.indexOf('network') >= 0) return 'Bestenliste online nicht erreichbar: keine Verbindung.';
+  if (c.indexOf('failed-precondition') >= 0) return 'Bestenliste online nicht erreichbar: Index fehlt.';
+  return 'Bestenliste online nicht erreichbar.';
+}
+function lbLocalGet() {
+  try { const a = JSON.parse(localStorage.getItem(LB_LOCAL_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function recordLocalLb(mode, score, correct, total) {
+  try {
+    if (!(score > 0)) return;
+    const a = lbLocalGet();
+    if (a.some(x => x.mode === mode && x.date === getDateKey() && x.score === score && x.correct === correct)) return;
+    a.push({
+      name: (currentUser && currentUser.displayName) ? currentUser.displayName : 'Du',
+      mode: mode, score: score, correct: correct || 0, total: total || 0, date: getDateKey()
+    });
+    a.sort((x, y) => (y.score || 0) - (x.score || 0));
+    localStorage.setItem(LB_LOCAL_KEY, JSON.stringify(a.slice(0, 20)));
+  } catch (e) {}
 }
 
 let currentLbFilter = 'today';
@@ -2567,45 +2614,61 @@ async function showLeaderboard() {
 
 async function loadLeaderboard(filter) {
   currentLbFilter = filter;
-  // Update tabs
   document.getElementById('lb-tab-today').classList.toggle('active', filter === 'today');
   document.getElementById('lb-tab-all').classList.toggle('active', filter === 'all');
 
   const list = document.getElementById('lb-list');
   list.innerHTML = '<div class="lb-empty">Lade…</div>';
-  if (!fbDb) {
-    list.innerHTML = '<div class="lb-empty">Firebase nicht konfiguriert.<br><small>Richte firebase-config.js ein.</small></div>';
-    return;
-  }
-  try {
-    const snap = await fbDb.collection('leaderboard').orderBy('score','desc').limit(100).get();
-    let docs = snap.docs;
-    if (filter === 'today') {
-      const today = getDateKey();
-      docs = docs.filter(d => d.data().date === today);
+
+  let globalHtml = '';
+  let note = '';
+  if (typeof fbDb === 'undefined' || !fbDb) {
+    note = 'Online-Bestenliste ist nicht verfügbar. Es werden nur Ergebnisse von diesem Gerät angezeigt.';
+  } else {
+    try {
+      const snap = await fbDb.collection('leaderboard').orderBy('score', 'desc').limit(100).get();
+      let docs = snap.docs;
+      if (filter === 'today') {
+        const today = getDateKey();
+        docs = docs.filter(d => d.data().date === today);
+      }
+      docs = docs.slice(0, 20);
+      if (docs.length === 0) {
+        globalHtml = '<div class="lb-empty">' + (filter === 'today' ? 'Heute noch keine Einträge.' : 'Noch keine Einträge.') + '</div>';
+      } else {
+        const medals = ['1', '2', '3'];
+        globalHtml = docs.map((d, i) => {
+          const e = d.data(), isMe = currentUser && e.uid === currentUser.uid;
+          const pct = e.total ? Math.round(e.correct / e.total * 100) : 0;
+          return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">' + (medals[i] || '#' + (i + 1)) + '</span>' +
+            '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
+            '<span class="lb-meta">' + (e.correct || 0) + '/' + (e.total || 10) + ' · ' + pct + '%</span>' +
+            '<span class="lb-score">' + (e.score || 0).toLocaleString() + ' Pkt.</span></div>';
+        }).join('');
+      }
+      if (isGuest) note = 'Als Gast kannst du dich nicht eintragen. Melde dich an, um in die Online-Liste zu kommen.';
+    } catch (e) {
+      console.warn('loadLeaderboard:', e);
+      note = lbErrorText(e) + ' Es werden nur Ergebnisse von diesem Gerät angezeigt.';
     }
-    docs = docs.slice(0, 20);
-    if (docs.length === 0) {
-      list.innerHTML = `<div class="lb-empty">${filter==='today'?'Heute noch keine Einträge.':'Noch keine Einträge.'}</div>`;
-      return;
-    }
-    list.innerHTML = '';
-    const medals = ['1','2','3'];
-    docs.forEach((d,i) => {
-      const e = d.data(), isMe = currentUser && e.uid === currentUser.uid;
-      const row = document.createElement('div');
-      row.className = 'lb-row' + (isMe ? ' me' : '');
-      const pct = e.total ? Math.round(e.correct/e.total*100) : 0;
-      row.innerHTML = `<span class="lb-rank">${medals[i]||'#'+(i+1)}</span>
-        <span class="lb-name">${escHtml(e.displayName)}${isMe?' (Du)':''}</span>
-        <span class="lb-meta">${e.correct||0}/${e.total||10} · ${pct}%</span>
-        <span class="lb-score">${(e.score||0).toLocaleString()} Pkt.</span>`;
-      list.appendChild(row);
-    });
-  } catch(e) {
-    list.innerHTML = '<div class="lb-empty" style="color:var(--red)">Fehler beim Laden.</div>';
-    console.warn('loadLeaderboard:', e);
   }
+
+  // Lokale Liste (nur auf diesem Geraet)
+  let local = lbLocalGet();
+  if (filter === 'today') local = local.filter(x => x.date === getDateKey());
+  let localHtml = '';
+  if (local.length) {
+    localHtml = '<div class="lb-empty" style="padding:12px 0 4px">Nur auf diesem Gerät gespeichert</div>' +
+      local.slice(0, 10).map((x, i) =>
+        '<div class="lb-row"><span class="lb-rank">#' + (i + 1) + '</span>' +
+        '<span class="lb-name">' + escHtml(x.name) + '</span>' +
+        '<span class="lb-meta">' + escHtml(x.mode || '') + ' · ' + (x.correct || 0) + '/' + (x.total || 0) + '</span>' +
+        '<span class="lb-score">' + (x.score || 0).toLocaleString() + ' Pkt.</span></div>').join('');
+  }
+
+  list.innerHTML = (note ? '<div class="lb-empty" role="status">' + escHtml(note) + '</div>' : '') +
+    globalHtml + localHtml +
+    ((!globalHtml && !localHtml) ? '<div class="lb-empty">Noch keine Einträge.</div>' : '');
 }
 
 // ── Points system ─────────────────────────────────────────────────────────────
@@ -2752,6 +2815,7 @@ function showBlitzEnd() {
     playSound('pb');
   }
   _trackBlitzGame();
+  recordLocalLb('Blitz', blitzScore, blitzCorrect, blitzAnswered);
   document.getElementById('blitz-end').classList.add('show');
   checkAchievements();
 }
@@ -2828,6 +2892,7 @@ function showDailyEnd() {
   document.getElementById('game-wrapper').style.display = 'none';
   const pct = Math.round(dailyCorrect / DAILY_TOTAL * 100);
   saveDailyData({ done: true, score: dailyScore, correct: dailyCorrect, pct });
+  recordLocalLb('Daily', dailyScore, dailyCorrect, DAILY_TOTAL);
   const streak = getDailyStreak();
   document.getElementById('daily-streak-num').textContent = streak;
   document.getElementById('daily-correct-num').textContent = dailyCorrect;
@@ -2977,6 +3042,7 @@ function showCompEnd(score, correct, total) {
     }
   }
 
+  recordLocalLb('Wettkampf', score, correct, total);
   if (!isGuest && FIREBASE_ENABLED) submitLeaderboard(score, correct, total);
 }
 
@@ -3390,7 +3456,7 @@ function submitReport(reason) {
   if (_reportedQs.has(qid)) { showToast('Bereits gemeldet.', 1500); return; }
   _reportedQs.add(qid);
   localStorage.setItem('mg_reported', JSON.stringify([..._reportedQs]));
-  if (FIREBASE_ENABLED && window.fbDb) {
+  if (typeof FIREBASE_ENABLED !== 'undefined' && FIREBASE_ENABLED && fbDb) {
     try {
       fbDb.collection('reports').add({
         questionId: qid,
@@ -3512,5 +3578,6 @@ if ('serviceWorker' in navigator) {
 </script>
 <script>MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
 MGSkin.mountChip(document.getElementById('mode-profile'));</script>
+<script>document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.getElementById('lb-modal'); if (m && !m.classList.contains('hidden')) m.classList.add('hidden'); } });</script>
 </body>
 </html>

@@ -37,8 +37,8 @@
   <ul>
     <li>Du kannst MineGuess ohne Konto spielen (Gastmodus). Spielstände liegen dann nur in deinem Browser.</li>
     <li>Mit Google-Anmeldung werden Name, Profilbild und Spielstatistiken in einer Cloud-Datenbank gespeichert, damit Leaderboard und Statistiken funktionieren.</li>
-    <li>Im Multiplayer werden dein Spielername, Antworten und optional dein Spielerkopf nur für die Dauer der Runde im Arbeitsspeicher des Servers gehalten.</li>
-    <li>Es gibt keine Werbung, kein Tracking und keine Analyse-Dienste.</li>
+    <li>Im Multiplayer werden dein Spielername, Antworten und optional dein Skin und deine Figurwahl (Steve oder Alex) nur für die Dauer der Runde im Arbeitsspeicher des Servers gehalten.</li>
+    <li>Es gibt keine Werbung (auch nicht für Premium-Nutzer relevant: MineGuess ist werbefrei), kein Tracking und keine Analyse-Dienste.</li>
   </ul>
 
   <h2>3. Hosting und Server-Logdateien</h2>
@@ -56,16 +56,16 @@
   <p>Zweck ist die Bereitstellung von Rangliste, Statistiken und Premium-Funktionen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Leaderboard-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
 
   <h2>5. Multiplayer (Echtzeitverbindung)</h2>
-  <p>Für den Multiplayer besteht eine WebSocket-Verbindung (Socket.io) zum Spielserver. Übertragen und verarbeitet werden: dein gewählter Spielername, Raumname und Raumcode, ggf. ein Raumpasswort, Bereit-Status, Buzzer, Antworten und Punkte sowie, falls du ihn hochlädst, dein <strong>Spielerkopf</strong> (ein 8x8-Pixel-Bild).</p>
+  <p>Für den Multiplayer besteht eine WebSocket-Verbindung (Socket.io) zum Spielserver. Übertragen und verarbeitet werden: dein gewählter Spielername, Raumname und Raumcode, ggf. ein Raumpasswort, Bereit-Status, Buzzer, Antworten und Punkte sowie, falls du ihn hochlädst, dein <strong>Skin</strong> (64x64-Bild) und deine Figurwahl.</p>
   <ul>
-    <li>Der Skin selbst wird nicht hochgeladen. Der Kopf wird in deinem Browser ausgeschnitten, nur dieses kleine Bild wird an Mitspieler im Raum gesendet.</li>
+    <li>Dein Skin (64x64-PNG) wird in deinem Browser verarbeitet und lokal gespeichert. Die Datei wird nicht auf unseren Server hochgeladen. Nur wenn du einen Multiplayer-Raum betrittst, wird die kleine, normalisierte Skin-Grafik (wenige KB) zusammen mit deiner Figurwahl (Steve oder Alex) an den Spieleserver und die Mitspieler im Raum gesendet. Dort liegt sie nur im Arbeitsspeicher und wird mit dem Raum gelöscht.</li>
     <li>Diese Daten liegen im Arbeitsspeicher des Servers und werden gelöscht, sobald du den Raum verlässt oder der Raum geschlossen wird. Nach einem Verbindungsabbruch wird dein Platz bis zu 30 Sekunden gehalten, damit du zurückkehren kannst. Es erfolgt keine dauerhafte Speicherung in einer Datenbank; Spielername und Raumcode können jedoch in den technischen Logs des Hosting-Anbieters erscheinen.</li>
     <li>Spielername, Raum und Kopf sind für andere Spieler im selben Raum sichtbar; öffentliche Räume erscheinen in der Raumliste. Bitte verwende keinen Klarnamen oder personenbezogene Bilder.</li>
   </ul>
   <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
 
   <h2>6. Lokale Speicherung im Browser</h2>
-  <p>MineGuess speichert Einstellungen und Spielstände lokal im Browser (localStorage), zum Beispiel Statistiken, Abzeichen, Blitz- und Daily-Ergebnisse, Theme, Ton, gemeldete Fragen und deinen Spielerkopf. Für die Rückkehr in einen Multiplayer-Raum wird zusätzlich eine zufällige Sitzungskennung im sessionStorage abgelegt, die beim Schließen des Tabs gelöscht wird. Außerdem registriert die Seite einen Service Worker, der Dateien für die Offline-Nutzung zwischenspeichert. Diese Speicherung ist technisch erforderlich, um die gewünschte Funktion bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst die Daten jederzeit in den Browser-Einstellungen löschen. Es werden keine Tracking-Cookies gesetzt.</p>
+  <p>MineGuess speichert Einstellungen und Spielstände lokal im Browser (localStorage), zum Beispiel Statistiken, Abzeichen, Blitz- und Daily-Ergebnisse, Theme, Ton, gemeldete Fragen und deinen Skin und deine Figurwahl (Steve oder Alex). Es wird keine Geschlechtsangabe gespeichert, nur der Figurenname. Für die Rückkehr in einen Multiplayer-Raum wird zusätzlich eine zufällige Sitzungskennung im sessionStorage abgelegt, die beim Schließen des Tabs gelöscht wird. Außerdem registriert die Seite einen Service Worker, der Dateien für die Offline-Nutzung zwischenspeichert. Diese Speicherung ist technisch erforderlich, um die gewünschte Funktion bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst die Daten jederzeit in den Browser-Einstellungen löschen. Es werden keine Tracking-Cookies gesetzt.</p>
 
   <h2>7. Schriften, Bilder und weitere Ressourcen</h2>
   <ul>
@@ -95,7 +95,7 @@
 </main>
 
 <footer class="mg-footer">
-  <p>MineGuess ist ein inoffizielles Fan-Projekt und kein Minecraft-Produkt. Nicht von Mojang oder Microsoft.</p>
+  <p>Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden. Minecraft-Texturen und -Namen © Mojang Studios / Microsoft.</p>
   <nav aria-label="Rechtliches und Seiten">
     <a href="game.html">Spielen</a>
     <a href="multiplayer.html">Multiplayer</a>

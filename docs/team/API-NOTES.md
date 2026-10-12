@@ -41,3 +41,43 @@ Buzzes innerhalb von 120 ms werden verglichen: Ankunftszeit minus halbe gemessen
 - Namen/`submitted` sind serverseitig von `<>"&` bereinigt, trotzdem im Client weiter per `textContent` setzen.
 - `server.js`, `package*.json`, `node_modules/`, `docs/`, `*.py`, `*.md`, `*.pdf`, `google-services.json` werden nicht mehr statisch ausgeliefert (404).
 - `sw.js`: Cache `mineguess-v3`, network-first für HTML/JS/CSS/JSON; neue Dateien nur in die `ASSETS`-Liste eintragen (Version bei Deploys erhöhen).
+
+
+---
+# Runde 3: Buzzer-Szene, Ganzkörper-Skin, Strafpunkte (löst die Skin-Abschnitte oben ab)
+
+## Skin / Charakter
+- `create_room`/`join_room` Payload: `{..., skin?, character?}`; später per `set_profile {skin?, character?}`.
+- `skin`: PNG-Data-URL `data:image/png;base64,...`. Erlaubt: **64x64, 64x32 (Ganzkörper) oder 8x8 (Kopf, Altformat)**. Länge <= 24000 Zeichen, dekodiert <= 16384 Byte, PNG-Signatur + IHDR strikt, sonst `skin = null` (kein Fehler). Nur im RAM, mit Raum/Spieler gelöscht.
+- `character`: `'steve' | 'alex'` (alles andere -> `'steve'`). Frontend rendert ohne `skin` den Standard-Charakter.
+- **Skin-Daten werden nur einmalig übertragen**: im `joined`-Roster (`players[]`), per `player_joined {player}` / `player_updated {player}`. `room_state.players[]`, `result.scores[]`, `game_over.scores[]` tragen **keine** Skins mehr, nur `skinId` (10-stelliger Hash, zum Cache-Abgleich) und `character`.
+- Player-Objekt (voll): `{id, name, score, skin, skinId, character, connected}`; kurz (ohne `skin`): `{id, name, score, skinId, character, connected, ready}`.
+- `player_left {id}` beim endgültigen Entfernen (nach Grace/`leave_room`).
+- Reconnect: neue Socket-ID. Server sendet `player_id_changed {oldId, newId}` an den Raum; der Rejoiner bekommt `joined` mit komplettem Roster (`rejoined:true`) + Snapshot.
+
+## Szenen-Events (Server -> Client)
+| Event | Payload | Zeitpunkt |
+|---|---|---|
+| `buzzed` | `{playerId, playerName}` | Buzz entschieden (zusammen mit `buzzer_won`, ca. 120 ms nach dem ersten Druck, latenzbereinigt). Figur drückt den Buzzer. |
+| `typing` | `{playerId}` | Der Buzzer-Halter tippt (an alle außer den Sender, max. alle 700 ms). Client sendet dafür `typing` (ohne Inhalt) bei Eingabe, höchstens ~1x/s. |
+| `answer_given` | `{playerId, playerName, text, correct, delta, score, unit}` | Antwort ausgewertet. `text` bereinigt, max. 40 Zeichen, **nie als HTML rendern** (`textContent`). Sprechblase "Die Antwort ist `text`!" (Zahl: optional + `unit`). `delta`: +Punkte bei richtig, `0..-50` bei falsch (tatsächlich angewendet). `score`: neuer Gesamtstand. |
+| `answer_timeout` | `{playerId, playerName, delta, penalty, score}` | Antwortzeit nach Buzz abgelaufen (oder Buzzer-Halter weg). Sprechblase "Zeit abgelaufen". Zusätzlich zu `answer_broadcast {timeout:true}`. |
+| `scene` | `{phase, buzzedId, typingId, lockedOut[], speech:{playerId,text,correct,timeout,delta}\|null, timerLeft, roundNum}` | Nach `joined`/Rejoin (Snapshot), damit Späteinsteiger die Szene rekonstruieren. Danach gelten die normalen Events. |
+| `answer_invalid` | `{message}` | Leere/ungültige Eingabe: **keine Strafe, kein Zeitgewinn** (Timer läuft unverändert weiter). |
+
+Alte Events (`buzzer_won`, `answer_broadcast`, ...) bleiben unverändert und kompatibel.
+
+## Punkte (A2)
+- `PTS_CORRECT 150` + Speedbonus (max 50); **falsche Antwort / Timeout nach Buzz: -50** (`PTS_WRONG`), Gesamtpunkte nie < 0 (bei Score 20 ist `delta` = -20).
+- `answer_broadcast`/`answer_given`/`answer_timeout` enthalten `delta` (angewendet), `penalty` (50, nur Wrong/Timeout) und `score`.
+- Anzeige "-50" im Ergebnis, in der Live-Liste und im Endscreen: `delta` verwenden, nicht fest 50.
+
+## Solo-Timer (A1)
+`submitGuess` ignoriert leere/ungültige Eingabe vollständig (nur Toast), der Timer wird weder gestoppt noch neu gestartet. Gilt für Endlos, Blitz, Daily, Wettkampf (gleiche Funktion). Server: `answer_invalid` berührt den Antwort-Timer nicht.
+
+## Toleranzen (A4)
+Optionale Felder bei number-Fragen: `tolerancePct` (z. B. 10) und `toleranceMin`. Erlaubte Abweichung = `max(tolerance, |answer| * tolerancePct/100, toleranceMin)`, ausgewertet in `answer-check.js` (Solo und Server identisch). Betroffen: Haltbarkeits-Fragen (±10 %, min. 5), Sprengwiderstand (±20 %, min. 1), Level-XP und Drachen-XP (±5 %).
+
+## Sonstiges
+- `maxHttpBufferSize` 96 KB. sw.js Cache `mineguess-v7`. `public_rooms_update` enthält `hasPassword`.
+- Neustart des Servers nötig.

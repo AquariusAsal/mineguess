@@ -57,6 +57,10 @@
       var cands = parseNumbers(input);
       if (!cands) return { valid: false, correct: false, dir: 'wrong', close: false };
       var tol = Number(q.tolerance) || 0;
+      // Relative Toleranz fuer schwer merkbare Zahlen: max(tolerance, answer*pct%, toleranceMin)
+      if (q.tolerancePct) {
+        tol = Math.max(tol, Math.abs(q.answer) * Number(q.tolerancePct) / 100, Number(q.toleranceMin) || 0);
+      }
       for (var i = 0; i < cands.length; i++) {
         if (Math.abs(cands[i] - q.answer) <= tol + 1e-9) return { valid: true, correct: true, dir: 'ok', close: true };
       }

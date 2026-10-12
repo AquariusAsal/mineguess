@@ -109,3 +109,101 @@ Offen: Profil im Spielmenue unter dem Falz (T-08), kein Fokus-Trap/Fokusring am 
 - Offline: 155/155 Texturen im Cache (sw v5), keine kaputten Bilder.
 - Emoji/Symbole: 0 in allen Dateien und gerendertem DOM (nur "->" Pfeil in 2 Code-Kommentaren in game.html und Konsolenlogs in server.js, nicht sichtbar).
 - Kontrast AA ueber Texturen: 0 Verstoesse; Overflow 0; 518/518 Fragen in Solo loesbar; Profil/Skin 360 und 1280 ok inkl. Fokus-Trap.
+
+---
+
+# Runde 3
+
+## Baseline A1-A6 (reproduziert im Stand vor den Runde-3-Lieferungen, Commit 7e63bfe)
+
+| # | Ergebnis | Reproduktion |
+|---|----------|--------------|
+| A1 | **Reproduziert** (Endlos, Blitz, Daily; Wettkampf nicht: dort laeuft der Speed-Timer weiter). Jeder "Antworten"-Klick/Enter mit leerer oder nur aus Leerzeichen bestehender Eingabe setzt den Frage-Timer auf den Startwert zurueck (40 s Zahl / 70 s Entity). Wiederholtes Absenden haelt die Zeit dauerhaft bei 40 s, Versuch wird nicht verbraucht = unbegrenzte Zeit. Auch der Pfad "ungueltige Zahl" (`fb.invalid`) ruft `startTimer()`. | game.html `submitGuess()`: `clearInterval(timerInterval)` dann `if (!val) { startTimer(); ... }` (Z.~2198/2201; `startTimer` setzt `timerLeft = TIMER_SECONDS`). Test: Modus starten, 6 s warten (timerLeft 33), leer absenden -> 40; 6x leer in 3 s -> bleibt 40. Skript `a1.js`. **Multiplayer-Server** ist ok: 5 leere Antworten verlaengern den 15-s-Timer nicht (12 -> 9 s), `answer_invalid` x5. |
+| A2 | Baseline: falsche Antwort gibt 0 Punkte Abzug (Score bleibt 0), `answer_broadcast` ohne Strafe-Feld. | `a2.js` |
+| A3 | **Ursache gefunden:** Im Wettkampf-Endscreen (`#comp-end`, z-index 200) oeffnet `.btn-ce-lb` zwar `#lb-modal`, aber das Modal lag in der aelteren Fassung (ae61d6c) **hinter** dem Endscreen (elementFromPoint ueber der Modal-Karte = Endscreen, onTop:false) -> Button wirkt tot. Im aktuellen Stand z-index 400, onTop ok. Das Menue-Leaderboard lieferte schon vorher Daten (Firestore-Lesen fuer Gaeste erlaubt, Liste "Jannes Comanescu 12.073 Pkt." sichtbar). Angemeldete Schreibzugriffe (`submitLeaderboard`) koennen nicht getestet werden (kein Konto) -> Firestore-Regeln siehe FIRESTORE-RULES.md. Leere Online-Liste bei Gast: Hinweis + lokaler Fallback ("Nur auf diesem Geraet", localStorage `mg_lb_local`) funktioniert. | `a3.js`, `a3old.js` |
+| A4 | **Reproduziert:** alle 29 Haltbarkeit-Fragen (ids 153, 159, 343-368, 666) haben `tolerance: 0`: 1560 statt 1561 ist falsch. Weitere "unmerkbare" Zahlen mit Toleranz 0 und Wert >= 100 (HEAD, 22 ausser Haltbarkeit): ids 10 (Wither 300), 11, 13, 14, 15, 29 (12000 XP), 45, 52, 54, 65, 67, 92, 313 (Obsidian-Sprengwiderstand 1200), 463 (1395), 481, 485, 489, 495 (5345), 578, 681, 704 (24000 Ticks). | Datenanalyse questions.json |
+| A5 | Bestaetigt: im Code keine Werbung (grep adsbygoogle/doubleclick/adsense/Banner: 0 Treffer); "Werbefrei" steht vor der Lieferung weder in premium.html noch in der Datenschutzerklaerung. | grep |
+| A6 | Der geforderte Footer-Satz ("Nicht von Mojang oder Microsoft genehmigt ... © Mojang Studios / Microsoft") fehlt vor der Lieferung auf allen 6 Seiten (nur Kurzfassung "Nicht von Mojang oder Microsoft."). | grep |
+
+Hinweise Runde 3: Teammates sind nicht erreichbar; Findings stehen hier. Server laeuft (Supervisor), Neustart via restart.flag.
+
+## Verifikation A1-A6 (Stand sw v8, Server neu gestartet)
+
+| # | Ergebnis | Nachweis |
+|---|----------|----------|
+| A1 | **verifiziert.** Leere/Leerzeichen-Eingabe laesst den Timer unveraendert weiterlaufen (Endlos 63 -> 63 -> 60 nach 6 Leer-Submits in 3 s, Blitz/Daily/Wettkampf gleich), kein Versuch verbraucht, nur Toast. Server: 5 leere `submit_answer` verlaengern den 15-s-Timer nicht (12 -> 9), `answer_invalid` ohne Strafe. | a1.js, a2.js |
+| A2 | **verifiziert.** Falsch: -50 (`delta -50`, `penalty 50`, Score 200 -> 150); bei Score 0 bleibt 0 (delta 0); 4 Fehlversuche 200 -> 0, nie < 0. Timeout nach Buzz: genau eine Strafe (`answer_timeout`, delta -50). Keine Doppel-Strafe: 5 weitere `submit_answer` nach falscher Antwort wirkungslos, kein nachtraeglicher Timeout nach falscher Antwort (17 s abgewartet), Disconnect des Buzzer-Halters = 1 Strafe. `room_state`-Scores alle >= 0. Hinweis: der Teilclamp (Score 20 -> delta -20) ist nur im Code geprueft (`Math.max(0, ...)`), da Scores in 50er-Schritten fallen. | mp5.js, mp6.js |
+| A3 | **verifiziert (Gast).** Leaderboard-Modal liegt jetzt ueber Menue, Wettkampf- und Blitz-Endscreen (onTop true; der Daily-Endscreen hat keinen Leaderboard-Button). Gast sieht Online-Liste (Lesen erlaubt) plus Hinweis "Als Gast kannst du dich nicht eintragen" und lokalen Block "Nur auf diesem Geraet gespeichert" (mg_lb_local, Wettkampf-Ergebnis wird eingetragen). Firestore-Hosts geblockt: Modal zeigt nach ca. 1 s Fehlertext + lokale Liste (nicht leer). **Nicht testbar:** angemeldeter Schreibzugriff/Firestore-Regeln (kein Konto) -> docs/team/FIRESTORE-RULES.md muss der Auftraggeber in der Konsole pruefen. Beobachtung (niedrig): bei bereits offener Firestore-Verbindung, die danach geblockt wurde, blieb "Lade..." einmal >= 4 s stehen (nicht reproduzierbar; Timeout/Fallback nach ca. 6 s wuerde das absichern). | a3.js, a3b.js, a3c.js |
+| A4 | **verifiziert.** Alle 29 Haltbarkeits-Fragen (+ 15 Sprengwiderstaende, XP 29/463/495, Y-Level) mit `tolerancePct`/`toleranceMin`; 29/29 Grenzfaelle ok (Diamantspitzhacke 1561: 1405..1717 richtig, 1400 falsch; Goldschwert 32: 27..37 richtig, 38/26 falsch). Solo (`MGAnswer`) und Server (`answer-check.js`) identisch. Noch exakt (Entscheidung Lead, steht in BACKEND-FINDINGS): ids 10, 11, 13, 14, 15 (HP), 45, 52, 54 (Dauer s), 65, 67, 92, 481, 485, 489, 578, 681, 704. | answer-check Selbsttest |
+| A5 | **verifiziert.** premium.html: "Werbefrei" in der Vorteilsliste; Datenschutz: Zeile "keine Werbung". Kein Werbecode im Repo (grep adsbygoogle/doubleclick/adsense: 0). | grep |
+| A6 | **verifiziert.** Footer-Satz ("Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt ... Minecraft-Texturen und -Namen (c) Mojang Studios / Microsoft.") auf allen 6 Seiten, Impressum 2x, Credits mit Wiki-Quelle CC BY-NC-SA. | grep, DOM |
+
+## B: Buzzer-Szene (mg-scene.js, WebGL)
+
+Testaufbau: 4 echte Browser-Sessions (Desktop 1280x720, Mobile 390x844 und 360x640 mit Touch/isMobile, Desktop 1024x768 mit `prefers-reduced-motion: reduce`) plus 4 Socket-Clients = **8 Spieler**; Skins: wide ari.png, slim alex.png, 64x32, eigener 64x64, 4 Bots mit assets-Skins.
+
+| Pruefung | Ergebnis |
+|---|---|
+| Charakter-Wahl Gast (Erststart) | Dialog "Waehle deine Figur: Steve oder Alex" erscheint beim ersten Multiplayer-Aufruf, Auswahl persistiert (`mg_character`), nach Reload kein erneuter Dialog, Profil-Vorschau zeigt 3D-Figur. Account-Erstkontakt (Google) nicht testbar. |
+| Szene rendert (4 Sessions) | ok: Tisch, Buzzer, 8 Figuren, Namensschilder, kein Overflow; Szene 596x335 (Desktop), 326x245 (390), 296x222 (360) |
+| Buzz | Touch-Tap auf `#buzzer-btn` (Mobile) und Leertaste (Desktop) loesen Buzz aus; alle Clients erhalten `buzzed`, Figur drueckt Buzzer, Nachdenk-Blase "..." bei allen |
+| Sprechblase | "Die Antwort ist 12!" (falsch) bei allen 4 Clients, `#scene-live` (aria-live) "Ben: Die Antwort ist 12! Falsch."; Zahl mit Einheit "Die Antwort ist 4 Stoecke!"; Text per textContent (HTML-Antwort/Name erzeugt 0 Elemente, 0 Dialoge); Server kuerzt auf 40 Zeichen und entfernt `<>"&` |
+| Reconnect mitten in der Szene | Trennen/Verbinden waehrend Nachdenken: `joined` rejoined, `scene`-Snapshot, 8 Figuren + Nachdenk-Blase wiederhergestellt; Mitspieler erhalten `player_id_changed` |
+| Spaeteinsteiger | `scene`-Snapshot mit buzzedId/typingId/timerLeft |
+| Performance | 8 Figuren, Mobile 390 mit CPU 4x gedrosselt: 56,5 fps (worst frame 33 ms); Desktop 60 fps; reduced-motion 60 fps (rAF) |
+| prefers-reduced-motion | `MGScene.reducedMotion=true`, Szene statisch (zwei Screenshots im Abstand 1,5 s identisch), Sprechblase bleibt; normale Szene animiert (Idle) |
+| Kein WebGL | `getContext('webgl')` gesperrt: Fallback-Kopfreihe `.mg-fallback` (4 Figuren), Sprechblasen "..." und "Die Antwort ist 4 Stoecke!" funktionieren, 0 Fehler |
+| Skins | 18 Standard-Skins (wide/slim: steve, alex, ari, efe, kai, makena, noor, sunny, zuri) korrekt (Arme 4/3 px, Overlay-Schicht); 64x32 legacy gespiegelt ok; Overlay-only, helle/dunkle Skins ok; ungueltige Skins (SVG, kaputtes PNG, javascript:, 30 KB, null, HTML) -> Standardfigur ohne Fehler; Server verwirft 129x129, 64x128 und > 16 KB |
+| Tastatur | Buzzer-Button fokussierbar (Label "BUZZ"), Space buzzt, Antwortfeld erhaelt nach Buzz automatisch Fokus, Enter sendet |
+| Konsole/Netzwerk | 0 Fehler, 0 404, 0 externe Bildrequests |
+
+### Neue Befunde Runde 3
+
+| ID | Sev | Befund | Repro / Hinweis | Owner | Status |
+|----|-----|--------|-----------------|-------|--------|
+| R3-01 | H | **game.html: horizontaler Scroll im Spielscreen** bei Breiten 320 (12 px), 390 (39 px), 393 (36), 412 (17), 414 (15), 600 (46). `.header-stats` (Chip + Button "Rangliste" `#btn-leaderboard` + weitere) bricht nicht um, rechter Rand 429 px bei 390. Menuescreen ok. Betrifft iPhone 12-15. | Chrome 390x844, game.html, Gast, Modus starten, scrollWidth 429 > 390 (ov2.js, ov3.js) | frontend | offen |
+| R3-02 | M | 8 Spieler: Figuren ueberlappen stark, Namensschilder ueberdecken sich ("Ben (du)" von "Cyimg src=..." verdeckt), auf Mobile 390 ist das unterste Schild ("Bot3") am Canvasrand abgeschnitten; Szene auf 390 nur 326x245. Bei 2-4 Spielern gut lesbar. Vorschlag: bei > 5 Spielern kleinere Figuren/zweite Reihe, Schilder nur fuer aktive Figur, Canvas auf Mobile hoeher (>= 300). | shots/scene-answer-desktop.png, scene-buzzed-mobile.png | frontend | offen |
+| R3-03 | N | `MG_isFull`: Skins mit data-URL <= 600 Zeichen (PNG < ca. 450 Byte, sehr flache Skins) werden stillschweigend durch Steve/Alex ersetzt. | mg-scene.js Z.456 | frontend | offen |
+| R3-04 | N | Komplett transparenter Skin (64x64 alpha 0) ergibt unsichtbare Figur (nur Namensschild). Vorschlag: bei < 5 % opaken Pixeln Standardfigur. | shots/skin1-montage.png | frontend | offen |
+| R3-05 | N | Nur im Test mit eigenem Container ohne vorgeladene Texturen blieb der erste Frame leer (kein Tisch), bis ein weiteres Scene-Objekt lief; echter Spielfluss rendert nach <= 4 s. Vorsorglich `needsRender=true` nach Laden der Tisch-/Buzzer-Texturen. | skinbisect.js | frontend | offen |
+| R3-06 | N | Skin-PNG-Limit 16 KB: unkomprimierbare 64x64-Skins (16,5 KB) werden vom Server still verworfen (Standardfigur). UI sollte beim Upload > 12 KB neu kodieren (canvas.toBlob) oder warnen. | mp5.js | frontend/backend | offen |
+| R3-07 | N | CLS im Spielscreen 0,10-0,13 beim Modusstart, bis 0,6 nach 6 Fehlversuchen im Endlos (Eingabebereich/Hint verschiebt sich, `#input-area` display:none). | walk.js | frontend | offen |
+| R3-08 | I | Charakter-Wahl-Dialog kommt bei blockiertem localStorage bei jedem Besuch erneut (nichts speicherbar); "Fertig" schliesst, Seite laeuft. Akzeptabel. | ls2.js | - | akzeptiert |
+| R3-09 | I | Das Zeichen (c) (U+00A9) steht im geforderten Footer auf allen Seiten und wird vom Symbol-Scan gemeldet; gewollt. "->" nur noch in Code-Kommentaren/Konsolenlogs. | emoji_files.js | Lead | akzeptiert |
+
+## Regression Runde 3
+- Solo: 518/518 Fragen programmatisch geloest, 4 Modi laufen, Punkte 1.000 = Session 1.000; Premium/Impressum/Datenschutz laden, 0 Konsolenfehler; Netzwerk 249 Requests, 0 >= 400, extern nur gstatic/firestore; Gewicht index 160 KB, game 992 KB, multiplayer 378 KB.
+- Blockierter localStorage/sessionStorage: alle 5 Seiten ok, Multiplayer-Lobby startet.
+- Kontrast AA ueber Texturen: 0 Verstoesse (Treffer nur versteckter Menuepunkt / hinter Modal gemessene Texte).
+- Emoji/Symbole: 0 Emoji; Symbole nur (c) im Footer (gefordert) und "->" in Code-Kommentaren.
+- Offline: SW cached alle 155 Texturen, Seiten/Fragen/JS offline ok.
+- Bekannt/unveraendert: Premium per ?premium=1 umgehbar, Platzhalter in Impressum/Datenschutz, Google-Login/Firestore nicht testbar.
+
+## Freigabe Runde 3
+Alle A1-A6 verifiziert, B funktional und performant. **Offener Blocker vor Freigabe: R3-01** (horizontaler Scroll im Spielscreen bei 390/393 px). R3-02 (8-Spieler-Ueberlappung) empfohlen. Rest niedrig.
+
+
+## Nachtest Runde 3b (nach Frontend-Fixes R3-01..R3-07)
+
+Overflow-Matrix (scrollWidth - clientWidth in px, Gast, Chrome): Viewports 320/360/390/393/412/414/600/768/1280 x Login, Menue, Spielscreen, "verloren"-Ergebnis, Wettkampf-Ende, Blitz-Ende, Daily-Ende: **alle 0**. Leaderboard-Button erreichbar und Modal oben: Menue (alle 9 Breiten), Wettkampf-Ende, Blitz-Ende (alle 9 Breiten); Daily-Ende hat konstruktionsbedingt keinen Leaderboard-Button.
+
+| ID | Status | Ergebnis |
+|----|--------|----------|
+| R3-01 | **verifiziert** | Spielscreen 0 px Overflow in allen 9 Breiten |
+| R3-02 | **teilweise** | 8 Spieler: 2 Reihen, Schilder ueberlappen nicht (0 Ueberlappungen, 0 abgeschnitten bei 320/390/768/1280); aber siehe R3-10 und R3-11 |
+| R3-03..R3-06 | verifiziert (Skin-Hinweise/Transparenz laut Frontend; transparenter Skin wird abgelehnt, Standardfigur bei ungueltig) |
+| R3-07 | **teilweise** | Desktop CLS 0,03-0,07 ok; Mobile 390/320 im Multiplayer-Spielscreen 0,10-0,17 (Grenze "gut" 0,1) |
+
+### Neue Befunde 3b
+| ID | Sev | Befund | Repro | Owner | Status |
+|----|-----|--------|-------|-------|--------|
+| R3-10 | M | Sprechblase wird bei langen Antworten (bis 40 Zeichen, z. B. "Die Antwort ist 6 Goldbarren + 1 Stock + 1 Redstone!") am Szenenrand abgeschnitten: bei Figuren am linken/rechten Rand ragt die Blase aus dem Canvas (390x844 n=8 und n=5, 320x640). Blase sollte horizontal in den Szenencontainer geklemmt werden (und Text umbrechen). | mp8.js, shots/r3b-390-8.png | frontend | offen |
+| R3-11 | M | Mobile-Schilder bei 6+ Spielern sind Initialen und bei Standardnamen nicht eindeutig: "Spieler1".."Spieler7" werden alle zu "SP" -> Figuren nicht unterscheidbar. Vorschlag: Initialen + laufende Nummer / erste 2-3 Zeichen, bei Kollision durchnummerieren. | shots/r3b-390-8.png | frontend | offen |
+| R3-12 | M | multiplayer.html bei **320 px**: horizontaler Overflow 27 px schon im Join-Screen (Header, Chip + Beta + Solo). (Bei 360+ ok.) | mp8.js 320x640 | frontend | offen |
+| R3-13 | N | Mobile, 8 Spieler: Live-Punkte-Liste (8 Zeilen, ca. 400 px) steht vor Frage und Szene; auf 390x844 beginnt die Szene erst bei y ca. 720, der Buzzer liegt unter dem Falz. Vorschlag: Liste auf Mobile einklappen/kompakt (2 Spalten) oder unter die Szene. | shots/r3b-390-8.png | frontend | offen |
+
+## Regression 3b
+Solo 518/518 Fragen, 4 Modi, A1 (Timer 33 -> 33 -> 30 bei leeren Submits) ok; Multiplayer-Server-Suite mp5 (A2 -50/Score >= 0, keine Doppelstrafe, Szenen-Events, Skin-Validierung) 29/29 PASS; Konsolenfehler 0, Netzwerk 0 x 4xx, extern nur gstatic/firestore; blockierter Speicher ok; Emoji: 0, Symbole nur (c) im Pflicht-Footer und "->" in Code-Kommentaren; Seiten x 5 Viewports ohne Overflow (vp.js).
+
+## Freigabe-Stand 3b
+Funktional alle Punkte aus Runde 3 verifiziert, kein Blocker mehr. Offen (mittel, UX): R3-10 Blasen-Clipping, R3-11 nicht eindeutige Mobile-Schilder, R3-12 320 px Header im Multiplayer. R3-13 und CLS Mobile (0,10-0,17) niedrig.

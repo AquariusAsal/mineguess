@@ -1,0 +1,42 @@
+Claude Agent:
+
+
+Füge diese lokalen Einstellungen in unserem Projekt:
+
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+
+
+Erstelle eine Meister-Referenz Guide für agent teams in ein order namens docs. Es wird dir in der Zukunft für mehr effektive agent teams weiterhelfen. 
+
+https://code.claude.com/docs/en/agent-teams
+
+
+
+
+
+Ziel: Im Verzeichnis findest du ein Fullstack Webspiel namens Minecraft Guessing Game. Vom Prinzip her findest du alles schon im Order. Das Spiel ist funktionsfähig. Unser Ziel ist es die Website vom Design und Funktionen her zu verbessern. Das Design gefällt mir persönlich gar nicht. Es sieht KI generiert und zu viel aus. Die Animationen sind ebenfalls verbesserungswürdig.
+Vom Funktion und Modi her bitte nichts ändern. Ich will dem ganzen nur einen neuen Look und Bug fixes. Du siehst auch dass das Spiel auf "https://github.com/AquariusAsal/mineguess" hochgeladen und auf Render gehostet wird. Analysiere ebenfalls die derzeitigen Dateien. Außerdem soll das Spiel auf Mobil und Desktop funktionsfähig sein!!! Derzeit sind alle Fragen in den Dateien drinnen. Analysiere "https://de.minecraft.wiki/" und suche nach schweren und lustigen Fakten über Minecraft aus, die Fragestellungen und das System des Spielst findest du eh heraus nach der Analyse. Impressum und Datenschutz soll auch erstellt werden. Schwerpunkt auf Multiplayer. Außerdem wäre es wirklich cool dass man einen eigenen Minecraft-Skin als "Spieler" hochgeladen werden (nur Kopf).
+
+Erstelle für diese Aufgabe folgende Agents mit Sonnet:
+
+Forscher: Soll bekannte Webgames wie "Imposter" oder "Guessing Games" und deren Websites analysieren. Deren Designs etc. Außerdem soll er das "Premium" Prinzip analysieren. Das Design soll wirklich benutzerfreundlich sein. Kommuniziere mit beiden Developern
+Backend Developer: Soll die Informationen über die Funktionen umsetzen (Fragen, Bugs, Funktionalität). Kommuniziere mit dem Forscher und Developer
+Frontend Developer: Soll die Informationen über das Design/UI umsetzen. (Design, Animationen, Zugänglichkeiten, Mobile und Desktop Kompatibilität, Visual Bugs)
+Tester: Kommuniziere mit allen Agents. Teste alle Bausteine und suche auf Fehler und Verbesserungen. Falls Fehler und Verbesserungsvorschläge enthalten soll der Vorgang umgesetzt werden. Am Ende soll die Website zuerst mir im Localhost gezeigt werden, erst nach meiner Bestätigung wird die Website auf Github hochgeladen werden. Teste die Website auch im Multiplayer-Modus.
+
+
+
+
+Bugs:
+Es gibt einen Bug wo mann beim Endlosmodus dass wenn man nichts eingibt und auf antworten klickt, bekommt man mehr zeit ohne dass ein Versuch verschwindet.
+Füge auch Minuspunkte für falsche Antwortmöglichkeiten im Multiplayer.
+Leaderboard Taste bei Wettkampf defekt.
+Leaderboard funktioniert im allgemeinen nicht.
+Toleranzen für Haltbarkeit weil keiner die exakte Zahl weiß.
+Premium soll ohne Werbung sein.
+Werbeanbieter finden.
+Bekomme ich Probleme mit Microsoft und Mojang bei den Texturen?

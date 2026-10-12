@@ -9,6 +9,7 @@
   <script src="multiplayer-config.js" onerror=""></script>
   <script src="mg-skin.js"></script>
   <script src="mg-icons.js"></script>
+  <script src="mg-scene.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="mg.css">
@@ -222,6 +223,16 @@
 
     .skin-box { margin-bottom:16px; }
 
+    @media (max-width:360px) {
+      header .beta, header .mg-logo span { display:none; }
+      header.mg-nav { padding-left:10px; padding-right:10px; gap:6px; }
+      header .btn { padding:6px 10px !important; }
+    }
+    .live-scores .score-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); }
+    .live-scores summary { cursor:pointer; list-style:none; min-height:36px; display:flex; align-items:center; justify-content:space-between; }
+    .live-scores summary::-webkit-details-marker { display:none; }
+    .live-scores summary::after { content:"–"; color:var(--muted); }
+    .live-scores:not([open]) summary::after { content:"+"; }
     @media (max-width:420px) {
       .card { padding:18px 14px; }
       .timer-label { display:none; }
@@ -343,10 +354,10 @@
 
 <!-- Spiel -->
 <div id="game-screen" style="display:none">
-  <div class="live-scores" id="live-scores">
-    <div class="live-scores-title">Live-Punkte</div>
+  <details class="live-scores" id="live-scores" open>
+    <summary class="live-scores-title">Live-Punkte</summary>
     <div class="score-list" id="live-score-list"></div>
-  </div>
+  </details>
 
   <div class="card" style="margin-top:14px">
     <div class="q-head">
@@ -362,6 +373,9 @@
         <span class="timer-label" id="timer-label">zum Buzzern</span>
       </div>
     </div>
+
+    <div id="mp-scene" class="mg-scene-host" role="img" aria-label="Szene: Spieler stehen um einen Tisch mit rotem Buzzer"></div>
+    <div class="sr-only" id="scene-live" aria-live="polite"></div>
 
     <div id="buzzer-area">
       <button class="buzzer-btn" id="buzzer-btn" onclick="pressBuzzer()">BUZZ</button>
@@ -393,7 +407,7 @@
 </main>
 
 <footer class="mg-footer">
-  <p>MineGuess ist ein inoffizielles Fan-Projekt und kein Minecraft-Produkt.</p>
+  <p>Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden. Minecraft-Texturen und -Namen © Mojang Studios / Microsoft.</p>
   <nav aria-label="Rechtliches und Seiten">
     <a href="game.html">Spielen</a>
     <a href="impressum.html">Impressum</a>
@@ -469,7 +483,26 @@ const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-function head(p, size) { return (window.MGSkin ? MGSkin.imgHTML(p && p.skin, size) : ''); }
+// Roster: Skins kommen nur einmalig (joined / player_joined / player_updated), später nur skinId + character
+const roster = {};
+let lastPlayers = [];
+const deltas = {};      // Punkte-Änderung in dieser Runde je Spieler
+const penaltyTotal = {}; // Strafpunkte im laufenden Spiel
+function syncRoster() { lastPlayers = Object.values(roster); }
+function rosterOf(id) { return roster[id] || null; }
+function head(p, size) {
+  if (!window.MGSkin) return '';
+  const r = (p && rosterOf(p.id)) || p || {};
+  return MGSkin.imgHTML(r.skin, size, r.character);
+}
+function fmtDelta(d) {
+  if (typeof d !== 'number' || !isFinite(d) || d === 0) return '';
+  return (d > 0 ? '+' : '\u2212') + Math.abs(d);
+}
+function deltaTag(d) {
+  const t = fmtDelta(d);
+  return t ? '<span class="delta ' + (d > 0 ? 'plus' : 'minus') + '">' + t + ' Pkt.</span>' : '';
+}
 function rankLabel(i) { return (i < 3 && window.MGIcon) ? MGIcon.html('podium.' + (i + 1), 24, 'Platz ' + (i + 1)) : '#' + (i + 1); }
 
 let toastTimer = null;
@@ -513,17 +546,18 @@ function selectVisibility(v) {
 
 // ── Room create / join ────────────────────────────────────────────────────────
 function mySkin() { return window.MGSkin ? MGSkin.get() : null; }
+function myChar() { return (window.MGSkin && MGSkin.getCharacter()) || 'steve'; }
 
 function createRoom() {
   const name     = el('input-name').value.trim() || 'Spieler';
   const roomName = el('input-room-name').value.trim() || name + 's Raum';
   const password = roomIsPublic ? null : (el('input-create-pw').value.trim() || null);
   const cats     = (myPremium && selectedCats.size > 0) ? [...selectedCats] : null;
-  socket.emit('create_room', { playerName: name, displayName: roomName, isPublic: roomIsPublic, password, categories: cats, skin: mySkin() });
+  socket.emit('create_room', { playerName: name, displayName: roomName, isPublic: roomIsPublic, password, categories: cats, skin: mySkin(), character: myChar() });
 }
 
 function joinPublicRoom(roomId) {
-  socket.emit('join_room', { roomId, playerName: el('input-name').value.trim() || 'Spieler', password: null, skin: mySkin() });
+  socket.emit('join_room', { roomId, playerName: el('input-name').value.trim() || 'Spieler', password: null, skin: mySkin(), character: myChar() });
 }
 
 function joinPrivateRoom() {
@@ -531,7 +565,7 @@ function joinPrivateRoom() {
   const roomId = el('input-room-code').value.trim().toLowerCase();
   const pw     = el('input-join-pw').value.trim() || null;
   if (!roomId) { showToast('Bitte Raum-Code eingeben'); return; }
-  socket.emit('join_room', { roomId, playerName: name, password: pw, skin: mySkin() });
+  socket.emit('join_room', { roomId, playerName: name, password: pw, skin: mySkin(), character: myChar() });
 }
 
 let myReady    = false;
@@ -652,8 +686,11 @@ function ensureGameScreen() {
   show('game-screen');
 }
 
-socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic, token, rejoined }) => {
+socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic, token, rejoined, players }) => {
   myId = playerId; myRoomId = roomId;
+  Object.keys(roster).forEach(k => delete roster[k]);
+  (players || []).forEach(p => { roster[p.id] = p; });
+  syncRoster(); sceneInit(); sceneSync();
   if (token) saveSession(roomId, token);
   el('room-status').textContent = (isPublic ? 'Öffentlich: ' : 'Privat: ') + displayName;
   el('lobby-code').textContent  = roomId;
@@ -683,7 +720,14 @@ socket.on('answer_invalid', ({ message }) => {
 // ── Room state ────────────────────────────────────────────────────────────────
 socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount, totalCount }) => {
   lockedOutIds = lockedOut || [];
-  lastPlayers = players || [];
+  (players || []).forEach(p => {
+    const old = roster[p.id] || {};
+    const keepSkin = old.skin && (!p.skinId || p.skinId === old.skinId) ? old.skin : (p.skin || null);
+    roster[p.id] = Object.assign({}, old, p, { skin: keepSkin });
+  });
+  Object.keys(roster).forEach(id => { if (!(players || []).some(p => p.id === id)) delete roster[id]; });
+  syncRoster();
+  sceneSync();
 
   // Lobby player list with ready indicators
   const lobbyList = el('lobby-players');
@@ -716,11 +760,10 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
     row.innerHTML = `<span class="score-rank">${rankLabel(i)}</span>
       ${head(p, 'sm')}
       <span class="score-name">${p.id === myId ? '<strong>' : ''}${esc(p.name)}${p.id === myId ? '</strong>' : ''}${isBuzzing ? '<span class="score-badge buzz">Buzzer</span>' : ''}${isLocked ? '<span class="score-badge out">raus</span>' : ''}${p.connected === false ? '<span class="score-badge">getrennt</span>' : ''}</span>
-      <span class="score-pts">${esc(p.score)}</span>`;
+      <span class="score-pts">${deltas[p.id] ? deltaTag(deltas[p.id]) + ' ' : ''}${esc(p.score)}</span>`;
     liveList.appendChild(row);
   });
 });
-let lastPlayers = [];
 let prevScores = {};
 
 // ── Countdown (shown before first question) ──────────────────────────────────
@@ -889,6 +932,7 @@ function buildAnswerInput(q) {
         <button class="btn-ok" onclick="submitAnswer(el('num-input').value)">Absenden</button>
       </div>`;
     el('num-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(el('num-input').value); });
+    el('num-input').addEventListener('input', sendTyping);
   } else {
     const opts = q.options || [];
     inner.innerHTML = `<div class="entity-grid" id="entity-grid"></div>
@@ -904,6 +948,7 @@ function buildAnswerInput(q) {
       el('entity-grid').appendChild(btn);
     });
     el('entity-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(el('entity-input').value); });
+    el('entity-input').addEventListener('input', sendTyping);
   }
 }
 
@@ -917,7 +962,7 @@ function submitAnswer(val) {
 }
 
 // ── Answer broadcast (everyone sees result of the buzz) ───────────────────────
-socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score, speedBonus, timeout, feedback }) => {
+socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score, speedBonus, timeout, feedback, delta }) => {
   const box = el('feedback-box');
   box.className = 'feedback-box'; void box.offsetWidth;
 
@@ -925,14 +970,14 @@ socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score
     box.className = 'feedback-box show correct';
     box.innerHTML = `<span class="mark">Richtig</span>
       <span><strong>${esc(playerName)}</strong> hat richtig geantwortet.${speedBonus ? ` <span class="fb-bonus">+${esc(speedBonus)} Speedbonus</span>` : ''}</span>
-      ${playerId === myId ? `<span class="px" style="margin-left:auto">${esc(score)} Pkt.</span>` : ''}`;
+      ${deltaTag(typeof delta === 'number' ? delta : (playerId === myId && typeof score === 'number' ? score : 0))}${playerId === myId ? `<span class="px" style="margin-left:auto">${esc(score)} Pkt.</span>` : ''}`;
     el('buzz-status').className = 'buzz-status';
   } else {
     box.className = 'feedback-box show wrong';
     const hint = feedback === 'low' ? ' Zu niedrig.' : feedback === 'high' ? ' Zu hoch.' : '';
     const reason = timeout ? 'Zeit abgelaufen.' : (submitted ? `„${esc(submitted)}“ war falsch.${hint}` : 'Keine Antwort.');
     box.innerHTML = `<span class="mark">Falsch</span>
-      <span><strong>${esc(playerName)}</strong>: ${reason}</span>`;
+      <span><strong>${esc(playerName)}</strong>: ${reason}</span>${deltaTag(delta)}`;
   }
 });
 
@@ -969,7 +1014,7 @@ socket.on('result', ({ answer, funFact, scores, nextIn, winnerId }) => {
     row.innerHTML = `<span class="score-rank">${rankLabel(i)}</span>
       ${head(pl, 'sm')}
       <span class="score-name">${p.id === myId ? '<strong>' : ''}${esc(p.name)}${p.id === myId ? '</strong>' : ''}</span>
-      <span class="score-pts"><span class="cnt">${esc(p.score)}</span> Pkt.</span>`;
+      <span class="score-pts">${deltas[p.id] ? deltaTag(deltas[p.id]) + ' ' : ''}<span class="cnt">${esc(p.score)}</span> Pkt.</span>`;
     sb.appendChild(row);
     const from = prevScores[p.id] != null ? prevScores[p.id] : 0;
     countUp(row.querySelector('.cnt'), from, Number(p.score) || 0);
@@ -1004,7 +1049,7 @@ socket.on('game_over', ({ scores, rounds }) => {
     row.innerHTML = `<span class="px" style="width:2.4ch;text-align:center;color:${i === 0 ? 'var(--gold)' : 'var(--muted)'}">${rankLabel(i)}</span>
       ${head(pl, 'sm')}
       <span style="flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.id === myId ? '<strong>' : ''}${esc(p.name)}${p.id === myId ? '</strong>' : ''}</span>
-      <span class="px" style="color:var(--green);font-size:.85rem">${esc(p.score)} Pkt.</span>`;
+      <span class="px" style="color:var(--green);font-size:.85rem">${esc(p.score)} Pkt.${penaltyTotal[p.id] ? ' <span class="delta minus">(\u2212' + penaltyTotal[p.id] + ' Strafe)</span>' : ''}</span>`;
     list.appendChild(row);
   });
 
@@ -1096,8 +1141,115 @@ function spawnConfetti() {
   }
 }
 
+// Mobile: Szene zuerst, Live-Punkte eingeklappt
+try { if (window.matchMedia('(max-width: 600px), (max-height: 820px)').matches) el('live-scores').removeAttribute('open'); } catch (e) {}
+
+// ── Szene (Tisch, Buzzer, Figuren) ──────────────────────────────────────────
+let scene = null, sceneSig = '', lastTyping = 0, lastGiven = {}, lastBuzz = { id: null, t: 0 };
+function sceneInit() {
+  if (scene || !window.MGScene || !el('mp-scene')) return;
+  try { scene = MGScene.create(el('mp-scene'), { myId }); } catch (e) { scene = null; }
+}
+function sceneSync() {
+  if (!scene) return;
+  scene.setMyId && scene.setMyId(myId);
+  const list = Object.values(roster).map(p => ({ id: p.id, name: p.name, skin: p.skin, character: p.character, connected: p.connected !== false }));
+  const sig = JSON.stringify(list.map(p => [p.id, p.name, p.character, p.connected, p.skin ? p.skin.length : 0]));
+  if (sig !== sceneSig) { sceneSig = sig; scene.setPlayers(list); }
+  scene.setLocked(lockedOutIds);
+}
+function sceneLive(t) { const n = el('scene-live'); if (n) n.textContent = t; }
+function sendTyping() {
+  const now = Date.now();
+  if (myPhase !== 'answering' || now - lastTyping < 1000) return;
+  lastTyping = now; socket.emit('typing');
+}
+function nameOf(id) { const r = roster[id]; return r ? r.name : 'Spieler'; }
+function doBuzz(id) {
+  if (!scene) return;
+  const now = Date.now();
+  if (lastBuzz.id === id && now - lastBuzz.t < 400) return;
+  lastBuzz = { id, t: now };
+  scene.buzz(id);
+  setTimeout(() => { if (lastBuzz.id === id && !lastGiven[id]) scene.think(id, true); }, 650);
+  sceneLive(nameOf(id) + ' hat den Buzzer gedrückt');
+}
+socket.on('buzzed', ({ playerId }) => doBuzz(playerId));
+socket.on('buzzer_won', ({ playerId }) => doBuzz(playerId));
+socket.on('typing', ({ playerId }) => { if (scene && lastBuzz.id === playerId && !lastGiven[playerId]) scene.think(playerId, true); });
+function giveAnswer(playerId, text, correct, delta, unit) {
+  lastGiven[playerId] = Date.now();
+  if (typeof delta === 'number') {
+    deltas[playerId] = delta;
+    if (delta < 0) penaltyTotal[playerId] = (penaltyTotal[playerId] || 0) + Math.abs(delta);
+  }
+  const shown = String(text == null ? '' : text).slice(0, 40);
+  const line = 'Die Antwort ist ' + shown + (unit && /^[-\d.,]+$/.test(shown) ? ' ' + unit : '') + '!';
+  if (scene) {
+    scene.say(playerId, line, correct ? 'correct' : 'wrong');
+    setTimeout(() => scene && scene.react(playerId, correct ? 'correct' : 'wrong'), 350);
+  }
+  sceneLive(nameOf(playerId) + ': ' + line + (correct ? ' Richtig.' : ' Falsch.') + (typeof delta === 'number' && delta ? ' ' + fmtDelta(delta) + ' Punkte.' : ''));
+}
+socket.on('answer_given', (d) => giveAnswer(d.playerId, d.text, d.correct, d.delta, d.unit));
+socket.on('answer_timeout', ({ playerId, delta }) => {
+  if (typeof delta === 'number') { deltas[playerId] = delta; }
+  if (scene) { scene.say(playerId, 'Zeit abgelaufen', 'wrong'); scene.react(playerId, 'timeout'); }
+  sceneLive(nameOf(playerId) + ': Zeit abgelaufen');
+});
+// Fallback für Server ohne answer_given
+socket.on('answer_broadcast', ({ playerId, correct, submitted, timeout, delta }) => {
+  setTimeout(() => {
+    if (lastGiven[playerId] && Date.now() - lastGiven[playerId] < 1500) return;
+    if (timeout) { if (scene) { scene.say(playerId, 'Zeit abgelaufen', 'wrong'); scene.react(playerId, 'timeout'); } return; }
+    if (submitted) giveAnswer(playerId, submitted, correct, delta, null);
+  }, 120);
+});
+socket.on('buzzer_reset', () => {
+  if (!scene) return;
+  scene.resetRound(); scene.setLocked(lockedOutIds); lastBuzz = { id: null, t: 0 }; lastGiven = {};
+});
+socket.on('question', (q) => {
+  if (q && q.roundNum === 1) { Object.keys(penaltyTotal).forEach(k => delete penaltyTotal[k]); }
+  Object.keys(deltas).forEach(k => delete deltas[k]);
+  lastBuzz = { id: null, t: 0 }; lastGiven = {};
+  sceneInit(); sceneSync();
+  if (scene) { scene.resetRound(); scene.setLocked([]); }
+});
+socket.on('result', ({ winnerId }) => {
+  if (scene && winnerId) scene.react(winnerId, 'correct');
+});
+socket.on('scene', (s) => {
+  if (!scene || !s) return;
+  sceneInit(); sceneSync();
+  (s.lockedOut || []).length && scene.setLocked(s.lockedOut);
+  if (s.buzzedId) { lastBuzz = { id: s.buzzedId, t: Date.now() }; scene.buzz(s.buzzedId); if (!s.speech) scene.think(s.buzzedId, !!s.typingId || true); }
+  if (s.speech && s.speech.playerId) {
+    const sp = s.speech;
+    if (sp.timeout) scene.say(sp.playerId, 'Zeit abgelaufen', 'wrong');
+    else scene.say(sp.playerId, 'Die Antwort ist ' + String(sp.text || '').slice(0, 40) + '!', sp.correct ? 'correct' : 'wrong');
+  }
+});
+socket.on('player_joined', ({ player }) => { if (player) { roster[player.id] = player; syncRoster(); sceneSync(); } });
+socket.on('player_updated', ({ player }) => { if (player) { roster[player.id] = Object.assign({}, roster[player.id], player); syncRoster(); sceneSync(); } });
+socket.on('player_left', ({ id }) => { delete roster[id]; syncRoster(); sceneSync(); });
+socket.on('player_id_changed', ({ oldId, newId }) => {
+  if (roster[oldId]) { roster[newId] = Object.assign({}, roster[oldId], { id: newId }); delete roster[oldId]; }
+  if (myId === oldId) myId = newId;
+  syncRoster(); sceneSync();
+});
+
+// Profiländerung im Raum (Skin/Figur) live an alle senden
+let profT = null;
+window.addEventListener('mg-skin-change', () => {
+  if (!myRoomId || !window.MGSkin) return;
+  clearTimeout(profT);
+  profT = setTimeout(() => socket.emit('set_profile', { skin: MGSkin.get(), character: MGSkin.getCharacter() || 'steve' }), 400);
+});
+
 // ── Connection ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { if (typeof initPremiumUI === 'function') initPremiumUI(); });
+document.addEventListener('DOMContentLoaded', () => { if (window.MGSkin) MGSkin.ensureCharacter(); });
 socket.on('connect', () => {
   const s = loadSession();
   if (s && s.roomId && s.token) { socket.emit('rejoin_room', { roomId: s.roomId, token: s.token }); showToast('Verbinde mit deinem Raum …'); }
