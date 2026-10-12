@@ -1,11 +1,11 @@
 /* MineGuess – gemeinsame Design-Tokens und Basis-Komponenten.
    Ruhig, flach, Erdtöne. Ein Grün, ein Gold (nur Premium), eckige Kanten, Pixel-Akzent nur an Rahmen/Buttons. */
 
-@font-face { font-family:'Inter'; font-style:normal; font-weight:400 800; font-display:optional;
+@font-face { font-family:'Inter'; font-style:normal; font-weight:400 800; font-display:swap;
   src:url('fonts/inter-400-800-latin.woff2') format('woff2'); }
-@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:400; font-display:optional;
+@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:400; font-display:swap;
   src:url('fonts/silkscreen-400-latin.woff2') format('woff2'); }
-@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:700; font-display:optional;
+@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:700; font-display:swap;
   src:url('fonts/silkscreen-700-latin.woff2') format('woff2'); }
 
 :root {
@@ -28,7 +28,7 @@
   --dirt:    #8a5a33;
   --r:       4px;
   --font:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-px: 'Silkscreen', 'Inter', ui-monospace, monospace;
+  --font-px: 'Silkscreen', ui-monospace, 'Courier New', monospace;
   --ease:    cubic-bezier(.2,.7,.2,1);
   --safe-t: env(safe-area-inset-top, 0px);
   --safe-b: env(safe-area-inset-bottom, 0px);

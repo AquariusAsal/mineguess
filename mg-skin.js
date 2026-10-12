@@ -1,11 +1,12 @@
 /* MineGuess Spielerprofil: Name, Charakter (Steve/Alex) und optionaler Ganzkörper-Skin.
-   - Skin: 64x64 oder altes 64x32 PNG. Beim Hochladen wird er auf 64x64 normalisiert (linke Gliedmaßen
-     bei 64x32 ergänzt) und als kleine PNG-Data-URL im localStorage abgelegt ("mg_skin_full").
+   - Skin: 64x64 oder altes 64x32 PNG. Die Original-Bytes werden unverändert als Data-URL im localStorage
+     abgelegt ("mg_skin_full"); kein Canvas-Readback/Re-Encoding (Anti-Fingerprinting-sicher).
    - Kopf-Anzeige in Listen wird per CSS-Ausschnitt (Gesicht + Hut-Layer) aus demselben Skin abgeleitet.
    - Die Datei verlässt das Gerät nicht; nur im Multiplayer wird die normalisierte PNG an den Raum gesendet. */
 (function (global) {
   'use strict';
-  var KEY_SKIN = 'mg_skin_full';
+  var KEY_SKIN = 'mg_skin_v2';          // v2: Original-Bytes (ältere, per Canvas neu kodierte Skins werden verworfen)
+  try { localStorage.removeItem('mg_skin_full'); localStorage.removeItem('mg_skin_head'); } catch (e) {}
   var KEY_CHAR = 'mg_character';
   var KEY_NAME = 'mg_player_name';
   var MAX_FILE = 256 * 1024;
@@ -45,21 +46,8 @@
     return '<span class="skin-head ' + (size || '') + '" role="img" aria-label="Spielerkopf" style="' + st + '"></span>';
   }
 
-  // ── Datei -> normalisierter 64x64-Skin (Data-URL) ──
+  // ── Datei -> Skin-Data-URL aus den ORIGINAL-Bytes (kein Canvas-Readback, keine Neukodierung) ──
   function fail(msg) { var e = new Error(msg); e.userMessage = msg; return e; }
-  function mirror(ctx, sx, sy, dx, dy, w, h) {
-    ctx.save(); ctx.translate(dx + w, dy); ctx.scale(-1, 1);
-    ctx.drawImage(ctx.canvas, sx, sy, w, h, 0, 0, w, h); ctx.restore();
-  }
-  function legacyLimb(ctx, sx, sy, dx, dy) { // 4x4x12 Gliedmaße: Flächen einzeln spiegeln, rechts/links tauschen
-    var d = 4, w = 4, h = 12;
-    mirror(ctx, sx + d, sy, dx + d, dy, w, d);
-    mirror(ctx, sx + d + w, sy, dx + d + w, dy, w, d);
-    mirror(ctx, sx, sy + d, dx + d + w, dy + d, d, h);
-    mirror(ctx, sx + d, sy + d, dx + d, dy + d, w, h);
-    mirror(ctx, sx + d + w, sy + d, dx, dy + d, d, h);
-    mirror(ctx, sx + 2 * d + w, sy + d, dx + 2 * d + w, dy + d, w, h);
-  }
   function fromFile(file) {
     return new Promise(function (resolve, reject) {
       if (!file) return reject(fail('Keine Datei ausgewählt.'));
@@ -67,33 +55,29 @@
       var reader = new FileReader();
       reader.onerror = function () { reject(fail('Die Datei konnte nicht gelesen werden.')); };
       reader.onload = function () {
-        var buf = new Uint8Array(reader.result), magic = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
-        for (var i = 0; i < magic.length; i++) {
-          if (buf[i] !== magic[i]) return reject(fail('Das ist keine PNG-Datei. Bitte einen Minecraft-Skin als PNG wählen.'));
+        var bytes = new Uint8Array(reader.result), P = global.MGPng;
+        if (!P || !P.isPng(bytes)) return reject(fail('Das ist keine PNG-Datei. Bitte einen Minecraft-Skin als PNG wählen.'));
+        var hd = P.header(bytes);
+        if (!hd) return reject(fail('Die PNG-Datei ist beschädigt.'));
+        if (hd.w !== 64 || (hd.h !== 64 && hd.h !== 32)) {
+          return reject(fail('Falsche Größe (' + hd.w + 'x' + hd.h + '). Der Skin muss 64x64 Pixel groß sein.'));
         }
-        var url = URL.createObjectURL(new Blob([buf], { type: 'image/png' }));
-        var img = new Image();
-        img.onerror = function () { URL.revokeObjectURL(url); reject(fail('Das Bild konnte nicht geladen werden.')); };
-        img.onload = function () {
-          URL.revokeObjectURL(url);
-          var w = img.naturalWidth, h = img.naturalHeight;
-          if (w !== 64 || (h !== 64 && h !== 32)) {
-            return reject(fail('Falsche Größe (' + w + 'x' + h + '). Der Skin muss 64x64 Pixel groß sein.'));
+        var maxBytes = Math.floor(MAX_DATA * 3 / 4);
+        if (bytes.length > maxBytes) {
+          return reject(fail('Der Skin ist zu groß (' + (bytes.length / 1024).toFixed(1).replace('.', ',') + ' KB, erlaubt sind ' + Math.floor(maxBytes / 1024) + ' KB). Bitte eine stärker komprimierte PNG wählen.'));
+        }
+        P.alpha(bytes).then(function (res) {
+          if (res) {
+            var vis = false, y, x;
+            for (y = 8; y < 16 && !vis; y++) for (x = 8; x < 16; x++) if (res.alpha[y * res.w + x] > 0) { vis = true; break; }
+            if (!vis) return reject(fail('Der Skin enthält an der Gesichtsstelle keine sichtbaren Pixel.'));
+            var opaque = 0; for (var i = 0; i < res.alpha.length; i++) if (res.alpha[i] > 0) opaque++;
+            if (opaque < res.w * res.h * 0.05) return reject(fail('Der Skin ist praktisch leer (fast alles transparent).'));
           }
-          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
-          var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = false;
-          x.drawImage(img, 0, 0);
-          if (h === 32) { legacyLimb(x, 0, 16, 16, 48); legacyLimb(x, 40, 16, 32, 48); }
-          // Kopfbereich muss sichtbare Pixel haben
-          var d = x.getImageData(8, 8, 8, 8).data, vis = false;
-          for (var j = 3; j < d.length; j += 4) { if (d[j] > 0) { vis = true; break; } }
-          if (!vis) return reject(fail('Der Skin enthält an der Gesichtsstelle keine sichtbaren Pixel.'));
-          var out = c.toDataURL('image/png');
-          if (out.length > MAX_DATA) return reject(fail('Der Skin ist zu groß (' + Math.round(out.length * 0.75 / 1024) + ' KB, erlaubt sind etwa 12 KB). Bitte einen einfacheren Skin oder eine stärker komprimierte PNG wählen.'));
+          var out = P.toDataUrl(bytes);
           if (!isValid(out)) return reject(fail('Der Skin konnte nicht verarbeitet werden.'));
           resolve(out);
-        };
-        img.src = url;
+        });
       };
       reader.readAsArrayBuffer(file);
     });

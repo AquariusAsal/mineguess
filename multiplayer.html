@@ -7,10 +7,12 @@
   <title>MineGuess – Multiplayer</title>
   <script src="/socket.io/socket.io.js"></script>
   <script src="multiplayer-config.js" onerror=""></script>
+  <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-scene.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="mg.css">
   <style>
@@ -172,7 +174,7 @@
     .funfact-label { color:var(--gold); font-family:var(--font-px); font-size:.72rem; margin-bottom:6px; text-transform:uppercase; }
     .next-in { text-align:center; color:var(--muted); margin-top:12px; font-size:.88rem; }
 
-    #toast { position:fixed; bottom:calc(20px + var(--safe-b)); left:50%; transform:translateX(-50%) translateY(8px); background:var(--bg2); border:2px solid var(--border2); color:var(--text);
+    #toast { position:fixed; top:calc(64px + var(--safe-t)); left:50%; transform:translateX(-50%) translateY(-8px); background:var(--bg2); border:2px solid var(--border2); color:var(--text);
       padding:10px 16px; border-radius:var(--r); font-size:.9rem; pointer-events:none; opacity:0; transition:opacity .2s, transform .2s; z-index:999; max-width:calc(100% - 32px); text-align:center; }
 
     /* Overlays */

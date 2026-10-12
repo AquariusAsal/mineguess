@@ -76,33 +76,48 @@
     m(d + w, d, 0, d, d, h);                // left -> right
     m(d + d + w, d, d + d + w, d, w, h);    // back
   }
-  function normalizeSkin(img) {
+  // Alles ohne Canvas-Readback (Anti-Fingerprinting-Browser verrauschen getImageData/toDataURL):
+  // Pixel kommen nur per drawImage -> Textur; Slim/Leer-Erkennung aus den PNG-Bytes (MGPng.alpha).
+  function bytesFor(src) {
+    if (src.indexOf('data:') === 0) return Promise.resolve(global.MGPng ? global.MGPng.dataUrlBytes(src) : null);
+    return fetch(src).then(function (r) { if (!r.ok) throw new Error('http'); return r.arrayBuffer(); }).then(function (ab) { return new Uint8Array(ab); });
+  }
+  function buildSkin(img, src, bytes) {
     var w = img.naturalWidth, h = img.naturalHeight;
+    if (w !== 64 || (h !== 64 && h !== 32)) throw new Error('size');
     var c = document.createElement('canvas'); c.width = 64; c.height = 64;
-    var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = false;
+    var x = c.getContext('2d'); x.imageSmoothingEnabled = false;
     x.drawImage(img, 0, 0);
     if (h === 32) {
-      // untere Hälfte war leer: Beine/Arme erzeugen
-      legacyToModern(x, 0, 16, 16, 48, 4, 4, 12);   // linkes Bein aus rechtem Bein (0,16)
-      legacyToModern(x, 40, 16, 32, 48, 4, 4, 12);  // linker Arm aus rechtem Arm (40,16)
+      legacyToModern(x, 0, 16, 16, 48, 4, 4, 12);
+      legacyToModern(x, 40, 16, 32, 48, 4, 4, 12);
     }
-    // praktisch leerer Skin -> Standardfigur (sonst unsichtbare Figur)
-    var all = x.getImageData(0, 0, 64, 64).data, opaque = 0;
-    for (var q = 3; q < all.length; q += 4) if (all[q] > 0) opaque++;
-    if (opaque < 64 * 64 * 0.05) throw new Error('empty');
-    var slim = false;
-    if (h !== 32) {
-      var d = x.getImageData(54, 20, 2, 12).data, clear = true;
-      for (var i = 3; i < d.length; i += 4) { if (d[i] !== 0) { clear = false; break; } }
-      slim = clear;
-    }
-    return { canvas: c, slim: slim };
+    var pngP = (bytes && global.MGPng) ? global.MGPng.alpha(bytes) : Promise.resolve(null);
+    return pngP.then(function (res) {
+      var slim = false;
+      if (res) {
+        var opaque = 0, i;
+        for (i = 0; i < res.alpha.length; i++) if (res.alpha[i] > 0) opaque++;
+        if (opaque < res.w * res.h * 0.05) throw new Error('empty');
+        if (h !== 32) {
+          var clear = true, yy, xx;
+          for (yy = 20; yy < 32 && clear; yy++) for (xx = 54; xx < 56; xx++) if (res.alpha[yy * res.w + xx] !== 0) { clear = false; break; }
+          slim = clear;
+        }
+      } else if (src.indexOf('/slim/') >= 0) { slim = true; }
+      return { canvas: h === 64 ? img : c, slim: slim };
+    });
   }
   function loadSkin(src) {
     if (skinCache[src]) return skinCache[src];
-    var p = loadImage(src).then(function (img) {
-      if (img.naturalWidth !== 64 || (img.naturalHeight !== 64 && img.naturalHeight !== 32)) throw new Error('size');
-      return normalizeSkin(img);
+    var p = bytesFor(src).then(function (bytes) {
+      var url = src;
+      if (bytes && global.MGPng) {
+        var hd = global.MGPng.header(bytes);
+        if (!hd || hd.w !== 64 || (hd.h !== 64 && hd.h !== 32)) throw new Error('size');
+        url = src.indexOf('data:') === 0 ? src : URL.createObjectURL(new Blob([bytes], { type: 'image/png' }));
+      }
+      return loadImage(url).then(function (img) { return buildSkin(img, src, bytes); });
     });
     skinCache[src] = p;
     return p;
@@ -214,6 +229,8 @@
     var gl = this.gl, t = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, t);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    if (gl.UNPACK_COLORSPACE_CONVERSION_WEBGL) gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
