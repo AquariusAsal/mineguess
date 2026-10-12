@@ -1,0 +1,442 @@
+{
+ "_meta": {
+  "source": "PrismarineJS/minecraft-assets (GitHub-Mirror unveränderter Vanilla-Client-Texturen), Version 1.21.11",
+  "note": "Dateien unverändert, außer ui.xp (Zuschnitt) und block/water_still, lava_still, sculk (erstes Frame aus Animationsstreifen). Rendern mit image-rendering: pixelated. water_still ist in Vanilla grau und wird per Biom eingefärbt.",
+  "legal": "Siehe docs/team/TEXTURE-LEGAL.md"
+ },
+ "map": {
+  "cat.Mobs": {
+   "file": "assets/mc/item/creeper_spawn_egg.png",
+   "original": "textures/items/creeper_spawn_egg.png"
+  },
+  "cat.Blöcke": {
+   "file": "assets/mc/block/grass_block_side.png",
+   "original": "textures/blocks/grass_block_side.png"
+  },
+  "cat.Crafting": {
+   "file": "assets/mc/block/crafting_table_front.png",
+   "original": "textures/blocks/crafting_table_front.png"
+  },
+  "cat.Weltgenerierung": {
+   "file": "assets/mc/item/map.png",
+   "original": "textures/items/map.png"
+  },
+  "cat.Items": {
+   "file": "assets/mc/item/iron_sword.png",
+   "original": "textures/items/iron_sword.png"
+  },
+  "cat.Verzauberungen": {
+   "file": "assets/mc/item/enchanted_book.png",
+   "original": "textures/items/enchanted_book.png"
+  },
+  "cat.Tränke": {
+   "file": "assets/mc/item/potion.png",
+   "original": "textures/items/potion.png"
+  },
+  "cat.Dorfbewohner": {
+   "file": "assets/mc/item/emerald.png",
+   "original": "textures/items/emerald.png"
+  },
+  "cat.Redstone": {
+   "file": "assets/mc/item/redstone.png",
+   "original": "textures/items/redstone.png"
+  },
+  "cat.Spielmechanik": {
+   "file": "assets/mc/block/repeater.png",
+   "original": "textures/blocks/repeater.png"
+  },
+  "badge.first_correct": {
+   "file": "assets/mc/item/arrow.png",
+   "original": "textures/items/arrow.png"
+  },
+  "badge.mob_expert": {
+   "file": "assets/mc/item/rotten_flesh.png",
+   "original": "textures/items/rotten_flesh.png"
+  },
+  "badge.nether_lord": {
+   "file": "assets/mc/block/netherrack.png",
+   "original": "textures/blocks/netherrack.png"
+  },
+  "badge.craft_master": {
+   "file": "assets/mc/block/crafting_table_front.png",
+   "original": "textures/blocks/crafting_table_front.png"
+  },
+  "badge.redstone_guru": {
+   "file": "assets/mc/item/redstone.png",
+   "original": "textures/items/redstone.png"
+  },
+  "badge.potion_master": {
+   "file": "assets/mc/item/potion.png",
+   "original": "textures/items/potion.png"
+  },
+  "badge.blitz_rookie": {
+   "file": "assets/mc/item/firework_rocket.png",
+   "original": "textures/items/firework_rocket.png"
+  },
+  "badge.daily_3": {
+   "file": "assets/mc/item/clock_00.png",
+   "original": "textures/items/clock_00.png"
+  },
+  "badge.daily_7": {
+   "file": "assets/mc/item/filled_map.png",
+   "original": "textures/items/filled_map.png"
+  },
+  "badge.100_played": {
+   "file": "assets/mc/item/nether_star.png",
+   "original": "textures/items/nether_star.png"
+  },
+  "mode.endless": {
+   "file": "assets/mc/block/grass_block_side.png",
+   "original": "textures/blocks/grass_block_side.png"
+  },
+  "mode.competition": {
+   "file": "assets/mc/item/golden_sword.png",
+   "original": "textures/items/golden_sword.png"
+  },
+  "mode.multiplayer": {
+   "file": "assets/mc/item/ender_eye.png",
+   "original": "textures/items/ender_eye.png"
+  },
+  "mode.blitz": {
+   "file": "assets/mc/item/firework_rocket.png",
+   "original": "textures/items/firework_rocket.png"
+  },
+  "mode.daily": {
+   "file": "assets/mc/item/clock_00.png",
+   "original": "textures/items/clock_00.png"
+  },
+  "ui.hint": {
+   "file": "assets/mc/item/glowstone_dust.png",
+   "original": "textures/items/glowstone_dust.png"
+  },
+  "ui.streak": {
+   "file": "assets/mc/item/blaze_powder.png",
+   "original": "textures/items/blaze_powder.png"
+  },
+  "podium.1": {
+   "file": "assets/mc/item/gold_ingot.png",
+   "original": "textures/items/gold_ingot.png"
+  },
+  "podium.2": {
+   "file": "assets/mc/item/iron_ingot.png",
+   "original": "textures/items/iron_ingot.png"
+  },
+  "podium.3": {
+   "file": "assets/mc/item/copper_ingot.png",
+   "original": "textures/items/copper_ingot.png"
+  },
+  "ui.clock": {
+   "file": "assets/mc/item/clock_00.png",
+   "original": "textures/items/clock_00.png",
+   "note": "Animation: nur erstes Frame (clock_00)"
+  },
+  "ui.time_up": {
+   "file": "assets/mc/item/clock_00.png",
+   "original": "textures/items/clock_00.png"
+  },
+  "ui.note_block": {
+   "file": "assets/mc/block/note_block.png",
+   "original": "textures/blocks/note_block.png"
+  },
+  "ui.sound": {
+   "file": "assets/mc/block/note_block.png",
+   "original": "textures/blocks/note_block.png"
+  },
+  "ui.totem": {
+   "file": "assets/mc/item/totem_of_undying.png",
+   "original": "textures/items/totem_of_undying.png"
+  },
+  "ui.joker": {
+   "file": "assets/mc/item/totem_of_undying.png",
+   "original": "textures/items/totem_of_undying.png"
+  },
+  "ui.crown": {
+   "file": "assets/mc/item/golden_helmet.png",
+   "original": "textures/items/golden_helmet.png",
+   "fallback": "Vanilla hat keine Krone; goldener Helm als Ersatz, alternativ item/gold_ingot"
+  },
+  "ui.lock": {
+   "file": "assets/mc/block/iron_bars.png",
+   "original": "textures/blocks/iron_bars.png",
+   "fallback": "Vanilla hat kein Schloss-Icon; Eisengitter als Ersatz. Alternativ item/barrier"
+  },
+  "ui.barrier": {
+   "file": "assets/mc/item/barrier.png",
+   "original": "textures/items/barrier.png"
+  },
+  "ui.trophy": {
+   "file": "assets/mc/item/nether_star.png",
+   "original": "textures/items/nether_star.png",
+   "fallback": "Keine Trophäe in Vanilla; Nether Star als Ersatz"
+  },
+  "ui.star": {
+   "file": "assets/mc/item/nether_star.png",
+   "original": "textures/items/nether_star.png"
+  },
+  "ui.premium": {
+   "file": "assets/mc/item/nether_star.png",
+   "original": "textures/items/nether_star.png"
+  },
+  "ui.chest": {
+   "file": "assets/mc/block/barrel_side.png",
+   "original": "textures/blocks/barrel_side.png",
+   "fallback": "Kisten sind in Vanilla Entity-Modelle (keine flache Textur); Fass-Seite als Ersatz"
+  },
+  "ui.skull": {
+   "file": "assets/mc/item/bone.png",
+   "original": "textures/items/bone.png",
+   "fallback": "Wither-Skelett-Schädel hat keine flache Item-Textur; Knochen als Ersatz"
+  },
+  "ui.compass": {
+   "file": "assets/mc/item/compass_00.png",
+   "original": "textures/items/compass_00.png"
+  },
+  "ui.map": {
+   "file": "assets/mc/item/filled_map.png",
+   "original": "textures/items/filled_map.png"
+  },
+  "ui.book": {
+   "file": "assets/mc/item/book.png",
+   "original": "textures/items/book.png"
+  },
+  "ui.sword": {
+   "file": "assets/mc/item/iron_sword.png",
+   "original": "textures/items/iron_sword.png"
+  },
+  "ui.pickaxe": {
+   "file": "assets/mc/item/iron_pickaxe.png",
+   "original": "textures/items/iron_pickaxe.png"
+  },
+  "ui.diamond": {
+   "file": "assets/mc/item/diamond.png",
+   "original": "textures/items/diamond.png"
+  },
+  "ui.emerald": {
+   "file": "assets/mc/item/emerald.png",
+   "original": "textures/items/emerald.png"
+  },
+  "ui.xp": {
+   "file": "assets/mc/gui/xp_orb.png",
+   "original": "textures/entity/experience_orb.png",
+   "note": "Abgeleitet: oberstes linkes 16x16-Feld des 64x64-Sheets, sonst unverändert"
+  },
+  "ui.xp_bottle": {
+   "file": "assets/mc/item/experience_bottle.png",
+   "original": "textures/items/experience_bottle.png"
+  },
+  "ui.heart": {
+   "file": "assets/mc/gui/heart_full.png",
+   "original": "textures/gui/sprites/hud/heart/full.png",
+   "note": "9x9"
+  },
+  "ui.heart_half": {
+   "file": "assets/mc/gui/heart_half.png",
+   "original": "textures/gui/sprites/hud/heart/half.png",
+   "note": "9x9"
+  },
+  "ui.heart_empty": {
+   "file": "assets/mc/gui/heart_empty.png",
+   "original": "textures/gui/sprites/hud/heart/container.png",
+   "note": "9x9, leere Herz-Hülle"
+  },
+  "ui.food": {
+   "file": "assets/mc/gui/food_full.png",
+   "original": "textures/gui/sprites/hud/food_full.png",
+   "note": "9x9"
+  },
+  "ui.food_half": {
+   "file": "assets/mc/gui/food_half.png",
+   "original": "textures/gui/sprites/hud/food_half.png",
+   "note": "9x9"
+  },
+  "ui.food_empty": {
+   "file": "assets/mc/gui/food_empty.png",
+   "original": "textures/gui/sprites/hud/food_empty.png",
+   "note": "9x9"
+  },
+  "ui.button": {
+   "file": "assets/mc/gui/button.png",
+   "original": "textures/gui/sprites/widget/button.png",
+   "note": "200x20, 9-Slice (Rand 3 px), border-image"
+  },
+  "ui.button_hover": {
+   "file": "assets/mc/gui/button_highlighted.png",
+   "original": "textures/gui/sprites/widget/button_highlighted.png",
+   "note": "200x20, 9-Slice"
+  },
+  "ui.button_disabled": {
+   "file": "assets/mc/gui/button_disabled.png",
+   "original": "textures/gui/sprites/widget/button_disabled.png",
+   "note": "200x20, 9-Slice"
+  },
+  "ui.slot": {
+   "file": "assets/mc/gui/slot.png",
+   "original": "textures/gui/sprites/container/slot.png",
+   "note": "18x18 Inventar-Slot"
+  },
+  "ui.hotbar": {
+   "file": "assets/mc/gui/hotbar.png",
+   "original": "textures/gui/sprites/hud/hotbar.png",
+   "note": "182x22"
+  },
+  "ui.hotbar_selection": {
+   "file": "assets/mc/gui/hotbar_selection.png",
+   "original": "textures/gui/sprites/hud/hotbar_selection.png",
+   "note": "24x23"
+  },
+  "ui.xp_bar_bg": {
+   "file": "assets/mc/gui/xp_bar_background.png",
+   "original": "textures/gui/sprites/hud/experience_bar_background.png",
+   "note": "182x5"
+  },
+  "ui.xp_bar_fill": {
+   "file": "assets/mc/gui/xp_bar_progress.png",
+   "original": "textures/gui/sprites/hud/experience_bar_progress.png",
+   "note": "182x5"
+  },
+  "bg.dirt": {
+   "file": "assets/mc/block/dirt.png",
+   "original": "textures/blocks/dirt.png"
+  },
+  "bg.stone": {
+   "file": "assets/mc/block/stone.png",
+   "original": "textures/blocks/stone.png"
+  },
+  "bg.planks": {
+   "file": "assets/mc/block/oak_planks.png",
+   "original": "textures/blocks/oak_planks.png"
+  },
+  "bg.cobblestone": {
+   "file": "assets/mc/block/cobblestone.png",
+   "original": "textures/blocks/cobblestone.png"
+  },
+  "bg.grass_top": {
+   "file": "assets/mc/block/grass_block_top.png",
+   "original": "textures/blocks/grass_block_top.png"
+  },
+  "bg.grass_side": {
+   "file": "assets/mc/block/grass_block_side.png",
+   "original": "textures/blocks/grass_block_side.png"
+  },
+  "bg.bedrock": {
+   "file": "assets/mc/block/bedrock.png",
+   "original": "textures/blocks/bedrock.png"
+  },
+  "bg.bricks": {
+   "file": "assets/mc/block/stone_bricks.png",
+   "original": "textures/blocks/stone_bricks.png"
+  },
+  "bg.obsidian": {
+   "file": "assets/mc/block/obsidian.png",
+   "original": "textures/blocks/obsidian.png"
+  },
+  "egg.creeper": {
+   "file": "assets/mc/item/creeper_spawn_egg.png",
+   "original": "textures/items/creeper_spawn_egg.png"
+  },
+  "egg.zombie": {
+   "file": "assets/mc/item/zombie_spawn_egg.png",
+   "original": "textures/items/zombie_spawn_egg.png"
+  },
+  "egg.skeleton": {
+   "file": "assets/mc/item/skeleton_spawn_egg.png",
+   "original": "textures/items/skeleton_spawn_egg.png"
+  },
+  "egg.enderman": {
+   "file": "assets/mc/item/enderman_spawn_egg.png",
+   "original": "textures/items/enderman_spawn_egg.png"
+  },
+  "egg.spider": {
+   "file": "assets/mc/item/spider_spawn_egg.png",
+   "original": "textures/items/spider_spawn_egg.png"
+  },
+  "egg.villager": {
+   "file": "assets/mc/item/villager_spawn_egg.png",
+   "original": "textures/items/villager_spawn_egg.png"
+  },
+  "egg.pig": {
+   "file": "assets/mc/item/pig_spawn_egg.png",
+   "original": "textures/items/pig_spawn_egg.png"
+  },
+  "egg.cow": {
+   "file": "assets/mc/item/cow_spawn_egg.png",
+   "original": "textures/items/cow_spawn_egg.png"
+  },
+  "egg.chicken": {
+   "file": "assets/mc/item/chicken_spawn_egg.png",
+   "original": "textures/items/chicken_spawn_egg.png"
+  },
+  "egg.sheep": {
+   "file": "assets/mc/item/sheep_spawn_egg.png",
+   "original": "textures/items/sheep_spawn_egg.png"
+  },
+  "egg.wolf": {
+   "file": "assets/mc/item/wolf_spawn_egg.png",
+   "original": "textures/items/wolf_spawn_egg.png"
+  },
+  "egg.cat": {
+   "file": "assets/mc/item/cat_spawn_egg.png",
+   "original": "textures/items/cat_spawn_egg.png"
+  },
+  "egg.blaze": {
+   "file": "assets/mc/item/blaze_spawn_egg.png",
+   "original": "textures/items/blaze_spawn_egg.png"
+  },
+  "egg.ghast": {
+   "file": "assets/mc/item/ghast_spawn_egg.png",
+   "original": "textures/items/ghast_spawn_egg.png"
+  },
+  "egg.witch": {
+   "file": "assets/mc/item/witch_spawn_egg.png",
+   "original": "textures/items/witch_spawn_egg.png"
+  },
+  "egg.slime": {
+   "file": "assets/mc/item/slime_spawn_egg.png",
+   "original": "textures/items/slime_spawn_egg.png"
+  },
+  "egg.warden": {
+   "file": "assets/mc/item/warden_spawn_egg.png",
+   "original": "textures/items/warden_spawn_egg.png"
+  },
+  "egg.axolotl": {
+   "file": "assets/mc/item/axolotl_spawn_egg.png",
+   "original": "textures/items/axolotl_spawn_egg.png"
+  },
+  "egg.bee": {
+   "file": "assets/mc/item/bee_spawn_egg.png",
+   "original": "textures/items/bee_spawn_egg.png"
+  },
+  "egg.allay": {
+   "file": "assets/mc/item/allay_spawn_egg.png",
+   "original": "textures/items/allay_spawn_egg.png"
+  },
+  "egg.wandering_trader": {
+   "file": "assets/mc/item/wandering_trader_spawn_egg.png",
+   "original": "textures/items/wandering_trader_spawn_egg.png"
+  },
+  "egg.piglin": {
+   "file": "assets/mc/item/piglin_spawn_egg.png",
+   "original": "textures/items/piglin_spawn_egg.png"
+  },
+  "egg.phantom": {
+   "file": "assets/mc/item/phantom_spawn_egg.png",
+   "original": "textures/items/phantom_spawn_egg.png"
+  },
+  "egg.drowned": {
+   "file": "assets/mc/item/drowned_spawn_egg.png",
+   "original": "textures/items/drowned_spawn_egg.png"
+  },
+  "ui.correct": {
+   "file": null,
+   "fallback": "Kein Vanilla-Icon für richtig/falsch. Text ✓/✗ in Palettenfarben, oder item/emerald (richtig) und item/barrier (falsch)"
+  },
+  "ui.theme_toggle": {
+   "file": null,
+   "fallback": "Kein Vanilla-Icon für Hell/Dunkel. Wort 'Hell'/'Dunkel' als Text"
+  },
+  "ui.arrows": {
+   "file": null,
+   "fallback": "Text-Pfeile ↑ ↓ (keine Texturen)"
+  }
+ }
+}

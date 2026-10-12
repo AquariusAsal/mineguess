@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="logo-64.png">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Datenschutzerklärung – MineGuess</title>
+<meta name="robots" content="noindex">
+<link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="mg.css">
+<script>try{if(localStorage.getItem('mg_theme')==='light')document.documentElement.setAttribute('data-theme','light');}catch(e){}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Zum Inhalt springen</a>
+<header class="mg-nav">
+  <a class="mg-logo" href="index.html" aria-label="MineGuess Startseite">
+    <img src="logo-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
+  </a>
+  <nav class="mg-nav-links" aria-label="Hauptnavigation">
+    <a class="btn" href="game.html">Zum Spiel</a>
+  </nav>
+</header>
+
+<main id="main" class="legal">
+  <h1>Datenschutzerklärung</h1>
+  <p class="meta">Stand: <span class="ph">[DATUM]</span></p>
+
+  <h2>1. Verantwortlicher</h2>
+  <address>
+    <span class="ph">[NAME]</span><br>
+    <span class="ph">[ANSCHRIFT]</span><br>
+    E-Mail: <span class="ph">[E-MAIL]</span>
+  </address>
+
+  <h2>2. Kurzfassung</h2>
+  <ul>
+    <li>Du kannst MineGuess ohne Konto spielen (Gastmodus). Spielstände liegen dann nur in deinem Browser.</li>
+    <li>Mit Google-Anmeldung werden Name, Profilbild und Spielstatistiken in einer Cloud-Datenbank gespeichert, damit Leaderboard und Statistiken funktionieren.</li>
+    <li>Im Multiplayer werden dein Spielername, Antworten und optional dein Spielerkopf nur für die Dauer der Runde im Arbeitsspeicher des Servers gehalten.</li>
+    <li>Es gibt keine Werbung, kein Tracking und keine Analyse-Dienste.</li>
+  </ul>
+
+  <h2>3. Hosting und Server-Logdateien</h2>
+  <p>Die Seite und der Spielserver werden bei <strong>Render Services, Inc.</strong> (USA) gehostet. Beim Aufruf verarbeitet der Hosting-Anbieter technisch notwendige Daten (IP-Adresse, Datum und Uhrzeit, aufgerufene Datei, Browsertyp), um die Seite auszuliefern und die Sicherheit zu gewährleisten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO (Betrieb und Sicherheit des Angebots). Mit dem Anbieter besteht <span class="ph">[Prüfen: Auftragsverarbeitungsvertrag / Standardvertragsklauseln]</span>.</p>
+
+  <h2>4. Anmeldung und Cloud-Daten (Firebase / Google)</h2>
+  <p>Für die optionale Anmeldung und das Speichern von Daten nutzen wir <strong>Firebase Authentication</strong> und <strong>Cloud Firestore</strong> der Google Ireland Limited bzw. Google LLC. Beim Laden der Firebase-Bibliotheken von Servern von Google wird deine IP-Adresse an Google übermittelt.</p>
+  <p>Bei Anmeldung mit Google speichern wir:</p>
+  <ul>
+    <li>Nutzerkennung (UID), Anzeigename und Profilbild-URL deines Google-Kontos,</li>
+    <li>Statistiken (Streak, Bestwert, gespielte Runden), ggf. Premium-Status,</li>
+    <li>Leaderboard-Einträge (Punkte, richtige Antworten, Datum),</li>
+    <li>Fragenmeldungen (Frage, Grund, Nutzerkennung bzw. „guest“, Zeitstempel).</li>
+  </ul>
+  <p>Zweck ist die Bereitstellung von Rangliste, Statistiken und Premium-Funktionen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Leaderboard-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
+
+  <h2>5. Multiplayer (Echtzeitverbindung)</h2>
+  <p>Für den Multiplayer besteht eine WebSocket-Verbindung (Socket.io) zum Spielserver. Übertragen und verarbeitet werden: dein gewählter Spielername, Raumname und Raumcode, ggf. ein Raumpasswort, Bereit-Status, Buzzer, Antworten und Punkte sowie, falls du ihn hochlädst, dein <strong>Spielerkopf</strong> (ein 8x8-Pixel-Bild).</p>
+  <ul>
+    <li>Der Skin selbst wird nicht hochgeladen. Der Kopf wird in deinem Browser ausgeschnitten, nur dieses kleine Bild wird an Mitspieler im Raum gesendet.</li>
+    <li>Diese Daten liegen im Arbeitsspeicher des Servers und werden gelöscht, sobald du den Raum verlässt oder der Raum geschlossen wird. Nach einem Verbindungsabbruch wird dein Platz bis zu 30 Sekunden gehalten, damit du zurückkehren kannst. Es erfolgt keine dauerhafte Speicherung in einer Datenbank; Spielername und Raumcode können jedoch in den technischen Logs des Hosting-Anbieters erscheinen.</li>
+    <li>Spielername, Raum und Kopf sind für andere Spieler im selben Raum sichtbar; öffentliche Räume erscheinen in der Raumliste. Bitte verwende keinen Klarnamen oder personenbezogene Bilder.</li>
+  </ul>
+  <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+
+  <h2>6. Lokale Speicherung im Browser</h2>
+  <p>MineGuess speichert Einstellungen und Spielstände lokal im Browser (localStorage), zum Beispiel Statistiken, Abzeichen, Blitz- und Daily-Ergebnisse, Theme, Ton, gemeldete Fragen und deinen Spielerkopf. Für die Rückkehr in einen Multiplayer-Raum wird zusätzlich eine zufällige Sitzungskennung im sessionStorage abgelegt, die beim Schließen des Tabs gelöscht wird. Außerdem registriert die Seite einen Service Worker, der Dateien für die Offline-Nutzung zwischenspeichert. Diese Speicherung ist technisch erforderlich, um die gewünschte Funktion bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst die Daten jederzeit in den Browser-Einstellungen löschen. Es werden keine Tracking-Cookies gesetzt.</p>
+
+  <h2>7. Schriften, Bilder und weitere Ressourcen</h2>
+  <ul>
+    <li><strong>Schriften</strong> (Inter, Silkscreen) werden lokal von unserem Server ausgeliefert. Es werden keine Schriften von Google geladen.</li>
+    <li><strong>Icons und Texturen</strong> (Mobs, Blöcke, Items) werden von unserem eigenen Server ausgeliefert. Es werden keine Bilder von Drittanbietern nachgeladen.</li>
+    <li><strong>Zahlung (Premium):</strong> Beim Klick auf „Jetzt bezahlen“ wirst du zu Stripe weitergeleitet. Dort gilt die Datenschutzerklärung von Stripe. Zahlungsdaten erhalten wir nicht. <span class="ph">[Prüfen: Stand der Zahlungsanbindung]</span></li>
+  </ul>
+
+  <h2>8. Deine Rechte</h2>
+  <p>Du hast nach der DSGVO das Recht auf:</p>
+  <ul>
+    <li>Auskunft (Art. 15),</li>
+    <li>Berichtigung (Art. 16),</li>
+    <li>Löschung (Art. 17),</li>
+    <li>Einschränkung der Verarbeitung (Art. 18),</li>
+    <li>Datenübertragbarkeit (Art. 20),</li>
+    <li>Widerspruch gegen Verarbeitungen auf Grundlage berechtigter Interessen (Art. 21),</li>
+    <li>Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft (Art. 7 Abs. 3).</li>
+  </ul>
+  <p>Schreibe dazu an <span class="ph">[E-MAIL]</span>. Außerdem hast du das Recht, dich bei einer Datenschutz-Aufsichtsbehörde zu beschweren (Art. 77 DSGVO), etwa bei der für deinen Wohnort zuständigen Landesbehörde oder bei der für uns zuständigen Behörde <span class="ph">[Aufsichtsbehörde eintragen]</span>.</p>
+
+  <h2>9. Kein offizielles Minecraft-Produkt, Quellen</h2>
+  <p>MineGuess ist ein inoffizielles Fan-Projekt, nicht von Mojang oder Microsoft. Faktenangaben beruhen auf dem Minecraft Wiki (CC BY-NC-SA 3.0). Details stehen im <a href="impressum.html">Impressum</a>.</p>
+
+  <h2>10. Änderungen</h2>
+  <p>Wir passen diese Erklärung an, wenn sich Funktionen oder die Rechtslage ändern. Es gilt die jeweils hier veröffentlichte Fassung.</p>
+</main>
+
+<footer class="mg-footer">
+  <p>MineGuess ist ein inoffizielles Fan-Projekt und kein Minecraft-Produkt. Nicht von Mojang oder Microsoft.</p>
+  <nav aria-label="Rechtliches und Seiten">
+    <a href="game.html">Spielen</a>
+    <a href="multiplayer.html">Multiplayer</a>
+    <a href="impressum.html">Impressum</a>
+    <a href="datenschutz.html" aria-current="page">Datenschutz</a>
+  </nav>
+</footer>
+</body>
+</html>

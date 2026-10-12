@@ -1,0 +1,187 @@
+/* MineGuess – gemeinsame Design-Tokens und Basis-Komponenten.
+   Ruhig, flach, Erdtöne. Ein Grün, ein Gold (nur Premium), eckige Kanten, Pixel-Akzent nur an Rahmen/Buttons. */
+
+@font-face { font-family:'Inter'; font-style:normal; font-weight:400 800; font-display:optional;
+  src:url('fonts/inter-400-800-latin.woff2') format('woff2'); }
+@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:400; font-display:optional;
+  src:url('fonts/silkscreen-400-latin.woff2') format('woff2'); }
+@font-face { font-family:'Silkscreen'; font-style:normal; font-weight:700; font-display:optional;
+  src:url('fonts/silkscreen-700-latin.woff2') format('woff2'); }
+
+:root {
+  --bg:      #15171a;
+  --bg1:     #1f2226;
+  --bg2:     #2b2f34;
+  --bg3:     #353a40;
+  --border:  #3a3f45;
+  --border2: #6b7279;
+  --text:    #f1efe8;
+  --muted:   #a9a69b;
+  --muted2:  #8e8b81;
+  --green:   #6cbf3c;
+  --green-d: #4f9a28;
+  --on-green:#10130c;
+  --gold:    #e8b93a;
+  --yellow:  #e8b93a;
+  --red:     #e5604d;
+  --blue:    #5aa9e6;
+  --dirt:    #8a5a33;
+  --r:       4px;
+  --font:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-px: 'Silkscreen', 'Inter', ui-monospace, monospace;
+  --ease:    cubic-bezier(.2,.7,.2,1);
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-r: env(safe-area-inset-right, 0px);
+}
+[data-theme="light"] {
+  --bg:#f4f1e8; --bg1:#ffffff; --bg2:#ebe7da; --bg3:#ded9ca;
+  --border:#d6d0bf; --border2:#8c8a7c;
+  --text:#1d1f1a; --muted:#5b5d52; --muted2:#65675c;
+  --green:#3d7a1c; --green-d:#316315; --on-green:#ffffff;
+  --gold:#8a6200; --yellow:#8a6200; --red:#b3321f; --blue:#2c6aa0;
+}
+
+*, *::before, *::after { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; scroll-behavior:smooth; }
+body { margin:0; background:var(--bg); color:var(--text); font-family:var(--font); line-height:1.55;
+  -webkit-font-smoothing:antialiased; min-height:100vh; min-height:100dvh; overflow-x:hidden; }
+img { max-width:100%; }
+a { color:var(--green); }
+.px { font-family:var(--font-px); letter-spacing:.02em; }
+
+/* Fokus: immer sichtbar, nie nur Farbe */
+:focus-visible { outline:3px solid var(--blue); outline-offset:2px; border-radius:2px; }
+.skip-link { position:absolute; left:8px; top:-60px; background:var(--green); color:var(--on-green); padding:10px 14px;
+  font-weight:700; z-index:1000; text-decoration:none; }
+.skip-link:focus { top:8px; }
+.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+
+/* Navigation */
+.mg-nav { position:sticky; top:0; z-index:100; background:var(--bg); border-bottom:2px solid var(--border);
+  padding:0 max(16px,var(--safe-l)) 0 max(16px,var(--safe-r)); padding-top:var(--safe-t);
+  display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:calc(56px + var(--safe-t)); }
+.mg-logo { display:flex; align-items:center; gap:0; color:var(--text); text-decoration:none;
+  font-family:var(--font-px); font-weight:700; font-size:1.05rem; min-height:44px; }
+.mg-logo img { width:30px; height:30px; object-fit:contain; image-rendering:pixelated; margin-right:10px; }
+.mg-logo span { color:var(--green); }
+.mg-nav-links { display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:flex-end; }
+.mg-nav-link { color:var(--muted); text-decoration:none; font-size:.9rem; font-weight:600; padding:0 12px;
+  min-height:44px; display:inline-flex; align-items:center; border-radius:var(--r); }
+.mg-nav-link:hover { color:var(--text); background:var(--bg2); }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:44px; padding:10px 20px;
+  font-family:var(--font); font-size:1rem; font-weight:700; text-decoration:none; cursor:pointer;
+  border:2px solid var(--border2); border-radius:var(--r); background:var(--bg2); color:var(--text);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); transition:transform .12s var(--ease), background .12s, border-color .12s; }
+.btn:hover { background:var(--bg3); }
+.btn:active { transform:translateY(2px); box-shadow:inset 0 -1px 0 rgba(0,0,0,.28); }
+.btn-primary { background:var(--green); border-color:var(--green-d); color:var(--on-green); }
+.btn-primary:hover { background:var(--green-d); }
+.btn-gold { background:var(--gold); border-color:var(--gold); color:#14110a; }
+[data-theme="light"] .btn-gold { color:#fff; }
+.btn-gold:hover { filter:brightness(.92); background:var(--gold); }
+.btn-ghost { background:transparent; box-shadow:none; }
+.btn[disabled], .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+.btn-block { width:100%; }
+
+/* Karten, Chips, Tags */
+.card { background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:24px; }
+.chip { display:inline-flex; align-items:center; min-height:36px; padding:6px 12px; border:2px solid var(--border);
+  border-radius:var(--r); background:var(--bg1); color:var(--muted); font-size:.85rem; font-weight:600; }
+.tag { display:inline-block; font-family:var(--font-px); font-size:.7rem; padding:3px 8px; border:2px solid var(--border2);
+  border-radius:var(--r); color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.tag-green { color:var(--green); border-color:var(--green); }
+.tag-gold  { color:var(--gold);  border-color:var(--gold); }
+.tag-blue  { color:var(--blue);  border-color:var(--blue); }
+
+/* Layout */
+.wrap { width:100%; max-width:1040px; margin:0 auto; padding:0 max(20px,var(--safe-l)) 0 max(20px,var(--safe-r)); }
+.eyebrow { font-family:var(--font-px); font-size:.78rem; color:var(--green); text-transform:uppercase; letter-spacing:.06em; margin:0 0 10px; }
+h1, h2, h3 { margin:0; line-height:1.2; }
+
+/* Footer (auf allen Seiten) */
+.mg-footer { width:100%; border-top:2px solid var(--border); background:var(--bg); color:var(--muted);
+  padding:20px max(16px,var(--safe-r)) calc(20px + var(--safe-b)) max(16px,var(--safe-l));
+  font-size:.82rem; display:flex; flex-wrap:wrap; gap:8px 24px; align-items:center; justify-content:space-between; margin-top:auto; }
+.mg-footer nav { display:flex; flex-wrap:wrap; gap:0 4px; }
+.mg-footer a { color:var(--muted); text-decoration:underline; text-underline-offset:3px; min-height:44px; display:inline-flex; align-items:center; padding:0 8px; }
+.mg-footer a:hover { color:var(--text); }
+.mg-footer p { margin:0; max-width:56ch; }
+
+/* Rechtstexte */
+.legal { max-width:760px; margin:0 auto; padding:40px 20px 64px; }
+.legal h1 { font-family:var(--font-px); font-size:clamp(1.1rem,5vw,2.2rem); margin-bottom:8px; overflow-wrap:anywhere; hyphens:auto; }
+.legal h2 { font-size:1.15rem; margin:32px 0 8px; padding-top:16px; border-top:2px solid var(--border); }
+.legal h3 { font-size:1rem; margin:20px 0 6px; }
+.legal p, .legal li { color:var(--text); max-width:70ch; }
+.legal ul { padding-left:22px; }
+.legal .meta { color:var(--muted); font-size:.9rem; }
+.legal .ph { background:var(--bg2); border:1px dashed var(--gold); border-radius:2px; padding:0 6px; font-family:ui-monospace,Consolas,monospace; white-space:normal; overflow-wrap:anywhere; }
+.legal address { font-style:normal; background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:16px; }
+.legal table { border-collapse:collapse; width:100%; font-size:.92rem; display:block; overflow-x:auto; }
+.legal th, .legal td { border:1px solid var(--border2); padding:8px 10px; text-align:left; vertical-align:top; }
+.legal th { background:var(--bg2); }
+
+/* Skin-Kopf (pixelscharf) */
+.skin-head { width:32px; height:32px; image-rendering:pixelated; image-rendering:crisp-edges; background:var(--bg3);
+  border:2px solid var(--border2); border-radius:2px; flex-shrink:0; display:block; object-fit:cover; }
+.skin-head.sm { width:24px; height:24px; }
+.skin-head.lg { width:48px; height:48px; }
+.skin-head.xl { width:64px; height:64px; }
+
+/* Bewegung zurücknehmen */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important; }
+}
+
+/* Skin-Upload */
+.skin-up-drop { display:flex; gap:16px; align-items:center; padding:14px; border:2px dashed var(--border2); border-radius:var(--r); background:var(--bg1); }
+.skin-up-drop.over { border-color:var(--green); background:var(--bg2); }
+.skin-up-text { display:flex; flex-wrap:wrap; gap:8px; align-items:center; min-width:0; }
+.skin-up-hint { flex-basis:100%; margin:4px 0 0; font-size:.8rem; color:var(--muted); }
+.skin-up-msg { flex-basis:100%; margin:0; font-size:.85rem; color:var(--green); min-height:1.2em; }
+.skin-up-msg.bad { color:var(--red); }
+.skin-up-btn { min-height:44px; }
+@media (max-width:420px) { .skin-up-drop { flex-direction:column; align-items:flex-start; } }
+
+/* Toast und Auswahl-Chips (geteilt) */
+#toast.show { opacity:1; transform:translateX(-50%); }
+button.chip { cursor:pointer; font-family:inherit; min-height:44px; }
+button.chip:hover { background:var(--bg2); color:var(--text); }
+.chip.on { border-color:var(--green); color:var(--text); background:var(--bg2); box-shadow:inset 0 -3px 0 var(--green); }
+
+/* Getrennte Spieler (Reconnect-Fenster) */
+.player-row.gone { opacity:.55; }
+
+/* Spielerprofil (Dialog) und Kopf-Chip */
+#mg-profile { position:fixed; inset:0; z-index:1500; background:rgba(0,0,0,.7); display:none; align-items:center; justify-content:center; padding:16px; }
+#mg-profile.open { display:flex; }
+.mg-profile-card { background:var(--bg1); border:2px solid var(--border2); border-radius:var(--r); padding:22px; width:100%; max-width:440px; max-height:92dvh; overflow:auto; display:flex; flex-direction:column; gap:12px; animation:mgIn .16s var(--ease); }
+.mg-profile-card h2 { font-family:var(--font-px); font-size:1.15rem; }
+.mg-profile-label { font-size:.8rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+.mg-profile-input { width:100%; min-height:48px; background:var(--bg); border:2px solid var(--border2); border-radius:var(--r); color:var(--text); padding:10px 14px; font:500 16px var(--font); }
+@keyframes mgIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.mg-chip { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:4px 12px 4px 6px; background:var(--bg1); border:2px solid var(--border2); border-radius:var(--r); color:var(--text); font:600 .85rem var(--font); cursor:pointer; max-width:200px; }
+.mg-chip:hover { background:var(--bg2); }
+.mg-chip-label { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+@media (max-width:480px) { .mg-chip.compact .mg-chip-label { display:none; } .mg-chip.compact { padding:4px 6px; } }
+
+/* Minecraft-Icons (feste Größe, pixelscharf, kein Layout-Sprung) */
+.mc-icon { display:inline-block; width:24px; height:24px; image-rendering:pixelated; image-rendering:crisp-edges; vertical-align:-.3em; flex:none; }
+.mc-icon.s16 { width:16px; height:16px; } .mc-icon.s32 { width:32px; height:32px; } .mc-icon.s48 { width:48px; height:48px; }
+.mc-pix { vertical-align:-.15em; }
+/* Gedämpfte Block-Textur als Akzent (nie unter Text ohne Dämpfung) */
+.tex-dirt { background-image:linear-gradient(rgba(21,23,26,.88),rgba(21,23,26,.88)), url('assets/mc/block/dirt.png'); background-size:auto, 64px 64px; image-rendering:pixelated; }
+
+/* Textur-Akzent: gedimmte Dirt-Kachel im Footer und in der Nav-Unterkante (Text bleibt auf deckender Dämpfung) */
+:root { --tex-dim: rgba(21,23,26,.9); }
+[data-theme="light"] { --tex-dim: rgba(244,241,232,.93); }
+.mg-footer { background-image:linear-gradient(var(--tex-dim),var(--tex-dim)), url('assets/mc/block/dirt.png'); background-size:auto, 64px 64px; image-rendering:pixelated; }
+
+/* Tastaturfokus am Skin-Upload (Input ist sr-only, Ring am Button) */
+.skin-up-text:has(#skin-up-file:focus-visible) .skin-up-btn { outline:3px solid var(--blue); outline-offset:2px; }
+#mode-profile { display:flex; justify-content:center; margin-bottom:4px; }
