@@ -390,6 +390,13 @@
       <div class="keyboard-hint">Tastatur: <kbd>Leertaste</kbd></div>
     </div>
 
+    <div id="totem-row">
+      <button type="button" class="btn totem-btn" id="totem-btn" onclick="useTotem()" disabled>
+        <img class="mc-icon" src="assets/mc/item/totem_of_undying.png" width="24" height="24" alt="">
+        <span>Totem: <b id="totem-state">verfügbar</b></span>
+      </button>
+    </div>
+
     <div class="buzz-status" id="buzz-status" role="status" aria-live="polite"></div>
 
     <div id="answer-area">
@@ -1270,6 +1277,91 @@ window.addEventListener('mg-skin-change', () => {
   clearTimeout(profT);
   profT = setTimeout(() => socket.emit('set_profile', { skin: MGSkin.get(), character: MGSkin.getCharacter() || 'steve' }), 400);
 });
+
+// ── Runde 7: Antwortphase für alle, Totem, Auflösung ─────────────────────────
+let answeredIds = {};
+let firstBuzzerId = null;
+function myTotemAvailable() { const p = roster[myId]; return !p || p.totem !== false; }
+function renderTotem() {
+  const b = el('totem-btn'), st = el('totem-state');
+  if (!b || !st) return;
+  const avail = myTotemAvailable();
+  st.textContent = avail ? 'verfügbar' : 'verbraucht';
+  b.disabled = !(avail && myPhase === 'answering');
+  b.classList.toggle('used', !avail);
+}
+function useTotem() {
+  if (myPhase !== 'answering' || !myTotemAvailable()) return;
+  socket.emit('use_totem');
+}
+socket.on('answer_phase', ({ firstBuzzerId: fb, endsIn, answered }) => {
+  firstBuzzerId = fb; answeredIds = {};
+  (answered || []).forEach(id => { answeredIds[id] = 1; });
+  el('buzzer-area').classList.remove('show');
+  const status = el('buzz-status');
+  if (answeredIds[myId]) {
+    myPhase = 'waiting';
+    status.className = 'buzz-status show other-buzzed';
+    status.textContent = 'Antwort abgegeben. Warte auf die anderen …';
+  } else {
+    myPhase = 'answering';
+    status.className = 'buzz-status show ' + (fb === myId ? 'you-buzzed' : 'other-buzzed');
+    status.textContent = fb === myId ? 'Du hast geläutet. Antworte jetzt, die anderen dürfen auch antworten.'
+      : nameOf(fb) + ' hat geläutet. Du darfst ebenfalls antworten: Wer am nächsten liegt, gewinnt.';
+    if (currentQ) buildAnswerInput(currentQ);
+    el('answer-area').classList.add('show');
+    const inp = el('num-input') || el('entity-input'); if (inp) inp.focus();
+  }
+  renderTotem();
+});
+socket.on('answer_submitted', ({ playerId, delta }) => {
+  answeredIds[playerId] = 1;
+  if (typeof delta === 'number' && delta < 0) { deltas[playerId] = delta; penaltyTotal[playerId] = (penaltyTotal[playerId] || 0) + Math.abs(delta); }
+  if (scene && playerId !== myId) scene.say(playerId, 'hat geantwortet', 'neutral');
+  if (playerId === myId) { myPhase = 'waiting'; renderTotem(); }
+  sceneLive(nameOf(playerId) + ' hat geantwortet');
+});
+socket.on('answers_revealed', ({ mode, winnerId, answers }) => {
+  const list = answers || [];
+  el('answer-area').classList.remove('show');
+  el('buzz-status').className = 'buzz-status';
+  list.forEach(a => {
+    if (typeof a.delta === 'number' && a.delta !== 0) deltas[a.playerId] = a.delta;
+    else if (typeof a.points === 'number' && a.points) deltas[a.playerId] = a.points;
+    const dev = (typeof a.deviationPct === 'number' && mode !== 'exact') ? ' (\u00b1' + Math.round(a.deviationPct) + ' %)' : '';
+    if (scene) {
+      scene.say(a.playerId, 'Die Antwort ist ' + String(a.text == null ? '' : a.text).slice(0, 30) + '!' + dev, a.winner ? 'correct' : (a.correct ? 'correct' : 'neutral'));
+      if (a.winner) scene.react(a.playerId, 'correct');
+    }
+  });
+  MGAudio.play(mode === 'none' || !winnerId ? 'wrong' : 'correct');
+  const w = list.find(a => a.winner);
+  sceneLive(w ? nameOf(w.playerId) + ' gewinnt die Runde' + (typeof w.deviationPct === 'number' && mode === 'closest' ? ' mit ' + Math.round(w.deviationPct) + ' % Abweichung' : '') + '.' : 'Niemand hat gepunktet.');
+  myPhase = 'idle'; renderTotem();
+});
+socket.on('totem_used', ({ playerId, playerName }) => {
+  if (playerId === myId) MGAudio.play('joker');
+  if (scene) scene.say(playerId, 'Totem!', 'neutral');
+  if (roster[playerId]) roster[playerId].totem = false;
+  renderTotem();
+  showToast((playerName || nameOf(playerId)) + ' setzt das Totem ein', 2500);
+});
+socket.on('totem_result', (t) => {
+  if (!t) return;
+  const status = el('buzz-status');
+  if (t.kind === 'range') {
+    status.className = 'buzz-status show you-buzzed';
+    status.textContent = 'Totem-Hinweis: Die Antwort liegt zwischen ' + t.from + ' und ' + t.to + (t.unit ? ' ' + t.unit : '') + '.';
+  } else if (t.kind === 'options') {
+    const rm = {}; (t.remove || []).forEach(o => { rm[String(o)] = 1; });
+    document.querySelectorAll('#entity-grid .entity-opt').forEach(b => { if (rm[b.textContent]) b.remove(); });
+    status.className = 'buzz-status show you-buzzed';
+    status.textContent = 'Totem: ' + (t.remove || []).length + ' falsche Optionen entfernt.';
+  }
+});
+socket.on('totem_denied', ({ reason }) => { showToast(reason || 'Das Totem ist nicht verfügbar', 3000); renderTotem(); });
+socket.on('room_state', () => renderTotem());
+socket.on('question', () => { answeredIds = {}; firstBuzzerId = null; renderTotem(); });
 
 // ── Connection ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { if (typeof initPremiumUI === 'function') initPremiumUI(); });

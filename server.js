@@ -78,7 +78,9 @@ const MAX_PLAYERS  = 8;
 const MAX_ROUNDS   = 10;
 const PTS_CORRECT  = 150;
 const PTS_SPEED    = 50;
-const PTS_WRONG    = 50;           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
+const PTS_WRONG    = 50;
+const APPROACH_LIMIT = 0.35;       // relative Abweichung, bis zu der eine Zahl als 'Annaeherung' zaehlt
+const REVEAL_DELAY = 2500;         // ms zwischen answers_revealed und result           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
 const BUZZ_WINDOW  = 120;          // ms: gleichzeitige Buzzes werden latenzbereinigt verglichen
 const GRACE_MS     = 30000;        // Reconnect-Fenster
 const MAX_NAME_LEN = 16;
@@ -162,6 +164,12 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent }
     pending:       new Set(),   // alle setTimeouts des Raums
     buzzQueue:     null,
     answered:      false,
+    firstBuzzer:   null,        // Socket-ID des ersten Laeutenden dieser Frage
+    answers:       new Map(),   // socketId -> Antworteintrag (verdeckt bis zur Aufloesung)
+    answerSeq:     0,
+    resolving:     false,
+    penalized:     false,
+    lastReveal:    null,
     lastAnswer:    null,        // { playerId, text, correct, timeout, delta } fuer Snapshot/Sprechblase
     typingId:      null,
     starting:      false,
@@ -220,11 +228,11 @@ function uniqueName(room, base) {
 }
 
 function publicPlayer(p, room) {
-  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, ready: room ? room.ready.has(p.id) : false };
+  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !p.totemUsed, ready: room ? room.ready.has(p.id) : false };
 }
 // Voller Datensatz inkl. Skin: nur einmalig (joined-Roster, player_joined, player_updated)
 function fullPlayer(p) {
-  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected };
+  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !p.totemUsed };
 }
 function scoreList(room) {
   return Object.values(room.players)
@@ -250,6 +258,8 @@ function broadcastLobby(room) {
     phase: room.phase,
     lockedOut: [...room.lockedOut],
     currentBuzzer: room.currentBuzzer,
+    firstBuzzer: room.firstBuzzer,
+    answered: [...room.answers.keys()],
     readyCount: room.ready.size,
     totalCount: connectedIds(room).length,
   });
@@ -294,6 +304,12 @@ function nextQuestion(room) {
   room.answered      = false;
   room.lastAnswer    = null;
   room.typingId      = null;
+  room.firstBuzzer   = null;
+  room.answers       = new Map();
+  room.answerSeq     = 0;
+  room.resolving     = false;
+  room.penalized     = false;
+  room.lastReveal    = null;
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
     room.questionOrder = shuffle(buildPool(room.categories));
@@ -334,58 +350,102 @@ function startAnswerCountdown(room) {
     io.to(room.id).emit('timer', { left: room.timerLeft, max: ANSWER_TIME, phase: 'answering' });
     if (room.timerLeft <= 0) {
       clearInterval(room.timerIv);
-      handleWrongAnswer(room, room.currentBuzzer, null, true);
+      finishAnswerPhase(room, 'timeout');
     }
   }, 1000);
 }
 
-// ── Falsche Antwort → naechster Spieler ──────────────────────────────────────
-function handleWrongAnswer(room, socketId, submittedAnswer, timeout = false, feedback = null) {
-  clearInterval(room.timerIv);
-  if (socketId) room.lockedOut.add(socketId);
-  room.currentBuzzer = null;
-  room.typingId = null;
+// ── Antwortphase: alle antworten, Auswertung "am naechsten dran" ───────────────
+function bandPoints(rel) {
+  if (rel == null) return 0;
+  return rel <= 0.05 ? 100 : rel <= 0.10 ? 80 : rel <= 0.20 ? 60 : rel <= APPROACH_LIMIT ? 40 : 0;
+}
 
-  const player = room.players[socketId];
-  let delta = 0;
-  if (player) {
-    const before = player.score;
-    player.score = Math.max(0, before - PTS_WRONG);
-    delta = player.score - before;                 // 0 .. -PTS_WRONG
-  }
-  room.lastAnswer = { playerId: socketId, text: timeout ? null : (submittedAnswer || ''), correct: false, timeout: !!timeout, delta };
-  const remaining = connectedIds(room).filter(id => !room.lockedOut.has(id));
+// Abzug nur fuer den ersten Laeutenden, hoechstens einmal je Frage, Score nie < 0
+function applyPenalty(room, p) {
+  if (!p || room.penalized) return 0;
+  room.penalized = true;
+  const before = p.score;
+  p.score = Math.max(0, before - PTS_WRONG);
+  return p.score - before;
+}
 
-  io.to(room.id).emit('answer_broadcast', {
-    playerId:   socketId,
-    playerName: player ? player.name : '?',
-    correct:    false,
-    timeout,
-    submitted:  submittedAnswer,
-    feedback,
-    delta,
-    penalty:    PTS_WRONG,
-    score:      player ? player.score : null,
-    lockedOut:  [...room.lockedOut],
-    remaining:  remaining.length,
+function answerDone(room) {
+  const ids = connectedIds(room);
+  return ids.length === 0 || ids.every(id => room.answers.has(id));
+}
+function checkAnswerPhaseDone(room) {
+  if (room.phase === 'answering' && !room.resolving && room.question && answerDone(room)) finishAnswerPhase(room, 'all');
+}
+
+function emitFirstBuzzerTimeout(room) {
+  const fb = room.players[room.firstBuzzer];
+  if (!fb || room.answers.has(fb.id) || room.penalized) return;
+  const delta = applyPenalty(room, fb);
+  io.to(room.id).emit('answer_timeout', { playerId: fb.id, playerName: fb.name, delta, penalty: PTS_WRONG, score: fb.score });
+}
+
+// Ergebnis der Antwortphase verkuenden, danach (REVEAL_DELAY) result
+function concludeAnswerPhase(room, mode, winnerId, points) {
+  room.resolving = true;
+  room.answered = true;
+  clearInterval(room.timerIv); room.timerIv = null;
+  const q = room.question;
+  const entries = [...room.answers.values()].sort((a, b) => a.order - b.order);
+  const answers = entries.map(e => {
+    const win = e.playerId === winnerId;
+    const pts = win ? points : 0;
+    return {
+      playerId: e.playerId, playerName: e.playerName, text: e.text.slice(0, 40), correct: !!e.correct,
+      deviationPct: e.rel == null ? null : Math.round(e.rel * 1000) / 10,
+      points: pts, delta: pts + (e.penalty || 0), winner: win,
+    };
   });
-  if (timeout) {
-    io.to(room.id).emit('answer_timeout', { playerId: socketId, playerName: player ? player.name : '?', delta, penalty: PTS_WRONG, score: player ? player.score : null });
-  } else {
-    io.to(room.id).emit('answer_given', { playerId: socketId, playerName: player ? player.name : '?', text: (submittedAnswer || '').slice(0, 40), correct: false, delta, score: player ? player.score : null, unit: room.question ? (room.question.unit || null) : null });
+  // erster Laeutender ohne Antwort: Abzug als eigener Eintrag
+  const fb = room.players[room.firstBuzzer];
+  const fbAnswered = room.answers.has(room.firstBuzzer);
+  room.lastReveal = {
+    mode, winnerId: winnerId || null, firstBuzzerId: room.firstBuzzer || null, answers,
+    correctAnswer: q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer,
+  };
+  io.to(room.id).emit('answers_revealed', room.lastReveal);
+  if (winnerId && room.players[winnerId]) {
+    const w = room.players[winnerId];
+    const win = entries.find(e => e.playerId === winnerId);
+    io.to(room.id).emit('answer_broadcast', {
+      playerId: w.id, playerName: w.name, correct: true, submitted: win ? win.text : '',
+      score: w.score, speedBonus: win && mode === 'exact' ? Math.max(0, points - PTS_CORRECT) : 0, delta: points,
+    });
+    io.to(room.id).emit('answer_given', {
+      playerId: w.id, playerName: w.name, text: win ? win.text.slice(0, 40) : '', correct: true,
+      delta: points, score: w.score, unit: q.unit || null,
+    });
+    room.lastAnswer = { playerId: w.id, text: win ? win.text : '', correct: true, timeout: false, delta: points };
+  } else if (fb && !fbAnswered) {
+    room.lastAnswer = { playerId: fb.id, text: null, correct: false, timeout: true, delta: 0 };
   }
   broadcastLobby(room);
+  later(room, () => revealResult(room, winnerId || null), REVEAL_DELAY);
+}
 
-  if (remaining.length === 0) {
-    room.answered = true;                       // nichts mehr annehmen
-    later(room, () => revealResult(room, null), 1800);
-  } else {
-    room.phase = 'buzzer';
-    room.answered = false;
-    broadcastLobby(room);
-    io.to(room.id).emit('buzzer_reset', { lockedOut: [...room.lockedOut] });
-    startBuzzerCountdown(room);
+// Ende der 15 s oder alle haben geantwortet: Annaeherungswertung
+function finishAnswerPhase(room, reason) {
+  if (room.dead || room.phase !== 'answering' || room.resolving || !room.question) return;
+  clearInterval(room.timerIv); room.timerIv = null;
+  emitFirstBuzzerTimeout(room);
+  let winnerId = null, mode = 'none', points = 0;
+  if (room.question.type === 'number') {
+    let best = null;
+    for (const a of room.answers.values()) {
+      if (bandPoints(a.rel) <= 0) continue;
+      if (!best || a.rel < best.rel - 1e-12 || (Math.abs(a.rel - best.rel) <= 1e-12 && a.order < best.order)) best = a;
+    }
+    if (best && room.players[best.playerId]) {
+      winnerId = best.playerId; mode = 'closest'; points = bandPoints(best.rel);
+      room.players[winnerId].score += points;
+    }
   }
+  concludeAnswerPhase(room, mode, winnerId, points);
 }
 
 // ── Aufloesung ────────────────────────────────────────────────────────────────
@@ -396,7 +456,8 @@ function revealResult(room, winnerId) {
 
   const q      = room.question;
   const answer = q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer;
-  room.lastResult = { answer, funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME };
+  room.lastResult = { answer, funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
+    mode: room.lastReveal ? room.lastReveal.mode : 'none', answers: room.lastReveal ? room.lastReveal.answers : [] };
   io.to(room.id).emit('result', room.lastResult);
   broadcastLobby(room);
 
@@ -456,12 +517,18 @@ function resolveBuzz(room) {
   clearInterval(room.timerIv);
   room.phase         = 'answering';
   room.currentBuzzer = winner.id;
+  room.firstBuzzer   = winner.id;
+  room.answers       = new Map();
+  room.answerSeq     = 0;
+  room.resolving     = false;
+  room.penalized     = false;
   room.answered      = false;
   room.timerLeft     = ANSWER_TIME;
 
   room.typingId = null;
   io.to(room.id).emit('buzzer_won', { playerId: winner.id, playerName: winner.name });
   io.to(room.id).emit('buzzed', { playerId: winner.id, playerName: winner.name });
+  io.to(room.id).emit('answer_phase', { firstBuzzerId: winner.id, endsIn: ANSWER_TIME, answered: [] });
   broadcastLobby(room);
   startAnswerCountdown(room);
 }
@@ -473,6 +540,8 @@ function sceneState(room) {
     buzzedId: room.phase === 'answering' ? room.currentBuzzer : null,
     typingId: room.typingId || null,
     lockedOut: [...room.lockedOut],
+    firstBuzzerId: room.firstBuzzer || null,
+    answered: [...room.answers.keys()],
     speech: room.lastAnswer || null,
     timerLeft: room.timerLeft,
     roundNum: room.roundNum,
@@ -487,7 +556,7 @@ function sendSnapshot(socket, room) {
     if (room.phase === 'answering' && room.currentBuzzer && room.players[room.currentBuzzer]) {
       socket.emit('buzzer_won', { playerId: room.currentBuzzer, playerName: room.players[room.currentBuzzer].name });
     }
-    if (room.lockedOut.size) socket.emit('buzzer_reset', { lockedOut: [...room.lockedOut] });
+    if (room.phase === 'answering') socket.emit('answer_phase', { firstBuzzerId: room.firstBuzzer, endsIn: room.timerLeft, answered: [...room.answers.keys()] });
   } else if (room.phase === 'result' && room.lastResult) {
     socket.emit('result', { ...room.lastResult, scores: scoreList(room) });
   } else if (room.phase === 'game_over' && room.lastGameOver) {
@@ -531,7 +600,7 @@ io.on('connection', (socket) => {
     let p = rejoinPlayer;
     if (!p) {
       p = { id: socket.id, name: uniqueName(room, name), score: 0, skin: skin || null, skinId: skinIdOf(skin),
-            character: validCharacter(character),
+            character: validCharacter(character), totemUsed: false,
             token: crypto.randomBytes(16).toString('hex'), connected: true, dcTimer: null };
       room.players[socket.id] = p;
     }
@@ -558,8 +627,8 @@ io.on('connection', (socket) => {
     const p = room.players[id];
     if (!p) return;
 
-    // Buzzer-Halter weg → zaehlt als falsch
-    if (room.currentBuzzer === id && room.phase === 'answering') handleWrongAnswer(room, id, null, true);
+    // Erster Laeutender weg ohne Antwort → Abzug wie Timeout, Runde laeuft fuer die anderen weiter
+    if (room.firstBuzzer === id && room.phase === 'answering' && !room.resolving) emitFirstBuzzerTimeout(room);
     room.ready.delete(id);
 
     const finalize = () => {
@@ -575,7 +644,7 @@ io.on('connection', (socket) => {
         return;
       }
       if (connectedIds(room).length === 0) resetRoom(room);
-      else { broadcastLobby(room); checkBuzzerDeadlock(room); maybeAutoStart(room); }
+      else { broadcastLobby(room); checkBuzzerDeadlock(room); maybeAutoStart(room); checkAnswerPhaseDone(room); }
     };
 
     if (immediate) { finalize(); return; }
@@ -586,6 +655,7 @@ io.on('connection', (socket) => {
     broadcastLobby(room);
     checkBuzzerDeadlock(room);
     maybeAutoStart(room);
+    checkAnswerPhaseDone(room);
   }
 
   // Raum erstellen ─────────────────────────────────────────────────────────────
@@ -673,7 +743,7 @@ io.on('connection', (socket) => {
   let lastTyping = 0;
   on('typing', () => {
     const room = getRoom();
-    if (!room || room.phase !== 'answering' || room.currentBuzzer !== socket.id) return;
+    if (!room || room.phase !== 'answering' || room.resolving || room.answers.has(socket.id)) return;
     const now = Date.now();
     if (now - lastTyping < 700) return;
     lastTyping = now;
@@ -712,38 +782,65 @@ io.on('connection', (socket) => {
     }
   });
 
-  // ANTWORT ────────────────────────────────────────────────────────────────────
+  // ANTWORT (alle in der Antwortphase, einmal je Frage) ───────────────────────
   on('submit_answer', (d) => {
     const room = getRoom();
-    if (!room || room.phase !== 'answering' || room.currentBuzzer !== socket.id || room.answered) return;
+    if (!room || room.phase !== 'answering' || room.resolving || !room.question) return;
+    const player = room.players[socket.id];
+    if (!player || !player.connected || room.answers.has(socket.id)) return;
     const raw = d && (typeof d.answer === 'string' || typeof d.answer === 'number') ? String(d.answer).slice(0, MAX_ANSWER_LEN) : '';
-    const result = MGAnswer.check(room.question, raw);
-    if (!result.valid) {                         // leer / keine Zahl → keine Strafe
-      socket.emit('answer_invalid', { message: room.question.type === 'number' ? 'Bitte eine Zahl eingeben.' : 'Bitte eine Antwort eingeben.' });
+    const q = room.question;
+    const result = MGAnswer.check(q, raw);
+    if (!result.valid) {                         // leer / keine Zahl → keine Strafe, Timer unveraendert
+      socket.emit('answer_invalid', { message: q.type === 'number' ? 'Bitte eine Zahl eingeben.' : 'Bitte eine Antwort eingeben.' });
       return;
     }
-
-    clearInterval(room.timerIv);
-    room.answered = true;
-    const player     = room.players[socket.id];
-    const speedBonus = Math.round(room.timerLeft / ANSWER_TIME * PTS_SPEED);
-    const shown      = cleanText(raw, 60);
+    let rel = null;
+    if (q.type === 'number') rel = Math.max(0, result.diff - MGAnswer.tolerance(q)) / Math.max(Math.abs(q.answer), 5);
+    const entry = {
+      playerId: socket.id, playerName: player.name, text: cleanText(raw, 60),
+      correct: !!result.correct, rel, order: ++room.answerSeq, timeLeft: room.timerLeft, penalty: 0,
+    };
+    room.answers.set(socket.id, entry);
+    room.typingId = null;
 
     if (result.correct) {
+      // sofort volle Punkte, Runde endet, andere Antworten werden ignoriert
+      const speedBonus = Math.round(room.timerLeft / ANSWER_TIME * PTS_SPEED);
       const gain = PTS_CORRECT + speedBonus;
       player.score += gain;
-      room.typingId = null;
-      room.lastAnswer = { playerId: socket.id, text: shown, correct: true, timeout: false, delta: gain };
-      io.to(room.id).emit('answer_broadcast', {
-        playerId: socket.id, playerName: player.name, correct: true,
-        submitted: shown, score: player.score, speedBonus, delta: gain,
-      });
-      io.to(room.id).emit('answer_given', { playerId: socket.id, playerName: player.name, text: shown.slice(0, 40), correct: true, delta: gain, score: player.score, unit: room.question.unit || null });
-      broadcastLobby(room);
-      later(room, () => revealResult(room, socket.id), 2000);
-    } else {
-      handleWrongAnswer(room, socket.id, shown, false, result.dir);
+      concludeAnswerPhase(room, 'exact', socket.id, gain);
+      return;
     }
+    // nicht exakt: Abzug nur fuer den ersten Laeutenden und nur ausserhalb des Annaeherungsbereichs
+    if (socket.id === room.firstBuzzer && (q.type !== 'number' || rel > APPROACH_LIMIT)) {
+      entry.penalty = applyPenalty(room, player);
+    }
+    io.to(room.id).emit('answer_submitted', { playerId: socket.id, playerName: player.name, delta: entry.penalty, score: player.score });
+    broadcastLobby(room);
+    checkAnswerPhaseDone(room);
+  });
+
+  // TOTEM: ein Mal pro Spieler und Raum-Session (serverseitig), Wirkung = Solo-Joker "Tipp 1" ─────
+  on('use_totem', () => {
+    const room = getRoom();
+    if (!room || room.phase !== 'answering' || room.resolving || !room.question) return socket.emit('totem_denied', { reason: 'phase' });
+    const p = room.players[socket.id];
+    if (!p || !p.connected) return;
+    if (p.totemUsed) return socket.emit('totem_denied', { reason: 'used' });
+    if (room.answers.has(socket.id)) return socket.emit('totem_denied', { reason: 'answered' });
+    p.totemUsed = true;
+    const q = room.question;
+    if (q.type === 'number') {
+      const margin = Math.max(Math.round(Math.abs(q.answer || 1) * 0.3), 3);
+      socket.emit('totem_result', { kind: 'range', from: q.answer - margin, to: q.answer + margin, unit: q.unit || null });
+    } else {
+      const wrong = (room.options || []).filter(o => !MGAnswer.check(q, o).correct);
+      const remove = shuffle(wrong).slice(0, 4);
+      socket.emit('totem_result', { kind: 'options', remove });
+    }
+    io.to(room.id).emit('totem_used', { playerId: p.id, playerName: p.name });
+    broadcastLobby(room);
   });
 
   // Weiterspielen ──────────────────────────────────────────────────────────────

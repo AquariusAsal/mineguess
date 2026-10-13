@@ -1739,10 +1739,10 @@ function setIconWithFallback(imgEl, name) {
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
-const MAX_ATTEMPTS = 6;
+const MAX_ATTEMPTS = 3;   // 3 Versuche pro Frage (Runde 7)
 const CLOSE_THRESHOLD_PERCENT = 0.15;
-const TIMER_SECONDS_NUMBER = 40;
-const TIMER_SECONDS_ENTITY = 70;
+const TIMER_SECONDS_NUMBER = 15;  // 15 s pro Versuch
+const TIMER_SECONDS_ENTITY = 15;
 let   TIMER_SECONDS        = 40; // set dynamically per question type
 const CIRCUMFERENCE = 2 * Math.PI * 24; // r=24 → ~150.8
 
@@ -1831,6 +1831,15 @@ function showToast(msg, duration = 2500) {
   setTimeout(() => t.classList.remove('show'), duration);
 }
 
+function updateAttemptLabel() {
+  // Anzeige "Versuch n/3" (Logik und Limit kommen aus MAX_ATTEMPTS/attempts)
+  let l = document.getElementById('attempt-label');
+  const bar = document.getElementById('attempts-bar');
+  if (!l && bar) { l = document.createElement('span'); l.id = 'attempt-label'; l.className = 'attempt-label'; l.setAttribute('role', 'status'); bar.parentNode.insertBefore(l, bar.nextSibling); }
+  if (!l) return;
+  const used = (typeof attempts === 'number') ? attempts : 0;
+  l.textContent = 'Versuch ' + Math.min(used + 1, MAX_ATTEMPTS) + '/' + MAX_ATTEMPTS;
+}
 function renderAttemptBar() {
   const bar = document.getElementById('attempts-bar');
   bar.innerHTML = '';
@@ -1840,11 +1849,13 @@ function renderAttemptBar() {
     dot.id = `dot-${i}`;
     bar.appendChild(dot);
   }
+  updateAttemptLabel();
 }
 
 function markDot(index, type) {
   const dot = document.getElementById(`dot-${index}`);
   if (dot) dot.classList.add(type);
+  setTimeout(updateAttemptLabel, 0);
 }
 
 function updateStatsDisplay() {
@@ -2009,7 +2020,7 @@ function buildShareText(won) {
     return '-';
   }).join('');
 
-  const result = won ? `${attempts}/${MAX_ATTEMPTS}` : 'X/6';
+  const result = won ? `${attempts}/${MAX_ATTEMPTS}` : 'X/' + MAX_ATTEMPTS;
   return `MineGuess ${getDateKey()}\n${result}\n${emojis}\n\nSpiel selbst: [dein-link]`;
 }
 
@@ -2470,7 +2481,7 @@ document.getElementById('btn-share').addEventListener('click', () => {
     d.classList.contains('used')    ? '-' : '_'
   ).join('');
   const won = document.getElementById('result-title').textContent.includes('Richtig');
-  const text = 'MineGuess\n' + (won ? attempts + '/' + MAX_ATTEMPTS : 'X/6') + '\n' + emojis + '\n\nScore: ' + sessCorrect + '/' + sessTotal;
+  const text = 'MineGuess\n' + (won ? attempts + '/' + MAX_ATTEMPTS : 'X/' + MAX_ATTEMPTS) + '\n' + emojis + '\n\nScore: ' + sessCorrect + '/' + sessTotal;
   navigator.clipboard.writeText(text).then(() => showToast('Kopiert!'));
 });
 

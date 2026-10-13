@@ -7,4 +7,7 @@
         automatisch in die /embed/-Form umgewandelt.
    Leer lassen = die Insel zeigt nur einen "In Spotify suchen"-Knopf.
    Beispiel: 'https://open.spotify.com/album/XXXXXXXXXXXXXXXXXXXXXX' */
-window.MG_SPOTIFY_URL = '';
+// Standard: MineGuess-Playlist. Eigenen Link hier eintragen, um sie zu ersetzen.
+window.MG_SPOTIFY_URL = 'https://open.spotify.com/playlist/7Js97HGm16FWMfZJVYI1Re';
+/* Hinweis: Mini-Player nutzt die Spotify iFrame API (Play/Pause, Fortschritt). Skip/Like sind ueber den Embed
+   technisch nicht moeglich; das ginge nur mit Spotify Web API/Playback SDK, einer eigenen Client-ID und Spotify-Premium-Login. */

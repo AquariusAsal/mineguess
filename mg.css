@@ -277,3 +277,15 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 @media (prefers-reduced-motion: reduce) { .mg-island, .mg-island.closed { transition:none; } }
 .rk-ingots { display:inline-flex; gap:1px; vertical-align:middle; flex:none; }
 .rk-ingots .mc-icon { width:18px; height:18px; }
+
+.mg-sp-controls { display:flex; align-items:center; gap:10px; margin-top:8px; }
+.mg-sp-play { min-width:76px; padding:0 12px; }
+.mg-sp-prog { flex:1; height:8px; background:var(--bg); border:2px solid var(--border); border-radius:2px; overflow:hidden; }
+.mg-sp-prog i { display:block; width:0; height:100%; background:var(--green); }
+.mg-sp-time { font-size:.78rem; color:var(--muted); min-width:3ch; }
+
+.attempt-label { font:700 .8rem var(--font-px); color:var(--muted); }
+
+#totem-row { margin:10px 0 0; display:flex; justify-content:center; }
+.totem-btn { gap:10px; }
+.totem-btn.used { opacity:.55; }

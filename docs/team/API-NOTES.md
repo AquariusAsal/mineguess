@@ -125,3 +125,36 @@ Laden (game.html `loadLeaderboard`): ein Query `ranked orderBy mmr desc limit 10
 - **Heute**: dieselbe Liste, clientseitig gefiltert auf `lastPlayedDay === MGRanked.dayKey()`, Reihenfolge nach aktuellem MMR; Zeile zeigt zusätzlich `mmrToday` ("+37 heute").
 - Lokaler Fallback: eigene Zeile "Du" (Rang, Fortschritt, MMR); Tab Heute ohne Spiel heute: Hinweis "Heute noch kein Ranked-Spiel."
 - Helfer: `MGRanked.rankData(mmr)` -> `{tier:'copper', division:3}`, `MGRanked.dayKey()`.
+
+
+---
+# Runde 7: Multiplayer-Wertung "am nächsten dran", Totem, Minuspunkte, Solo-Versuche
+
+## Ablauf der Antwortphase (Server)
+1. Buzz wie bisher (120-ms-Fenster, Vorrang des ersten Läutenden). Danach `buzzer_won`, `buzzed` und neu **`answer_phase {firstBuzzerId, endsIn:15, answered:[ids]}`**. Ab jetzt dürfen **alle verbundenen Spieler** (nicht nur der Läutende) per `submit_answer {answer}` antworten, einmal pro Spieler und Frage, 15 s (`timer {phase:'answering'}` wie bisher). Der Buzzer wird in dieser Frage nicht wieder geöffnet (`buzzer_reset` wird nicht mehr gesendet).
+2. Antworten sind bis zur Auflösung **nicht sichtbar**. Der Server sendet nur `answer_submitted {playerId, playerName, delta?, score?}` (Text fehlt; `delta` nur beim ersten Läutenden, falls Abzug). `typing {playerId}` darf jetzt jeder Antwortende senden.
+3. Auflösung (bei exakter Antwort **sofort**, sonst am Ende der 15 s oder wenn alle verbundenen Spieler geantwortet haben):
+   - a/b) Die **früheste exakt richtige** Antwort (nach Toleranz; erster Läutender hat durch frühere Abgabe Vorrang) bekommt 150 + Speedbonus (max 50, nach Restzeit bei Abgabe), Runde endet sofort, andere Antworten werden ignoriert.
+   - c) Nur Zahlenfragen, keine exakte Antwort: kleinste relative Abweichung gewinnt Teilpunkte: `rel = max(0, |x - Lösung| - Toleranz) / max(|Lösung|, 5)`; <= 5 % -> 100, <= 10 % -> 80, <= 20 % -> 60, <= 35 % -> 40, größer: 0 (kein Gewinner). Gleichstand: frühere Abgabe. Nur der Gewinner erhält Punkte (immer < 150).
+   - Entity-Fragen: nur exakt richtig zählt; frühester Treffer gewinnt, sonst kein Gewinner.
+4. **Minuspunkte (-50, Score >= 0) bekommt nur der erste Läutende**, und nur wenn (Zahl) seine Antwort > 35 % Abweichung hat bzw. (Entity) falsch ist bzw. er nach 15 s nicht geantwortet hat oder die Verbindung verliert. Antwortet er im Annäherungsbereich (<= 35 %), gibt es weder Abzug noch Punkte, außer er ist am nächsten. Andere Spieler bekommen nie Abzüge. Der Abzug wird sofort angewendet (`answer_submitted.delta`, bei Timeout `answer_timeout`).
+5. Events zur Auflösung (in dieser Reihenfolge):
+   - **`answers_revealed {mode:'exact'|'closest'|'none', winnerId, firstBuzzerId, answers:[{playerId, playerName, text (<=40, nie als HTML), correct, deviationPct (Zahl, sonst null), points, delta, winner}], correctAnswer}`** (`delta` = Punkte dieser Frage inkl. Abzug; Reihenfolge nach Abgabezeit).
+   - für den Gewinner zusätzlich die alten `answer_broadcast {correct:true,...}` und `answer_given` (Kompatibilität),
+   - nach 2,5 s `result {answer, funFact, winnerId, scores, nextIn, answers, mode}` und wie bisher `room_state` mit neuen Scores.
+6. `room_state.players[]` hat zusätzlich `totem` (true = verfügbar). `room_state` enthält `answered:[ids]` und `firstBuzzer`.
+7. Snapshot nach Join/Rejoin in der Antwortphase: `answer_phase` plus `scene` (`scene.answered`, `scene.firstBuzzerId`).
+
+## Totem (Joker im Multiplayer)
+- **Ein Totem pro Spieler und Raum-Session** (`player.totemUsed`, serverseitig; bleibt über Spiele im selben Raum und über Reconnect verbraucht, wird nur durch Verlassen/Neu-Beitritt zurückgesetzt).
+- Client: `use_totem` (ohne Payload). Nur in der Antwortphase, nur bevor der Spieler selbst geantwortet hat, nur einmal. Sonst `totem_denied {reason:'phase'|'used'|'answered'}`.
+- Wirkung (Variante des Solo-Jokers `useHint`, Tipp 1): 
+  - Zahl: `totem_result {kind:'range', from, to, unit}`; Bereich = Lösung ± max(round(|Lösung|·0.3), 3) (wie Solo "Tipp 1"). 
+  - Entity: `totem_result {kind:'options', remove:[4 falsche Optionen]}` (aus `question.options`, die richtige Option wird nie entfernt).
+  - Antwort geht nur an den Einsetzenden. An alle: `totem_used {playerId, playerName}` (Totem-Textur über der Figur, Ton `sounds/totem.mp3` beim Einsetzenden, optional bei allen).
+
+## Solo (game.html)
+- Pro Frage **3 Versuche à 15 s** in allen Modi (`MAX_ATTEMPTS=3`, `TIMER_SECONDS_*=15`, Timer startet je Versuch neu, Timeout verbraucht einen Versuch). Leere/ungültige Eingabe: kein Versuch, Timer läuft weiter.
+- **Blitz**: Gesamtzeit 60 s bleibt maßgeblich; die 15-s-Versuchszeit gilt zusätzlich, es gibt keine Kollision, daher gleiche Regel.
+- **Ranked**: für die MMR zählt nur das Endergebnis der Frage (richtig im 1./2./3. Versuch mit Ergebnisfaktor 1.0/0.85/0.70, Tipps -0.1 je Joker, sonst falsch = 0).
+- Neue Helfer in `answer-check.js`: `MGAnswer.tolerance(q)` und im Rückgabeobjekt `check()` zusätzlich `diff` und `value` (nächster Kandidatenwert).

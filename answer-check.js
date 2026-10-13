@@ -48,6 +48,15 @@
 
   // q: { type, answer, tolerance, acceptedAnswers }
   // Rückgabe: { valid, correct, dir: 'ok'|'low'|'high'|'wrong', close }
+  // Erlaubte Abweichung: max(tolerance, |answer| * tolerancePct/100, toleranceMin)
+  function tolerance(q) {
+    var tol = Number(q && q.tolerance) || 0;
+    if (q && q.tolerancePct) {
+      tol = Math.max(tol, Math.abs(q.answer) * Number(q.tolerancePct) / 100, Number(q.toleranceMin) || 0);
+    }
+    return tol;
+  }
+
   function check(q, raw) {
     if (!q) return { valid: false, correct: false, dir: 'wrong', close: false };
     var input = String(raw == null ? '' : raw);
@@ -56,18 +65,16 @@
     if (q.type === 'number') {
       var cands = parseNumbers(input);
       if (!cands) return { valid: false, correct: false, dir: 'wrong', close: false };
-      var tol = Number(q.tolerance) || 0;
-      // Relative Toleranz fuer schwer merkbare Zahlen: max(tolerance, answer*pct%, toleranceMin)
-      if (q.tolerancePct) {
-        tol = Math.max(tol, Math.abs(q.answer) * Number(q.tolerancePct) / 100, Number(q.toleranceMin) || 0);
+      var tol = tolerance(q);
+      // nächster Kandidat (mehrdeutige Schreibweisen wie "1.561")
+      var v = cands[0], diff = Math.abs(v - q.answer);
+      for (var i = 1; i < cands.length; i++) {
+        var dd = Math.abs(cands[i] - q.answer);
+        if (dd < diff) { diff = dd; v = cands[i]; }
       }
-      for (var i = 0; i < cands.length; i++) {
-        if (Math.abs(cands[i] - q.answer) <= tol + 1e-9) return { valid: true, correct: true, dir: 'ok', close: true };
-      }
-      var v = cands[0];
-      var diff = Math.abs(v - q.answer);
+      if (diff <= tol + 1e-9) return { valid: true, correct: true, dir: 'ok', close: true, diff: diff, value: v };
       var pct = diff / Math.max(Math.abs(q.answer), 1);
-      return { valid: true, correct: false, dir: v < q.answer ? 'low' : 'high', close: pct <= 0.15 || diff <= 2 };
+      return { valid: true, correct: false, dir: v < q.answer ? 'low' : 'high', close: pct <= 0.15 || diff <= 2, diff: diff, value: v };
     }
 
     var n = normText(input);
@@ -79,7 +86,7 @@
     return { valid: true, correct: false, dir: 'wrong', close: false };
   }
 
-  var api = { normText: normText, parseNumbers: parseNumbers, check: check };
+  var api = { normText: normText, parseNumbers: parseNumbers, check: check, tolerance: tolerance };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MGAnswer = api;
 })(typeof window !== 'undefined' ? window : this);
