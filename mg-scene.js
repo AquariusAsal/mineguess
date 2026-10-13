@@ -11,7 +11,7 @@
 (function (global) {
   'use strict';
 
-  var REDUCED = !!(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  var REDUCED = !!(global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches) || (function () { try { return localStorage.getItem('mg_reduce_motion') === '1'; } catch (e) { return false; } })();
   var BASE = 'assets/mc/';
   var STEVE = BASE + 'entity/player/wide/steve.png';
   var ALEX = BASE + 'entity/player/slim/alex.png';
@@ -370,6 +370,10 @@
     this.myId = opts.myId || null;
     this.preview = !!opts.preview;
     this.solo = !!opts.solo;
+    this.bookRoll = opts.bookRoll !== undefined ? opts.bookRoll : Math.PI / 2;   // Auftraggeber: Buch um 90 Grad gedreht
+    this.labelsBelow = opts.labelsBelow !== undefined ? !!opts.labelsBelow : !!opts.solo;   // Schilder unter die Fuesse: Blase kollidiert nie damit
+    this.zoom = opts.zoom || 1;              // <1: Kamera naeher (Titelbild)
+    this.bellScale = opts.bellScale || 0.85; // Glockengroesse
     this.players = [];
     this.figs = {};
     this.bubbles = {};
@@ -414,8 +418,7 @@
       beam: R.buffer(plainBox(12, 2, 2, { all: [0, 0, 1, 1] })),
       bellBody: R.buffer(boxVerts(6, 7, 6, 0, 0, 0, 32, 32)),
       bellLip: R.buffer(boxVerts(8, 2, 8, 0, 13, 0, 32, 32)),
-      card: R.buffer(plainBox(11, 13, 0.6, { all: [0, 0, 1, 1] })),
-      cardInner: R.buffer(plainBox(8.5, 10.5, 0.2, { all: [0, 0, 1, 1] }))
+      book: R.buffer(plainBox(20, 20, 0.35, { all: [0, 0, 1, 1] }))
     };
     this.tex = { top: null, side: null };
     function img(src, key) {
@@ -423,6 +426,7 @@
     }
     img(BASE + 'block/scaffolding_top.png', 'top');
     img(BASE + 'block/scaffolding_side.png', 'side');
+    img('assets/ui/buch.png', 'book');
     img(BASE + 'block/stone.png', 'stone');
     img(BASE + 'block/oak_log.png', 'log');
     img(BASE + 'entity/bell/bell_body.png', 'bell');
@@ -487,7 +491,7 @@
     var fov = 32 * Math.PI / 180, th = Math.tan(fov / 2), asp = this.w / this.h;
     var Hh = (uMax - uMin) / 2 + 2, uC = (uMax + uMin) / 2;
     var D = Math.max(Hh / th, (maxX + 1) / (th * asp));
-    this.camDist = D;
+    this.camDist = D * (this.zoom || 1);
     this.camTargetY = uC / ce;
     this.needsRender = true;
   };
@@ -646,7 +650,8 @@
     var fov = 32 * Math.PI / 180, asp = this.w / this.h, el = this.preview ? 0.18 : (this.elev || 0.7);
     var D = this.preview ? 78 : (this.camDist || 70);
     var target = this.preview ? [0, 16, 0] : [0, this.camTargetY || 17, 0];
-    var eye = [target[0], target[1] + D * Math.sin(el), target[2] + D * Math.cos(el)];
+    var vy = this.viewYaw || 0;   // sanfte Kamerafahrt/Parallax (Titelbild)
+    var eye = [target[0] + D * Math.cos(el) * Math.sin(vy), target[1] + D * Math.sin(el), target[2] + D * Math.cos(el) * Math.cos(vy)];
     var P = M.persp(fov, asp, 5, 400), V = M.look(eye, target, [0, 1, 0]);
     this.VP = M.mul(P, V);
     gl.uniformMatrix4fv(R.loc.vp, false, this.VP);
@@ -669,7 +674,7 @@
         /* Tischplatte bleibt frei */
       } else {
         // Glocke: Steinpfosten, Balken, goldene Glocke (Pendel um die Balkenachse), Rahmen dreht sich zum Läutenden
-        var G = M.mul(M.t(0, 14, 0), M.mul(M.ry(this.bellYawCur || 0), M.s(0.85, 0.85, 0.85)));
+        var G = M.mul(M.t(0, 14, 0), M.mul(M.ry(this.bellYawCur || 0), M.s(this.bellScale, this.bellScale, this.bellScale)));
         var stoneT = this.tex.stone || white, logT = this.tex.log || white, bellT = this.tex.bell || white;
         var stTint = this.tex.stone ? [1, 1, 1] : [0.55, 0.55, 0.58], lgTint = this.tex.log ? [0.5, 0.38, 0.27] : [0.35, 0.25, 0.15];
         R.draw(this.geo.post, M.mul(G, M.t(-7, 6.5, 0)), stoneT, stTint);
@@ -712,9 +717,9 @@
       }
       part('legR', 0, 0, 0); part('legL', 0, 0, 0);
       if (fg.reporter) {
-        var cardM = M.mul(up, M.mul(M.t(0, 21, 11.5), M.mul(M.ry(0.7), M.rx(-0.18))));
-        R.draw(self.geo.card, cardM, R.white, [0.93, 0.9, 0.78]);                       // Karte
-        R.draw(self.geo.cardInner, M.mul(cardM, M.t(0, 0, 0.35)), R.white, [0.72, 0.66, 0.5]);  // Rahmenlinie
+        // Buch (assets/ui/buch.png) in beiden Haenden vor der Brust, zur Kamera geneigt; bewegt sich mit dem Oberkoerper
+        var bookM = M.mul(up, M.mul(M.t(0, 19.5, 10), M.mul(M.ry(1.25), M.mul(M.rx(-0.28), M.rz(self.bookRoll || 0)))));
+        R.draw(self.geo.book, bookM, self.tex.book || R.white, self.tex.book ? [1, 1, 1] : [0.8, 0.6, 0.3]);
       }
       part('body', 0, 0, 0);
       part('armR', p.armRx, 0, p.armRz); part('armL', p.armLx, 0, p.armLz);
@@ -749,14 +754,17 @@
       lab.classList.toggle('short', !full);
       // Minecraft-Nametag: schwebt ueber dem Kopf, folgt der Figur, skaliert mit ihr (Billboard im DOM)
       var sz = Math.max(30, feet[1] - headP[1]), sc = Math.max(0.7, Math.min(1.25, sz / 95));
-      f.labelTop = true; f.labelH = 24 * sc;
-      lab.style.transform = 'translate(' + headP[0].toFixed(1) + 'px,' + (headP[1] - 4).toFixed(1) + 'px) translate(-50%,-100%) scale(' + sc.toFixed(2) + ')';
+      f.labelTop = !self.labelsBelow; f.labelH = self.labelsBelow ? 0 : 24 * sc;
+      lab.style.transformOrigin = self.labelsBelow ? '50% 0' : '50% 100%';
+      lab.style.transform = self.labelsBelow
+        ? 'translate(' + feet[0].toFixed(1) + 'px,' + (feet[1] + 3).toFixed(1) + 'px) translate(-50%,0) scale(' + sc.toFixed(2) + ')'
+        : 'translate(' + headP[0].toFixed(1) + 'px,' + (headP[1] - 4).toFixed(1) + 'px) translate(-50%,-100%) scale(' + sc.toFixed(2) + ')';
       var b = self.bubbles[id];
       if (b) {
         var bw = b.offsetWidth || 120, half = bw / 2 + 6;
         var bx = Math.max(half, Math.min(self.w - half, headP[0]));
         var tail = Math.max(-(bw / 2 - 16), Math.min(bw / 2 - 16, headP[0] - bx));
-        var by = Math.max((b.offsetHeight || 40) + 14, headP[1] - 2 - (f.labelH || 0) - 6);
+        var by = Math.max((b.offsetHeight || 40) + 14, headP[1] - 2 - (f.labelH || 0) - (self.labelsBelow ? 12 : 18));   // Platz fuer Blasenspitze, Schild bleibt frei
         b.style.setProperty('--tx', tail.toFixed(1) + 'px');
         b.style.transform = 'translate(' + bx.toFixed(1) + 'px,' + by.toFixed(1) + 'px) translate(-50%,-100%)';
       }
@@ -789,7 +797,7 @@
       say: function (id, t, k) { s.say(id, t, k); }, clearBubble: function (id) { s.clearBubble(id); },
       react: function (id, k) { s.react(id, k); }, setLocked: function (ids) { s.setLocked(ids); },
       resetRound: function () { s.resetRound(); }, setMyId: function (id) { s.myId = id; },
-      isGL: function () { return !!s.R; }, destroy: function () { s.destroy(); }
+      isGL: function () { return !!s.R; }, setViewYaw: function (v) { s.viewYaw = v; s.needsRender = true; s.wake(); }, destroy: function () { s.destroy(); }
     };
   }
 

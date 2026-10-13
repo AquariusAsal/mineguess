@@ -1,7 +1,7 @@
 // MineGuess Service Worker — Offline Support
 // Version bei jedem Deploy erhöhen. HTML/JS/CSS/JSON: network-first (frische Deploys),
 // Bilder/Fonts: cache-first. Socket.io und Firebase werden nie abgefangen.
-const CACHE = 'mineguess-v31';
+const CACHE = 'mineguess-v51';
 // ASSETS_START (generiert von tools/gen-sw-assets.js)
 const ASSETS = [
   "/",
@@ -20,6 +20,12 @@ const ASSETS = [
   "/mg-png.js",
   "/answer-check.js",
   "/ranked.js",
+  "/mg-badges.js",
+  "/mg-panorama.js",
+  "/mg-video.js",
+  "/mg-settings.js",
+  "/mg-ranklist.js",
+  "/assets/ui/buch.png",
   "/sounds/bell.mp3",
   "/sounds/orb.mp3",
   "/sounds/totem.mp3",
@@ -31,7 +37,20 @@ const ASSETS = [
   "/logo-128.png",
   "/fonts/inter-400-800-latin.woff2",
   "/fonts/silkscreen-400-latin.woff2",
-  "/fonts/silkscreen-700-latin.woff2"
+  "/fonts/silkscreen-700-latin.woff2",
+  "/assets/video/clips.json",
+  "/assets/video/poster/clip-01.webp",
+  "/assets/video/poster/clip-02.webp",
+  "/assets/video/poster/clip-03.webp",
+  "/assets/video/poster/clip-04.webp",
+  "/assets/video/poster/clip-05.webp",
+  "/assets/video/poster/clip-06.webp",
+  "/assets/video/poster/clip-07.webp",
+  "/assets/video/poster/clip-08.webp",
+  "/assets/video/poster/clip-09.webp",
+  "/assets/video/poster/clip-10.webp",
+  "/assets/video/poster/clip-11.webp",
+  "/assets/video/poster/clip-12.webp"
 ];
 // ASSETS_END
 
@@ -62,6 +81,9 @@ self.addEventListener('fetch', e => {
   if (url.origin !== self.location.origin) return;                 // Firebase, Google Fonts etc. unberührt
   if (url.pathname.startsWith('/socket.io/')) return;              // Echtzeit nie cachen
   if (url.pathname.includes('firebase-config')) return;
+
+  // Videos nie ueber den Service Worker (Range-Requests, grosse Dateien)
+  if (url.pathname.startsWith('/assets/video/') && /\.(mp4|webm)$/i.test(url.pathname)) return;
 
   const isStaticMedia = url.pathname.startsWith('/assets/mc/') || /\.(png|jpg|jpeg|svg|webp|gif|ico|woff2?|ttf|mp3|ogg|wav)$/i.test(url.pathname);
 

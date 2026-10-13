@@ -26,10 +26,15 @@ const mc = walk(path.join(root, 'assets', 'mc'), [])
 
 const rootCandidates = [
   '/', '/index.html', '/game.html', '/multiplayer.html', '/impressum.html', '/datenschutz.html',
-  '/mg.css', '/mg-audio.js', '/mg-spotify.js', '/spotify-config.js', '/mg-skin.js', '/mg-icons.js', '/mg-scene.js', '/mg-png.js', '/answer-check.js', '/ranked.js', '/sounds/bell.mp3', '/sounds/orb.mp3', '/sounds/totem.mp3', '/sounds/rare-achievement.mp3', '/sounds/anvil-drop.mp3', '/questions.json',
+  '/mg.css', '/mg-audio.js', '/mg-spotify.js', '/spotify-config.js', '/mg-skin.js', '/mg-icons.js', '/mg-scene.js', '/mg-png.js', '/answer-check.js', '/ranked.js', '/mg-badges.js', '/mg-panorama.js', '/mg-video.js', '/mg-settings.js', '/mg-ranklist.js', '/assets/ui/buch.png', '/sounds/bell.mp3', '/sounds/orb.mp3', '/sounds/totem.mp3', '/sounds/rare-achievement.mp3', '/sounds/anvil-drop.mp3', '/questions.json',
   '/multiplayer-config.js', '/logo-64.png', '/logo-128.png',
 ];
 const rootFiles = rootCandidates.filter(f => f === '/' || fs.existsSync(path.join(root, f)));
+// Video: nur Liste und Poster vorcachen (die mp4-Dateien nie)
+const videoDir = path.join(root, 'assets', 'video');
+const videoMeta = [];
+if (fs.existsSync(path.join(videoDir, 'clips.json'))) videoMeta.push('/assets/video/clips.json');
+if (fs.existsSync(path.join(videoDir, 'poster'))) fs.readdirSync(path.join(videoDir, 'poster')).filter(f => /\.webp$/i.test(f)).sort().forEach(f => videoMeta.push('/assets/video/poster/' + f));
 const fonts = fs.existsSync(path.join(root, 'fonts'))
   ? fs.readdirSync(path.join(root, 'fonts')).filter(f => /\.woff2?$/i.test(f)).map(f => '/fonts/' + f).sort()
   : [];
@@ -40,7 +45,7 @@ let sw = fs.readFileSync(swPath, 'utf8');
 sw = sw.replace(/const CACHE = 'mineguess-v(\d+)';/, (m, n) => `const CACHE = 'mineguess-v${Number(n) + 1}';`);
 
 // Feste Liste (zwischen Markern)
-const assetsBlock = `// ASSETS_START (generiert von tools/gen-sw-assets.js)\nconst ASSETS = ${JSON.stringify([...rootFiles, ...fonts], null, 2)};\n// ASSETS_END`;
+const assetsBlock = `// ASSETS_START (generiert von tools/gen-sw-assets.js)\nconst ASSETS = ${JSON.stringify([...rootFiles, ...fonts, ...videoMeta], null, 2)};\n// ASSETS_END`;
 if (/\/\/ ASSETS_START[\s\S]*?\/\/ ASSETS_END/.test(sw)) {
   sw = sw.replace(/\/\/ ASSETS_START[\s\S]*?\/\/ ASSETS_END/, assetsBlock);
 } else {

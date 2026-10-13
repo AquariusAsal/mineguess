@@ -86,3 +86,65 @@ Zusätzlich: `tier` (String-Rang-Id), `division` (1-3), `lastPlayedDay` (YYYY-MM
 
 ## Premium abgeschafft
 Das Feld `premium` im Nutzerdokument wird nicht mehr verwendet. Die Regel `!(premium in ...)` kann bleiben (schadet nicht) oder entfallen; `users/{uid}` braucht nur noch streak/best/played/displayName/photoURL/updatedAt (und optional `character`). Das Thema "Premium clientseitig umgehbar" ist damit erledigt.
+
+
+---
+# Rankliste öffentlich: komplette Regeln zum Kopieren (Stand Runde 12)
+
+Symptom "keine Berechtigung": Die Collection `ranked` ist für Besucher nicht lesbar. Ohne veröffentlichte Regeln lehnt Firestore alles ab. Die Seite funktioniert trotzdem (Server-Fallback `/api/ranked`, siehe API-NOTES.md), die Regeln machen die Rankliste dauerhaft und über Geräte hinweg sichtbar.
+
+## Schritt für Schritt
+1. https://console.firebase.google.com öffnen, Projekt **mineguessv1** wählen.
+2. Links **Build -> Firestore Database** öffnen, oben den Reiter **Regeln** (Rules) wählen.
+3. Den gesamten Inhalt durch den Block unten ersetzen.
+4. **Veröffentlichen** (Publish) klicken, ca. eine Minute warten.
+5. Seite neu laden: Die Rankliste ist für alle (auch ohne Login) sichtbar; eingetragen werden nur angemeldete Nutzer (Gäste erscheinen über den Server-Fallback).
+
+## Regel-Block
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Eigene Nutzerdaten (Statistik, Abzeichen). Niemand kann fremde Dokumente lesen/schreiben.
+    match /users/{uid} {
+      allow read, create, update: if request.auth != null && request.auth.uid == uid;
+      allow delete: if false;
+    }
+
+    // Rankliste: öffentlich lesbar, schreiben nur das eigene Dokument mit plausiblen Werten.
+    match /ranked/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() <= 40
+        && request.resource.data.mmr is int
+        && request.resource.data.mmr >= 0 && request.resource.data.mmr <= 20000
+        && request.resource.data.peak is int && request.resource.data.peak >= request.resource.data.mmr
+        && request.resource.data.answered is int && request.resource.data.answered >= 0
+        && request.resource.data.correct is int && request.resource.data.correct <= request.resource.data.answered
+        && request.resource.data.games is int && request.resource.data.games >= 0
+        && (!('lastPlayedDay' in request.resource.data) || request.resource.data.lastPlayedDay is string)
+        && (!('mmrToday' in request.resource.data) || request.resource.data.mmrToday is int)
+        && (!('division' in request.resource.data) || request.resource.data.division in [1, 2, 3]);
+      allow delete: if false;
+    }
+
+    // Alte Bestenliste (wird nicht mehr beschrieben, nur lesbar).
+    match /leaderboard/{doc} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Fragen melden (auch Gäste), nur anlegen.
+    match /reports/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['questionId','question','reason','uid','ts'])
+        && request.resource.data.question is string && request.resource.data.question.size() <= 300
+        && request.resource.data.reason is string && request.resource.data.reason.size() <= 100;
+      allow read, update, delete: if false;
+    }
+  }
+}
+```
+Hinweise: Die Abfrage `orderBy('mmr','desc').limit(100)` braucht keinen zusätzlichen Index. MMR bleibt clientseitig berechnet und damit manipulierbar (Wertebereiche und `correct <= answered` begrenzen nur den Schaden); echter Schutz bräuchte eine Cloud Function.

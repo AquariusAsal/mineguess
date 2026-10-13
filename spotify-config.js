@@ -11,3 +11,8 @@
 window.MG_SPOTIFY_URL = 'https://open.spotify.com/playlist/7Js97HGm16FWMfZJVYI1Re';
 /* Hinweis: Mini-Player nutzt die Spotify iFrame API (Play/Pause, Fortschritt). Skip/Like sind ueber den Embed
    technisch nicht moeglich; das ginge nur mit Spotify Web API/Playback SDK, einer eigenen Client-ID und Spotify-Premium-Login. */
+
+/* Lautstärke: Die Spotify iFrame API (Embed) bietet KEINEN Lautstärkeregler (nur togglePlay/pause/resume/seek/loadUri).
+   Die Musik-Lautstärke regelt man im Embed selbst bzw. am Gerät. Ein eigener Regler wäre nur mit dem Spotify Web
+   Playback SDK möglich (eigene Client-ID + Spotify-Premium-Login des Nutzers). Optional vorgesehen, derzeit ungenutzt: */
+window.MG_SPOTIFY_CLIENT_ID = '';

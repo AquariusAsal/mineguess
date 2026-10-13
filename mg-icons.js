@@ -30,6 +30,7 @@
     up:    ['0001000', '0011100', '0111110', '0001000', '0001000', '0001000', '0000000'],
     down:  ['0000000', '0001000', '0001000', '0001000', '0111110', '0011100', '0001000'],
     ask:   ['0111100', '1000010', '0000010', '0001100', '0001000', '0000000', '0001000'],
+    gear:  ['0010100', '0111110', '1101011', '0110110', '1101011', '0111110', '0010100'],
     sun:   ['0001000', '1001001', '0011100', '0111110', '0011100', '1001001', '0001000'],
     moon:  ['0011100', '0111000', '1110000', '1110000', '1110000', '0111000', '0011100']
   };
@@ -72,8 +73,14 @@
       '" decoding="async" onerror="this.style.visibility=\'hidden\'">';
   }
 
+  /** Direkte Textur ('item/diamond' unter assets/mc, ohne .png) */
+  function tex(path, size, label) {
+    size = size || 24;
+    return '<img class="mc-icon" src="' + BASE + String(path).replace(/[^a-z0-9_/]/g, '') + '.png" width="' + size + '" height="' + size + '" alt="' + esc(label || '') + '" decoding="async" onerror="this.hidden=true">';
+  }
+
   /** Textur anhand von cat-Name (Fallback: leer) */
   function category(name, size) { return html('cat.' + name, size || 16); }
 
-  global.MGIcon = { html: html, category: category, map: MAP, base: BASE, forName: forName };
+  global.MGIcon = { tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
 })(window);

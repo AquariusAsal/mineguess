@@ -5,43 +5,116 @@
 <link rel="icon" type="image/png" href="logo-64.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MineGuess – Teste dein Minecraft-Wissen</title>
-<meta name="description" content="MineGuess ist ein inoffizielles Minecraft-Quiz: allein, täglich oder im Multiplayer mit Buzzer.">
+<meta name="description" content="MineGuess ist ein inoffizielles Minecraft-Quiz: allein, ranked, täglich oder im Multiplayer mit Glocke.">
 <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="mg.css">
 <style>
-.hero { padding:72px 0 56px; border-bottom:2px solid var(--border); }
-.hero h1 { font-family:var(--font-px); font-size:clamp(2rem,7vw,3.6rem); line-height:1.1; margin-bottom:20px; }
-.hero h1 .accent { color:var(--green); }
-.hero p { color:var(--muted); font-size:1.1rem; max-width:52ch; margin:0 0 32px; }
-.hero-cta { display:flex; flex-wrap:wrap; gap:12px; }
-.facts { display:grid; grid-template-columns:repeat(3,1fr); margin-top:48px; border:2px solid var(--border); border-radius:var(--r); background:var(--bg1); }
-.fact { padding:18px 16px; border-right:2px solid var(--border); }
-.fact:last-child { border-right:0; }
-.fact b { display:block; font-family:var(--font-px); font-size:1.5rem; color:var(--green); line-height:1.2; }
-.fact span { font-size:.85rem; color:var(--muted); }
-
-section { padding:56px 0; border-bottom:2px solid var(--border); }
-section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); margin-bottom:10px; }
+section { padding:64px 0; }
+section + section { border-top:2px solid var(--border); }
+.eyebrow { margin-bottom:12px; }
+h2.sec { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.9rem); line-height:1.25; margin-bottom:10px; }
 .lead { color:var(--muted); max-width:56ch; margin:0 0 28px; }
 
-.grid { display:grid; gap:16px; grid-template-columns:repeat(3,1fr); }
-.grid.two { grid-template-columns:repeat(2,1fr); }
-.grid .card { display:flex; flex-direction:column; gap:8px; padding:20px; }
-.grid .card h3 { font-size:1.05rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.grid .card p { margin:0; color:var(--muted); font-size:.92rem; }
+/* Hero: Szene (WebGL) rechts, grosse CTA links */
+.hero { padding:48px 0 56px; position:relative; overflow:hidden; background:#8ec8f0; border-bottom:6px solid #5d9b3a; }
+.pano { position:absolute; inset:0; z-index:0; }
+.pano-canvas { width:100%; height:100%; display:block; }
+.pano.pano-fallback { background:linear-gradient(#8ec8f0 55%, #6aa84f 55%); }
+.hero .wrap { position:relative; z-index:1; }
+.hero-copy { background:rgba(21,23,26,.88); border:2px solid var(--border); padding:24px; border-radius:var(--r); }
+.hero-grid { display:grid; grid-template-columns:1fr 1.1fr; gap:32px; align-items:center; }
+.hero h1 { font-family:var(--font-px); font-size:clamp(2rem,6.5vw,3.4rem); line-height:1.12; margin:0 0 18px; }
+.hero h1 .accent { color:var(--green); }
+.hero p { color:var(--muted); font-size:1.1rem; max-width:46ch; margin:0 0 28px; }
+.hero-cta { display:flex; flex-wrap:wrap; gap:12px; }
+.btn-xl { min-height:56px; padding:14px 30px; font-size:1.1rem; }
+.hero-scene { aspect-ratio:4/3; max-height:460px; min-height:240px; }
+.hero-note { margin-top:18px; font-size:.82rem; color:var(--muted2); }
 
-.cats { display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0; list-style:none; }
+/* Modi als Bildkarten (gedimmte Block-Textur als Kopfbereich) */
+.modes { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.mode { display:flex; flex-direction:column; background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); overflow:hidden; text-decoration:none; color:var(--text); transition:border-color .15s, transform .15s var(--ease); }
+.mode:hover { border-color:var(--border2); transform:translateY(-2px); }
+.mode-img { height:84px; display:flex; align-items:center; justify-content:center; background-size:64px 64px; image-rendering:pixelated; border-bottom:2px solid var(--border); position:relative; }
+.mode-img::before { content:""; position:absolute; inset:0; background:rgba(21,23,26,.72); }
+.mode-img img { position:relative; width:48px; height:48px; image-rendering:pixelated; }
+.mode-body { padding:16px; display:flex; flex-direction:column; gap:6px; flex:1; }
+.mode h3 { font-size:1.05rem; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.mode p { margin:0; color:var(--muted); font-size:.92rem; }
+.mode .go { margin-top:auto; padding-top:8px; font-weight:700; font-size:.9rem; color:var(--green); }
 
-@media (max-width:820px) {
-  .grid, .grid.two { grid-template-columns:1fr; }
-  .hero { padding:40px 0 40px; }
+/* Daily-Highlight */
+.daily { display:flex; align-items:center; gap:20px; padding:20px; background:var(--bg1); border:2px solid var(--gold); border-radius:var(--r); margin-top:16px; }
+.daily img { width:48px; height:48px; image-rendering:pixelated; flex:none; }
+.daily h3 { font-size:1.1rem; margin-bottom:4px; }
+.daily p { margin:0; color:var(--muted); font-size:.92rem; }
+.daily .btn { margin-left:auto; flex:none; }
+
+/* Ranked-Teaser */
+.ranks { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:8px; }
+.rank { background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:16px 8px; text-align:center; }
+.rank img { width:40px; height:40px; image-rendering:pixelated; display:block; margin:0 auto 8px; }
+.rank b { display:block; font-family:var(--font-px); font-size:.85rem; }
+.rank span { font-size:.78rem; color:var(--muted); }
+.rank-bar { height:10px; margin-top:16px; background:var(--bg1); border:2px solid var(--border); border-radius:2px; overflow:hidden; display:flex; }
+.rank-bar i { flex:1; border-right:2px solid var(--bg); }
+.rank-bar i:nth-child(1) { background:#b87333; } .rank-bar i:nth-child(2) { background:#b9c0c4; } .rank-bar i:nth-child(3) { background:var(--gold); }
+.rank-bar i:nth-child(4) { background:#5ad0d6; } .rank-bar i:nth-child(5) { background:#4a4452; border-right:0; }
+
+/* So funktioniert's */
+.steps { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; counter-reset:s; }
+.step { background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:20px; }
+.step::before { counter-increment:s; content:counter(s); font-family:var(--font-px); font-size:1.6rem; color:var(--green); display:block; margin-bottom:8px; }
+.step h3 { font-size:1.05rem; margin-bottom:6px; }
+.step p { margin:0; color:var(--muted); font-size:.92rem; }
+
+.cta-band { text-align:center; padding:56px 0 64px; }
+.cta-band h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); margin-bottom:18px; }
+
+/* Block-Kanten zwischen Abschnitten, Himmelsblau/Grasgruen-Akzente */
+section { position:relative; }
+section + section { border-top:0; }
+section + section::before { content:""; position:absolute; top:0; left:0; right:0; height:14px; border-top:5px solid #5aa337; background:url(assets/mc/block/dirt.png); background-size:28px 28px; image-rendering:pixelated; }
+section#ranked, .steps-sec { background:#1d2a33; }
+.eyebrow { color:#7cc4f5; }
+h2.sec::after { content:""; display:block; width:56px; height:5px; background:#5aa337; margin-top:10px; }
+.stats { list-style:none; margin:0; padding:20px 0; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; text-align:center; background:#1d2a33; border:2px solid var(--border); border-radius:var(--r); margin-top:-30px; position:relative; z-index:2; }
+.stats b { display:block; font-family:var(--font-px); font-size:1.8rem; color:#7cc4f5; }
+.stats span { font-size:.85rem; color:var(--muted); }
+.hero-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; }
+.hero-bell { min-height:44px; }
+.mode:hover .mode-img img { transform:scale(1.12); }
+.mode-img img { transition:transform .2s var(--ease); }
+body.pg-in main { animation:pgIn .35s var(--ease); }
+body.pg-out main { opacity:0; transition:opacity .15s; }
+@keyframes pgIn { from { opacity:0; transform:translateY(6px); } }
+/* Reveals, Hover, Schimmer: nur transform/opacity */
+.reveal { opacity:0; transform:translateY(14px); transition:opacity .5s var(--ease), transform .5s var(--ease); }
+.reveal.in { opacity:1; transform:none; }
+.rank { position:relative; overflow:hidden; }
+.rank::after { content:""; position:absolute; top:0; left:-60%; width:40%; height:100%; background:rgba(255,255,255,.08); transform:skewX(-20deg); animation:shimmer 5s ease-in-out infinite; }
+.rank:nth-child(2)::after { animation-delay:.5s; } .rank:nth-child(3)::after { animation-delay:1s; } .rank:nth-child(4)::after { animation-delay:1.5s; } .rank:nth-child(5)::after { animation-delay:2s; }
+@keyframes shimmer { 0%,60% { transform:translateX(0) skewX(-20deg); } 100% { transform:translateX(420%) skewX(-20deg); } }
+.mini-rank { display:grid; gap:6px; }
+.mini-rank-row { display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 12px; background:var(--bg1); border:2px solid var(--border); border-radius:4px; }
+.mini-rank-row.me { border-color:var(--green); }
+.mr-pos { font-family:var(--font-px); font-size:.8rem; color:var(--muted); min-width:2.4ch; }
+.mr-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.mr-mmr { font-family:var(--font-px); font-size:.78rem; color:var(--gold); }
+.mini-rank-empty { color:var(--muted); padding:8px 0; }
+.rk-top-title { font-family:var(--font-px); font-size:1rem; margin:24px 0 10px; }
+@media (prefers-reduced-motion: reduce) { .rank::after { display:none; } .reveal { opacity:1; transform:none; } }
+@media (max-width:860px) {
+  .hero-grid { grid-template-columns:1fr; }
+  .hero-scene { order:-1; max-height:320px; }
+  .modes, .steps { grid-template-columns:1fr; }
+  .ranks { grid-template-columns:repeat(5,1fr); gap:6px; }
+  .rank { padding:10px 2px; min-width:0; } .rank img { width:28px; height:28px; } .rank span { display:none; } .rank b { font-size:.52rem; letter-spacing:-.02em; }
+  .daily { flex-direction:column; align-items:flex-start; } .daily .btn { margin-left:0; width:100%; }
+  section { padding:44px 0; }
 }
 @media (max-width:480px) {
-  .facts { grid-template-columns:1fr; }
-  .fact { border-right:0; border-bottom:2px solid var(--border); }
-  .fact:last-child { border-bottom:0; }
   .mg-nav-link.hide-sm { display:none; }
   .hero-cta .btn { width:100%; }
 }
@@ -56,92 +129,121 @@ section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); mar
     <img src="logo-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
   </a>
   <nav class="mg-nav-links" aria-label="Hauptnavigation">
+    <span id="nav-gear"></span>
     <span id="nav-chip"></span>
     <a class="mg-nav-link hide-sm" href="#modi">Modi</a>
+    <a class="mg-nav-link hide-sm" href="#ranked">Ranked</a>
     <a class="btn btn-primary" href="game.html">Spielen</a>
   </nav>
 </header>
 
 <main id="main">
-  <div class="hero">
-    <div class="wrap">
-      <p class="eyebrow">Inoffizielles Minecraft-Quiz</p>
-      <h1>Wie gut kennst du <span class="accent">Minecraft</span>?</h1>
-      <p>Mobs, Blöcke, Enchantments, Redstone und mehr. Allein üben, täglich antreten oder mit Freunden im Multiplayer um den Buzzer kämpfen.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="game.html">Jetzt spielen</a>
-        <a class="btn" href="multiplayer.html">Multiplayer</a>
-        <button type="button" class="btn btn-ghost" id="btn-profile">Mein Spielerkopf</button>
+  <section class="hero">
+    <div class="pano" id="pano" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Inoffizielles Minecraft-Quiz</p>
+        <h1>Wie gut kennst du <span class="accent">Minecraft</span>?</h1>
+        <p>Mobs, Blöcke, Redstone, Enchantments und mehr. Allein üben, im Ranked aufsteigen oder mit Freunden im Multiplayer um die Glocke kämpfen.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary btn-xl" href="game.html">Jetzt spielen</a>
+          <a class="btn btn-xl" href="multiplayer.html">Multiplayer</a>
+        </div>
+        <p class="hero-note">Kostenlos, ohne Anmeldung spielbar.</p>
       </div>
-      <div class="facts" role="list">
-        <div class="fact" role="listitem"><b>5</b><span>Spielmodi</span></div>
-        <div class="fact" role="listitem"><b>2–8</b><span>Spieler im Multiplayer</span></div>
-        <div class="fact" role="listitem"><b>Deutsch</b><span>und Englisch als Antwort</span></div>
-      </div>
+      <div class="hero-wrap"><div class="hero-scene mg-scene-host" id="hero-scene" role="img" aria-label="Spielfiguren stehen um einen Tisch mit einer Glocke"></div><button type="button" class="btn hero-bell" id="hero-bell">Glocke läuten</button></div>
     </div>
-  </div>
+  </section>
+
+  <div class="wrap"><ul class="stats" aria-label="MineGuess in Zahlen">
+    <li><b data-count="5">0</b><span>Spielmodi</span></li>
+    <li><b data-count="8">0</b><span>Spieler pro Raum</span></li>
+    <li><b data-count="5">0</b><span>Ränge</span></li>
+    <li><b data-count="34">0</b><span>Abzeichen</span></li>
+  </ul></div>
 
   <section id="modi">
     <div class="wrap">
       <p class="eyebrow">Spielmodi</p>
-      <h2>Fünf Wege zu spielen</h2>
-      <p class="lead">Zum Üben, für den schnellen Lauf oder gegen echte Gegner.</p>
-      <div class="grid">
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/block/grass_block_side.png" width="24" height="24" alt="">Endlosmodus <span class="tag tag-green">Für alle</span></h3>
-          <p>Fragen ohne Ende aus allen Kategorien. Mit Tipps, Fun Facts und Streak.</p>
-        </article>
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/item/golden_sword.png" width="24" height="24" alt="">Wettkampf <span class="tag tag-gold">Account</span></h3>
-          <p>10 schwere Fragen alle 12 Stunden, gleiche Fragen für alle. Dein bester Lauf kommt ins Leaderboard.</p>
-        </article>
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/item/ender_eye.png" width="24" height="24" alt="">Multiplayer <span class="tag tag-blue">Echtzeit</span></h3>
-          <p>Buzzer-Runden: Wer zuerst drückt, darf antworten. Öffentliche und private Räume für bis zu 8 Spieler.</p>
-        </article>
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/item/firework_rocket.png" width="24" height="24" alt="">Blitz</h3>
-          <p>60 Sekunden, so viele richtige Antworten wie möglich.</p>
-        </article>
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/item/clock_00.png" width="24" height="24" alt="">Tägliche Challenge</h3>
-          <p>5 Fragen pro Tag. Baue deine Serie auf.</p>
-        </article>
-        <article class="card">
-          <h3><img class="mc-icon" src="assets/mc/item/iron_helmet.png" width="24" height="24" alt="">Eigener Kopf</h3>
-          <p>Lade deinen Skin hoch: Im Multiplayer erscheint dein Spielerkopf neben deinem Namen.</p>
-        </article>
+      <h2 class="sec">Such dir deinen Modus aus</h2>
+      <p class="lead">Zum Üben, für den schnellen Lauf, für den Rang oder gegen echte Gegner.</p>
+      <div class="modes">
+        <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/grass_block_top.png)"><img src="assets/mc/block/grass_block_side.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Endlosmodus <span class="tag tag-green">Für alle</span></h3>
+          <p>Fragen ohne Ende aus allen Kategorien, mit Tipps, Fun Facts und eigener Kategorien-Auswahl.</p><span class="go">Üben</span></div>
+        </a>
+        <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/gold_block.png)"><img src="assets/mc/item/golden_sword.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Ranked <span class="tag tag-gold">Account</span></h3>
+          <p>10 Fragen, 3 Versuche à 15 Sekunden. Schwere Fragen richtig geben mehr MMR. Steige von Copper bis Netherite auf.</p><span class="go">Rang erspielen</span></div>
+        </a>
+        <a class="mode" href="multiplayer.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/oak_planks.png)"><img src="assets/mc/item/ender_eye.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Multiplayer <span class="tag tag-blue">Echtzeit</span></h3>
+          <p>Glocken-Runden mit bis zu 8 Spielern: Wer zuerst läutet, antwortet. Wer am nächsten liegt, gewinnt.</p><span class="go">Raum öffnen</span></div>
+        </a>
+        <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/redstone_block.png)"><img src="assets/mc/item/firework_rocket.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Blitz</h3>
+          <p>60 Sekunden, so viele richtige Antworten wie möglich. Schnelligkeit bringt Bonus.</p><span class="go">Los</span></div>
+        </a>
+        <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/stone_bricks.png)"><img src="assets/mc/item/iron_helmet.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Eigene Figur</h3>
+          <p>Wähle Steve oder Alex oder lade deinen eigenen Skin hoch. Er erscheint in Multiplayer und Solo-Szene.</p><span class="go">Profil öffnen</span></div>
+        </a>
+        <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/obsidian.png)"><img src="assets/mc/item/enchanted_book.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Fun Facts</h3>
+          <p>Nach jeder Frage lernst du etwas über die Antwort, auf Deutsch und Englisch akzeptiert.</p><span class="go">Entdecken</span></div>
+        </a>
+      </div>
+      <div class="daily">
+        <img src="assets/mc/item/clock_00.png" width="48" height="48" alt="">
+        <div><h3>Tägliche Challenge</h3><p>5 Fragen pro Tag, für alle gleich. Baue deine Serie auf.</p></div>
+        <a class="btn btn-gold" href="game.html">Heute spielen</a>
       </div>
     </div>
   </section>
 
-  <section id="features">
+  <section id="ranked">
     <div class="wrap">
-      <p class="eyebrow">Gut zu wissen</p>
-      <h2>Was MineGuess ausmacht</h2>
-      <div class="grid two" style="margin-top:24px">
-        <article class="card"><h3>Tipps</h3><p>Bis zu zwei Tipps pro Frage, dafür mit Punkteabzug.</p></article>
-        <article class="card"><h3>Deutsch &amp; Englisch</h3><p>Antworten werden in beiden Sprachen akzeptiert.</p></article>
-        <article class="card"><h3>Leaderboard</h3><p>Tages- und Allzeit-Ranking. Anmelden mit Google ist optional, Gäste können alles außer Ranglisten nutzen.</p></article>
-        <article class="card"><h3>Fun Facts</h3><p>Nach jeder Frage ein Fakt zur richtigen Antwort.</p></article>
+      <p class="eyebrow">Ranked</p>
+      <h2 class="sec">Fünf Ränge, ein Ziel: Netherite</h2>
+      <p class="lead">Jede Frage hat eine Schwierigkeit. Wer schwere Fragen löst, bekommt mehr MMR, wer leichte verpasst, verliert mehr.</p>
+      <div class="ranks">
+        <div class="rank"><img src="assets/mc/item/copper_ingot.png" width="40" height="40" alt=""><b>Copper</b><span>ab 0 MMR</span></div>
+        <div class="rank"><img src="assets/mc/item/iron_ingot.png" width="40" height="40" alt=""><b>Iron</b><span>ab 1000</span></div>
+        <div class="rank"><img src="assets/mc/item/gold_ingot.png" width="40" height="40" alt=""><b>Gold</b><span>ab 2000</span></div>
+        <div class="rank"><img src="assets/mc/item/diamond.png" width="40" height="40" alt=""><b>Diamond</b><span>ab 3000</span></div>
+        <div class="rank"><img src="assets/mc/item/netherite_ingot.png" width="40" height="40" alt=""><b>Netherite</b><span>ab 4000</span></div>
       </div>
+      <div class="rank-bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      <h3 class="rk-top-title">Rankliste: Top 5</h3>
+      <div id="mini-rank" style="max-width:520px"></div>
+      <p style="margin-top:20px"><a class="btn" href="game.html">Rankliste und Profil ansehen</a></p>
     </div>
   </section>
 
   <section>
     <div class="wrap">
-      <p class="eyebrow">Kategorien</p>
-      <h2>Von Anfänger bis Hardcore</h2>
-      <ul class="cats" style="margin-top:20px">
-        <li class="chip">Mobs</li><li class="chip">Blöcke</li><li class="chip">Items &amp; Waffen</li>
-        <li class="chip">Verzauberungen</li><li class="chip">Tränke &amp; Brauen</li><li class="chip">Crafting</li>
-        <li class="chip">Redstone</li><li class="chip">Biome &amp; Strukturen</li><li class="chip">Dimensionen</li>
-        <li class="chip">Erze &amp; Ressourcen</li><li class="chip">Essen</li><li class="chip">Geschichte &amp; Updates</li>
-        <li class="chip">Hardcore-Wissen</li><li class="chip">Gameplay</li>
-      </ul>
+      <p class="eyebrow">So funktioniert's</p>
+      <h2 class="sec">In drei Schritten loslegen</h2>
+      <div class="steps" style="margin-top:24px">
+        <div class="step"><h3>Modus wählen</h3><p>Üben, Ranked, Blitz, Daily oder Multiplayer. Ohne Anmeldung als Gast, mit Google für Rang und Statistik.</p></div>
+        <div class="step"><h3>Frage beantworten</h3><p>Zahl eintippen oder Mob wählen. Tipp und Joker helfen, im Multiplayer entscheidet die Glocke.</p></div>
+        <div class="step"><h3>Aufsteigen</h3><p>Sammle Punkte, Abzeichen und MMR. Dein Rang erscheint als Barren neben deinem Namen.</p></div>
+      </div>
     </div>
   </section>
 
+  <section class="cta-band">
+    <div class="wrap">
+      <h2>Bereit für die erste Frage?</h2>
+      <a class="btn btn-primary btn-xl" href="game.html">Jetzt spielen</a>
+    </div>
+  </section>
 </main>
 
 <footer class="mg-footer">
@@ -153,12 +255,80 @@ section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); mar
     <a href="datenschutz.html">Datenschutz</a>
   </nav>
 </footer>
+
 <script src="mg-png.js"></script>
-  <script src="mg-skin.js"></script>
+<script src="mg-skin.js"></script>
+<script src="mg-icons.js"></script>
 <script src="mg-scene.js"></script>
+<script src="mg-panorama.js"></script>
+<script src="mg-video.js"></script>
+<script src="mg-ranklist.js"></script>
+<script src="mg-audio.js"></script>
+<script src="mg-spotify.js"></script>
+<script src="spotify-config.js"></script>
+<script src="mg-settings.js"></script>
 <script>
   MGSkin.mountChip(document.getElementById('nav-chip'), { className: 'compact' });
-  document.getElementById('btn-profile').addEventListener('click', MGSkin.openProfile);
+  (function () {
+    var el = document.getElementById('pano');
+    function pano() { if (window.MGPanorama) MGPanorama.mount(el); }
+    if (window.MGVideo) MGVideo.mount(el, { fallback: pano }); else pano();   // Video-Hintergrund, Panorama als Fallback
+  })();
+  if (window.MGSettings) MGSettings.mount(document.getElementById('nav-gear'));
+  if (window.MGRanklist) MGRanklist.mount(document.getElementById('mini-rank'));
+  // Zähler: zählen beim Einblenden hoch
+  (function () {
+    var nums = document.querySelectorAll('[data-count]');
+    function run(el) {
+      var to = +el.getAttribute('data-count');
+      if (MGScene.reducedMotion) { el.textContent = to; return; }
+      var t0 = performance.now();
+      (function step(now) { var k = Math.min(1, (now - t0) / 900); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); })(t0);
+    }
+    if (!('IntersectionObserver' in window)) { nums.forEach(run); return; }
+    var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { run(x.target); io.unobserve(x.target); } }); }, { threshold: 0.5 });
+    nums.forEach(function (n) { io.observe(n); });
+  })();
+  // Scroll-Reveals (nur transform/opacity)
+  (function () {
+    var els = document.querySelectorAll('.mode, .daily, .rank, .step');
+    if (!('IntersectionObserver' in window) || MGScene.reducedMotion) return;
+    els.forEach(function (e) { e.classList.add('reveal'); });
+    var io = new IntersectionObserver(function (es) { es.forEach(function (x) { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: 0.15 });
+    els.forEach(function (e, i) { e.style.transitionDelay = (i % 3) * 70 + 'ms'; io.observe(e); });
+  })();
+  // Titelbild: Figuren am Tisch mit Glocke, langsame Kamerafahrt, Parallax, alle paar Sekunden läutet jemand.
+  (function () {
+    var host = document.getElementById('hero-scene');
+    if (!host || !window.MGScene) return;
+    var s;
+    try { s = MGScene.create(host, { myId: 'hero', zoom: 0.85, bellScale: 1.35, labelsBelow: true }); } catch (e) { return; }
+    s.setPlayers([
+      { id: 'a', name: 'Steve', character: 'steve' },
+      { id: 'b', name: 'Alex', character: 'alex' },
+      { id: 'c', name: 'Du', character: 'steve' }
+    ]);
+    function ring() { s.resetRound(); s.buzz('c'); if (window.MGAudio) MGAudio.play('bell'); setTimeout(function () { s.say('c', 'Ich läute!', 'neutral'); }, 500); }
+    host.style.cursor = 'pointer';
+    host.addEventListener('click', ring);
+    document.getElementById('hero-bell').addEventListener('click', ring);
+    if (MGScene.reducedMotion) { s.buzz('b'); return; }
+    var talk = ['Die Antwort ist 10!', 'Das ist ein Creeper!', 'Es sind 64 Blöcke!', 'Die Antwort ist 3!'];
+    var ids = ['a', 'b', 'c'], i = 0;
+    function round() {
+      var id = ids[i++ % ids.length];
+      s.resetRound(); s.buzz(id);
+      setTimeout(function () { s.think(id, true); }, 700);
+      setTimeout(function () { s.say(id, talk[i % talk.length], 'correct'); s.react(id, 'correct'); }, 1700);
+    }
+    setTimeout(round, 800); setInterval(round, 5200);
+    var t0 = performance.now(), px = 0;
+    host.addEventListener('pointermove', function (e) { var r = host.getBoundingClientRect(); px = ((e.clientX - r.left) / r.width - 0.5) * 0.5; });
+    (function drift() {
+      if (!document.hidden) s.setViewYaw(Math.sin((performance.now() - t0) / 6000) * 0.22 + px);
+      requestAnimationFrame(drift);
+    })();
+  })();
 </script>
 </body>
 </html>

@@ -1199,7 +1199,7 @@ main {
   /* Category pill */
   .category-pill { font-size:.72rem; padding: 3px 8px; }
 
-  /* Leaderboard */
+  /* Rankliste */
   .lb-card { padding: 16px; max-width: 100%; margin: 8px; border-radius: 4px; }
   .lb-row { padding: 8px 10px; font-size: 0.78rem; }
 
@@ -1233,6 +1233,41 @@ main {
 /* ── Feinschliff (Design-Brief) ── */
 .mode-card { text-align:left; font:inherit; color:inherit; width:100%; }
 .mode-card > * { display:block; }
+.mode-card { padding:0 20px 20px; overflow:hidden; }
+.mode-card::before { content:""; display:block; height:64px; margin:0 -20px 14px; background:linear-gradient(rgba(21,23,26,.72),rgba(21,23,26,.72)), var(--band, none); background-size:auto, 64px 64px; image-rendering:pixelated; border-bottom:2px solid var(--border); }
+.mode-card .mode-name { margin-top:0; }
+.menu-status { display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; width:100%; max-width:560px; padding:12px 16px; background:var(--bg1); border:2px solid var(--border); border-radius:4px; }
+.menu-status:empty { display:none; }
+.pano { position:fixed; inset:0; z-index:0; }
+.pano-canvas { width:100%; height:100%; display:block; }
+.pano.pano-fallback { background:linear-gradient(#8ec8f0 55%, #6aa84f 55%); }
+#mode-screen { position:relative; z-index:1; }
+#mode-screen .mode-title, #mode-screen .mode-welcome { background:rgba(21,23,26,.85); padding:4px 12px; border-radius:4px; }
+body.menu-hidden #menu-pano { display:none; }
+/* Ergebnis: ruhiger Auftritt, grosse Punktezahl */
+.result-panel.show { animation:resultIn .22s var(--ease); }
+@keyframes resultIn { from { opacity:0; transform:translateY(10px); } }
+.result-title { font-family:var(--font-px); font-size:1.15rem; }
+.pts-earned { font-size:1.9rem; }
+.attempt-label { display:inline-block; margin-left:8px; padding:2px 8px; background:rgba(0,0,0,.35); border-radius:0; color:#fff; }
+.timer-ring .fg { stroke-width:4; }
+@media (prefers-reduced-motion: reduce) { .result-panel.show { animation:none; } }
+.menu-rank { width:100%; max-width:560px; background:rgba(21,23,26,.88); border:2px solid var(--border); border-radius:4px; padding:4px 14px 14px; }
+.mini-rank { display:grid; gap:6px; }
+.mini-rank-row { display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 12px; background:var(--bg1); border:2px solid var(--border); border-radius:4px; }
+.mini-rank-row.me { border-color:var(--green); }
+.mr-pos { font-family:var(--font-px); font-size:.8rem; color:var(--muted); min-width:2.4ch; }
+.mr-name { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+.mr-mmr { font-family:var(--font-px); font-size:.78rem; color:var(--gold); }
+.mini-rank-empty { color:var(--muted); padding:8px 0; }
+.rk-top-title { font-family:var(--font-px); font-size:1rem; margin:24px 0 10px; }
+/* Schlanker Header: Logo, Zahnrad, Profil-Chip (Details im Einstellungs-Panel) */
+.header-stats .stat, #theme-toggle, #sound-toggle, #btn-leaderboard, #spotify-slot { display:none !important; }
+.menu-status .ms-rank { display:flex; align-items:center; gap:8px; font-weight:700; }
+.menu-status .ms-bar { flex:1; min-width:120px; height:8px; background:var(--bg); border:2px solid var(--border); border-radius:2px; overflow:hidden; }
+.menu-status .ms-bar i { display:block; height:100%; background:var(--gold); }
+.menu-status .ms-streak { color:var(--muted); font-size:.9rem; }
+.question-card { font-size:clamp(1.15rem,3.6vw,1.5rem); line-height:1.4; }
 .mode-card:hover { transform:none; border-color:var(--border2); }
 .mode-tag { position:static; align-self:flex-start; margin-top:6px; background:transparent; color:var(--muted); border:2px solid var(--border); font-family:var(--font-px); }
 .green-tag { color:var(--green); border-color:var(--green); background:transparent; }
@@ -1279,6 +1314,10 @@ header h1 { flex-shrink:0; }
   <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
 <script src="mg-scene.js"></script>
+<script src="mg-panorama.js"></script>
+  <script src="mg-video.js"></script>
+  <script src="mg-ranklist.js"></script>
+  <script src="mg-settings.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-audio.js"></script>
   <script src="spotify-config.js"></script>
@@ -1308,20 +1347,23 @@ header h1 { flex-shrink:0; }
 <div class="overlay hidden" id="auth-modal">
   <div class="modal-card">
     <div class="modal-logo">Mine<span>Guess</span></div>
-    <div class="modal-title">Melde dich an, um Statistiken zu speichern,<br>Punkte zu sammeln und im Leaderboard aufzutauchen.</div>
+    <div class="modal-title">Melde dich an, um Statistiken zu speichern,<br>Punkte zu sammeln und im Rankliste aufzutauchen.</div>
     <button class="btn-social" id="btn-google-signin">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H24v7h11.1C33.5 32.4 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5 12.7 5.5 3.5 14.7 3.5 26S12.7 46.5 24 46.5c10.9 0 20-7.9 20-20 0-1.3-.1-2.7-.4-3.9-.3-.7-.3-1.5 0-2.1z"/><path fill="#34A853" d="M6.3 15.6l6.3 4.6C14.2 16.5 18.8 13.5 24 13.5c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5c-7.7 0-14.4 4.3-17.7 10.1z"/><path fill="#FBBC05" d="M24 46.5c4.8 0 9.1-1.6 12.4-4.4l-5.7-4.7C28.9 38.8 26.6 39.5 24 39.5c-5.2 0-9.5-2.8-11.7-6.8l-6.2 4.8C9.5 42.3 16.3 46.5 24 46.5z"/><path fill="#EA4335" d="M43.6 20.5H24v7h11.1c-.8 2.2-2.3 4-4.2 5.4l5.7 4.7c3.4-3.1 5.4-7.8 5.4-13.1 0-1.3-.1-2.7-.4-4z"/></svg>
       Mit Google anmelden
     </button>
     <div class="divider">oder</div>
     <button class="btn-guest" id="btn-guest-play">Als Gast spielen (keine Statistiken)</button>
-    <div class="auth-note">Deine Daten werden in der Cloud (Google Firebase) gespeichert. Gäste haben keinen Leaderboard-Zugang.<br><a href="datenschutz.html" target="_blank" rel="noopener" style="color:var(--blue)">Datenschutz</a> · <a href="impressum.html" target="_blank" rel="noopener" style="color:var(--blue)">Impressum</a></div>
+    <div class="auth-note">Deine Daten werden in der Cloud (Google Firebase) gespeichert. Gäste haben keinen Ranklisten-Zugang.<br><a href="datenschutz.html" target="_blank" rel="noopener" style="color:var(--blue)">Datenschutz</a> · <a href="impressum.html" target="_blank" rel="noopener" style="color:var(--blue)">Impressum</a></div>
   </div>
 </div>
 
 <!-- ── Mode Selection ─────────────────────────────────────────────────────── -->
+<div id="menu-pano" class="pano" aria-hidden="true"></div>
 <div id="mode-screen" class="hidden">
   <div id="mode-profile"></div>
+  <div class="menu-status" id="menu-status" aria-live="polite"></div>
+  <div class="menu-rank"><h3 class="rk-top-title">Rankliste: Top 5</h3><div id="mini-rank"></div></div>
   <div class="mode-welcome" id="mode-welcome">Wähle einen Modus</div>
   <div class="mode-title">Was möchtest du spielen?</div>
   <div class="mode-grid">
@@ -1331,8 +1373,8 @@ header h1 { flex-shrink:0; }
       <span class="mode-tag green-tag">Für alle</span>
     </button>
     <button type="button" class="mode-card" onclick="selectMode('competition')" id="comp-mode-card">
-      <span class="mode-name"><img class="mc-icon" src="assets/mc/item/golden_sword.png" width="24" height="24" alt="">Wettkampf</span>
-      <span class="mode-desc">10 schwere Fragen alle 12 Stunden. 3 Versuche pro Runde, das beste Ergebnis zählt.</span>
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/item/golden_sword.png" width="24" height="24" alt="">Ranked</span>
+      <span class="mode-desc">Ranked: 10 Fragen, 3 Versuche à 15 Sekunden. Jede Frage hat eine Schwierigkeit: schwere Fragen richtig geben mehr MMR, leichte falsch kosten mehr. Steige auf von Copper über Iron, Gold und Diamond bis Netherite.</span>
       <span class="mode-tag" id="comp-mode-tag">Nur Accounts</span>
     </button>
     <button type="button" class="mode-card" onclick="window.location.href='multiplayer.html'">
@@ -1352,7 +1394,7 @@ header h1 { flex-shrink:0; }
     </button>
   </div>
   <div class="mode-actions">
-    <button class="btn-lb-header" onclick="showLeaderboard()">Leaderboard</button>
+    <button class="btn-lb-header" onclick="showLeaderboard()">Rankliste</button>
     <button class="btn-lb-header" onclick="showBadges()">Abzeichen</button>
     <button class="btn-lb-header" onclick="showCatStats()">Kategorien</button>
     <button class="btn-lb-header" id="btn-profile" onclick="MGSkin.openProfile()">Mein Spielerkopf</button>
@@ -1379,12 +1421,12 @@ header h1 { flex-shrink:0; }
 </div>
 
 
-<!-- ── Leaderboard Modal ───────────────────────────────────────────────────── -->
-<div id="lb-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Leaderboard">
+<!-- ── Rankliste Modal ───────────────────────────────────────────────────── -->
+<div id="lb-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Rankliste">
   <div class="lb-card">
     <button class="lb-refresh" onclick="loadLeaderboard(currentLbFilter)" title="Aktualisieren" aria-label="Aktualisieren">Neu laden</button>
     <button class="lb-close-btn" onclick="document.getElementById('lb-modal').classList.add('hidden')">Schließen</button>
-    <div class="lb-title px">Leaderboard</div>
+    <div class="lb-title px">Rankliste</div>
     <div class="lb-tabs">
       <button class="lb-tab active" id="lb-tab-today" onclick="loadLeaderboard('today')">Heute</button>
       <button class="lb-tab" id="lb-tab-all" onclick="loadLeaderboard('all')">Allzeit</button>
@@ -1396,7 +1438,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Competition End Screen ─────────────────────────────────────────────── -->
 <div id="comp-end" class="hidden">
   <div class="comp-end-card">
-    <div class="ce-title px">Wettkampf abgeschlossen</div>
+    <div class="ce-title px">Ranked-Runde abgeschlossen</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <div class="ce-grade" id="ce-grade">–</div>
       <div class="ce-label" id="ce-grade-label">BEWERTUNG</div>
@@ -1412,9 +1454,9 @@ header h1 { flex-shrink:0; }
       <div class="ce-stat"><span class="v" id="ce-total">10</span><span class="l">FRAGEN</span></div>
       <div class="ce-stat"><span class="v" id="ce-pct">0%</span><span class="l">QUOTE</span></div>
     </div>
-    <div id="ce-lb-note" style="font-size:0.8rem;color:var(--muted)">Punkte werden ins Leaderboard eingetragen…</div>
+    <div id="ce-lb-note" style="font-size:0.8rem;color:var(--muted)">Punkte werden ins Rankliste eingetragen…</div>
     <div class="ce-btns">
-      <button class="btn-ce-lb" onclick="showLeaderboard()">Leaderboard</button>
+      <button class="btn-ce-lb" onclick="showLeaderboard()">Rankliste</button>
       <button class="btn-ce-home" onclick="location.reload()">Neu starten</button>
     </div>
   </div>
@@ -1433,7 +1475,7 @@ header h1 { flex-shrink:0; }
       <div class="blitz-stat"><span class="v" id="blitz-pct">0%</span><span class="l">QUOTE</span></div>
     </div>
     <div style="display:flex;gap:10px;margin-top:4px;width:100%">
-      <button class="btn-ce-lb" onclick="showLeaderboard()" style="flex:1">Leaderboard</button>
+      <button class="btn-ce-lb" onclick="showLeaderboard()" style="flex:1">Rankliste</button>
       <button class="btn-ce-home" onclick="location.reload()" style="flex:1">Nochmal</button>
     </div>
   </div>
@@ -1502,11 +1544,12 @@ header h1 { flex-shrink:0; }
     <div class="stat"><span id="streak-val">0</span><span>STREAK</span></div>
     <div class="stat"><span id="best-val">0</span><span>BEST</span></div>
     <div class="stat"><span id="played-val">0</span><span>GESPIELT</span></div>
+    <span id="settings-slot"></span>
     <span id="spotify-slot"></span>
     <span id="hdr-chip"></span>
     <button class="theme-btn" id="theme-toggle" title="Theme wechseln" aria-label="Hell/Dunkel wechseln"></button>
     <button class="sound-btn" id="sound-toggle" title="Ton ein/aus" aria-label="Ton ein oder aus" onclick="toggleSound()"></button>
-    <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()">Rangliste</button>
+    <button class="btn-lb-header" id="btn-leaderboard" onclick="showLeaderboard()">Rankliste</button>
     <button type="button" class="user-chip" id="user-chip" style="display:none" onclick="toggleUserMenu()" aria-haspopup="true">
       <img id="user-avatar" src="" alt=""/>
       <span class="uname" id="user-name"></span>
@@ -1632,6 +1675,7 @@ header h1 { flex-shrink:0; }
 </script>
 <script src="answer-check.js"></script>
 <script src="ranked.js"></script>
+<script src="mg-badges.js"></script>
 <script>
 // ── Entity list for autocomplete ─────────────────────────────────────────────
 const ENTITIES = [
@@ -2207,7 +2251,7 @@ async function init() {
   }
   // Shuffle questions for this session
   allQuestions = questions;
-  questionOrder = [...Array(questions.length).keys()].sort(() => Math.random() - 0.5);
+  questionOrder = freshOrder([...Array(questions.length).keys()]);
   currentIndex = 0;
 
   // Build dynamic ENTITIES and separate crafting answers
@@ -2276,7 +2320,7 @@ function loadNextQuestion() {
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) return; // handled by showResult
     // Ranked: Frage passend zur aktuellen MMR-Zone (adaptiv), keine Wiederholung im Lauf
-    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed);
+    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed, Math.random, { seen: seenLoad() });
     compUsed.add(_ri);
     question = allQuestions[_ri];
     compIndex++;
@@ -2294,7 +2338,7 @@ function loadNextQuestion() {
     dailyIndex++;
   } else {
     if (currentIndex >= questionOrder.length) {
-      questionOrder = [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
+      questionOrder = freshOrder([...Array(allQuestions.length).keys()]);
       currentIndex  = 0;
       showToast('Alle Fragen durch! Neue Runde…');
     }
@@ -2304,6 +2348,7 @@ function loadNextQuestion() {
 
   attempts = 0;
   finished = false;
+  seenAdd(question.id);
 
   document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
   document.getElementById('category-pill').textContent = question.category;
@@ -2384,6 +2429,7 @@ let _authDone = false;
 function finishAuth() {
   if (_authDone) return; // prevent double-call from onAuthStateChanged + signInGoogle
   _authDone = true;
+  setTimeout(function () { if (window.renderMenuStatus) window.renderMenuStatus(); }, 300);
   document.getElementById('auth-modal').classList.add('hidden');
   // Show mode screen
   const modeScreen = document.getElementById('mode-screen');
@@ -2398,7 +2444,7 @@ function finishAuth() {
     document.getElementById('user-name').textContent = name.split(' ')[0];
     if (currentUser.photoURL) document.getElementById('user-avatar').src = currentUser.photoURL;
     // Unlock competition mode tag
-    document.getElementById('comp-mode-tag').textContent = 'Alle 12 Std.';
+    document.getElementById('comp-mode-tag').textContent = 'Ranked';
     document.getElementById('btn-leaderboard').style.display = '';
     setTimeout(function () { if (window.MGSkin) MGSkin.ensureCharacter(); }, 600);
     // Show sign-out button on mode screen
@@ -2423,6 +2469,7 @@ async function loadCloudStats() {
     if (snap.exists) {
       const d = snap.data();
       localStorage.setItem('mg_stats', JSON.stringify({ streak: d.streak||0, best: d.best||0, played: d.played||0 }));
+      MGBadges.merge(d.badges);
     }
     updateStatsDisplay();
     await loadRankedCloud();
@@ -2436,7 +2483,7 @@ async function saveCloudStats() {
     await fbDb.collection('users').doc(currentUser.uid).set({
       displayName: currentUser.displayName || 'Spieler',
       photoURL: currentUser.photoURL || null,
-      streak: s.streak, best: s.best, played: s.played,
+      streak: s.streak, best: s.best, played: s.played, badges: [...MGBadges.earned()],
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) { console.warn('saveCloudStats:', e); }
@@ -2466,18 +2513,12 @@ async function submitLeaderboard(score, correct, total) {
     showToast('Neues Bestresultat gespeichert.');
   } catch(e) {
     console.warn('submitLeaderboard:', e);
-    showToast(lbErrorText(e), 5000);
+    // Fehlermeldung bewusst nicht angezeigt; der Eintrag bleibt lokal
   }
 }
 
 // ── Leaderboard: lokaler Fallback (nur auf diesem Geraet) ────────────────────
-function lbErrorText(e) {
-  const c = e && e.code ? String(e.code) : '';
-  if (c.indexOf('permission-denied') >= 0) return 'Bestenliste online nicht erreichbar: keine Berechtigung (Firestore-Regeln).';
-  if (c.indexOf('unavailable') >= 0 || c.indexOf('network') >= 0) return 'Bestenliste online nicht erreichbar: keine Verbindung.';
-  if (c.indexOf('failed-precondition') >= 0) return 'Bestenliste online nicht erreichbar: Index fehlt.';
-  return 'Bestenliste online nicht erreichbar.';
-}
+
 
 let currentLbFilter = 'today';
 
@@ -2496,43 +2537,53 @@ async function loadLeaderboard(filter) {
 
   let globalHtml = '';
   let note = '';
-  if (typeof fbDb === 'undefined' || !fbDb) {
-    note = 'Online-Bestenliste ist nicht verfügbar. Es werden nur Ergebnisse von diesem Gerät angezeigt.';
-  } else {
-    try {
-      const snap = await fbDb.collection('ranked').orderBy('mmr', 'desc').limit(100).get();
-      let docs = snap.docs;
-      if (filter === 'today') {
-        const today = getDateKey();
-        docs = docs.filter(d => (d.data().lastPlayedDay || '') === MGRanked.dayKey());
-      }
-      docs = docs.slice(0, 20);
-      if (docs.length === 0) {
-        globalHtml = '<div class="lb-empty">' + (filter === 'today' ? 'Heute noch keine Einträge.' : 'Noch keine Einträge.') + '</div>';
-      } else {
-        globalHtml = docs.map((d, i) => {
-          const e = d.data(), isMe = currentUser && e.uid === currentUser.uid;
-          const ri = MGRanked.rankInfo(e.mmr);
-          const prog = ri.next ? Math.round(ri.progress * 100) + '% bis ' + ri.nextName : 'Höchster Rang';
-          return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">#' + (i + 1) + '</span>' +
-            rankIngots(ri, 18) + '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
-            '<span class="lb-meta">' + '' + (filter === 'today' && typeof e.mmrToday === 'number' ? (e.mmrToday >= 0 ? '+' : '') + e.mmrToday + ' heute' : prog) + '</span>' +
-            '<span class="lb-score">' + ri.mmr.toLocaleString() + ' MMR</span></div>';
-        }).join('');
-      }
-      if (isGuest) note = 'Als Gast kannst du dich nicht eintragen. Melde dich an, um in die Online-Liste zu kommen.';
-    } catch (e) {
-      console.warn('loadLeaderboard:', e);
-      note = lbErrorText(e) + ' Es werden nur Ergebnisse von diesem Gerät angezeigt.';
-    }
+  // Quellen zusammenfuehren: Firestore (falls lesbar) und Server-Fallback /api/ranked; Fehler nur in der Konsole
+  const rows = new Map();
+  const addRow = (r) => {
+    if (!r || !Number.isFinite(Number(r.mmr))) return;
+    r.mmr = Number(r.mmr);
+    const k = r.uid ? 'u:' + r.uid : (r.key ? 'k:' + r.key : 'n:' + r.name);
+    const old = rows.get(k);
+    if (!old || r.mmr > old.mmr) rows.set(k, r);
+  };
+  const tasks = [];
+  if (typeof fbDb !== 'undefined' && fbDb) {
+    tasks.push(fbDb.collection('ranked').orderBy('mmr', 'desc').limit(100).get()
+      .then(snap => snap.docs.forEach(d => {
+        const e = d.data();
+        addRow({ uid: e.uid || d.id, name: e.displayName || 'Spieler', mmr: e.mmr, lastPlayedDay: e.lastPlayedDay || '', mmrToday: e.mmrToday });
+      }))
+      .catch(e => console.warn('loadLeaderboard (Firestore):', e)));
+  }
+  tasks.push(fetch('api/ranked', { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : [])
+    .then(arr => { if (Array.isArray(arr)) arr.forEach(e => addRow({ uid: e.uid || null, key: e.key, name: e.name, mmr: e.mmr, lastPlayedDay: e.lastPlayedDay || '', mmrToday: e.mmrToday })); })
+    .catch(e => console.warn('loadLeaderboard (Server):', e)));
+  await Promise.all(tasks);
+
+  let myKey = '';
+  try { myKey = localStorage.getItem('mg_ranked_key') || ''; } catch (e) {}
+  let all = [...rows.values()].sort((x, y) => y.mmr - x.mmr);
+  if (filter === 'today') all = all.filter(r => (r.lastPlayedDay || '') === MGRanked.dayKey());
+  all = all.slice(0, 50);
+  if (all.length) {
+    globalHtml = all.map((e, i) => {
+      const isMe = (currentUser && e.uid && e.uid === currentUser.uid) || (myKey && e.key === myKey);
+      const ri = MGRanked.rankInfo(e.mmr);
+      const prog = ri.next ? Math.round(ri.progress * 100) + '% bis ' + ri.nextName : 'Höchster Rang';
+      const meta = (filter === 'today' && typeof e.mmrToday === 'number') ? (e.mmrToday >= 0 ? '+' : '') + e.mmrToday + ' heute' : prog;
+      return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">#' + (i + 1) + '</span>' +
+        rankIngots(ri, 18) + '<span class="lb-name">' + escHtml(e.name) + (isMe ? ' (Du)' : '') + '</span>' +
+        '<span class="lb-meta">' + escHtml(meta) + '</span>' +
+        '<span class="lb-score">' + ri.mmr.toLocaleString() + ' MMR</span></div>';
+    }).join('');
   }
 
   const mine = MGRanked.rankInfo(rankedEnsure().mmr);
   const mineHtml = '<div class="lb-row me"><span class="lb-rank">Du</span>' +
-    rankIngots(mine, 18) + '<span class="lb-name">Du' + (isGuest ? ' (nur dieses Gerät)' : '') + '</span>' +
+    rankIngots(mine, 18) + '<span class="lb-name">Du</span>' +
     '<span class="lb-meta">' + (mine.next ? Math.round(mine.progress * 100) + '% bis ' + escHtml(mine.nextName) : 'Höchster Rang') + '</span>' +
     '<span class="lb-score">' + mine.mmr.toLocaleString() + ' MMR</span></div>' +
-    (isGuest ? '<div class="lb-empty">Dein Rang wird nur auf diesem Gerät gespeichert.</div>' : '') +
     ((filter === 'today' && (rankedEnsure().lastPlayedDay || '') !== MGRanked.dayKey()) ? '<div class="lb-empty">Heute noch kein Ranked-Spiel.</div>' : '');
   list.innerHTML = (note ? '<div class="lb-empty" role="status">' + escHtml(note) + '</div>' : '') +
     mineHtml + globalHtml +
@@ -2861,6 +2912,28 @@ function getCompGrade(pct) {
   return             { g:'D', lbl:'MEHR ÜBEN!',      css:'grade-d' };
 }
 
+// ── Verlauf gesehener Fragen (sitzungsuebergreifend, letzte 300 IDs) ──────────
+const SEEN_KEY = 'mg_seen', SEEN_MAX = 300;
+function seenLoad() {
+  try { const a = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function seenAdd(id) {
+  if (id == null) return;
+  let a = seenLoad().filter(x => x !== id);
+  a.push(id);
+  if (a.length > SEEN_MAX) a = a.slice(-SEEN_MAX);
+  try { localStorage.setItem(SEEN_KEY, JSON.stringify(a)); } catch (e) {}
+}
+// Reihenfolge ohne Zuruecklegen: ungesehene zuerst (gemischt), danach gesehene, aelteste zuerst
+function freshOrder(indices) {
+  const age = new Map(seenLoad().map((id, i) => [id, i]));
+  const fresh = [], old = [];
+  indices.forEach(ix => { (age.has(allQuestions[ix].id) ? old : fresh).push(ix); });
+  fresh.sort(() => Math.random() - 0.5);
+  old.sort((a, b) => age.get(allQuestions[a].id) - age.get(allQuestions[b].id));
+  return fresh.concat(old);
+}
+
 // ── Ranked: Profil, MMR-Update, Persistenz ───────────────────────────────────
 const RANKED_LOCAL_KEY = 'mg_ranked';
 let rankedProfile = null;
@@ -2880,7 +2953,37 @@ function rankedSaveLocal() {
   try { localStorage.setItem(RANKED_LOCAL_KEY, JSON.stringify(rankedProfile)); } catch (e) {}
 }
 // Cloud: pro Account Dokument ranked/{uid}; gedrosselt (force = sofort)
+let _rankedApiAt = 0;
+function rankedGid() {
+  try {
+    let g = localStorage.getItem('mg_gid');
+    if (!g) {
+      g = Array.from(crypto.getRandomValues(new Uint8Array(12))).map(b => b.toString(16).padStart(2, '0')).join('');
+      localStorage.setItem('mg_gid', g);
+    }
+    return g;
+  } catch (e) { return null; }
+}
+// Server-Fallback der Rankliste (funktioniert ohne Firestore-Regeln, auch fuer Gaeste)
+function rankedPostApi(force) {
+  if (!rankedProfile || rankedProfile.answered < 1) return;
+  const now = Date.now();
+  if (!force && now - _rankedApiAt < 6000) return;
+  _rankedApiAt = now;
+  let name = '';
+  try { name = localStorage.getItem('mg_player_name') || ''; } catch (e) {}
+  if (currentUser && currentUser.displayName) name = currentUser.displayName;
+  const body = { name: name || 'Gast', gid: rankedGid(), mmr: rankedProfile.mmr,
+                 lastPlayedDay: rankedProfile.lastPlayedDay || '', mmrToday: rankedProfile.mmrToday || 0 };
+  if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
+  fetch('api/ranked', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && j.key) { try { localStorage.setItem('mg_ranked_key', j.key); } catch (e) {} } })
+    .catch(() => {});
+}
+
 async function rankedSaveCloud(force) {
+  rankedPostApi(force);
   if (!currentUser || !fbDb || isGuest || !rankedProfile) return;
   const now = Date.now();
   if (!force && now - _rankedCloudAt < 4000) return;
@@ -2925,10 +3028,12 @@ function rankedAnswered(correct) {
   const speedFrac = correct ? Math.max(0, Math.min(1, calcSpeedBonus() / COMP_SPEED_PTS)) : 0;
   const r = MGRanked.applyAnswer(p, q.rating, result, { speedFrac: speedFrac, streak: compStreak });
   rankedProfile = r.profile;
+  MGBadges.record('rank', { promoted: r.promoted, demoted: r.demoted });
   rankedProfile.lastDate = getDateKey();
   rankedRun.delta += r.delta; rankedRun.answered++; if (correct) rankedRun.correct++;
   if (rankedRun.answered === COMP_TOTAL) rankedProfile.games += 1;
   rankedSaveLocal();
+  if (rankedRun.answered === COMP_TOTAL) MGBadges.record('ranked_game', { correct: rankedRun.correct, total: COMP_TOTAL });
   rankedSaveCloud(false);
   window.lastRanked = r;
   try { document.dispatchEvent(new CustomEvent('mg:ranked', { detail: r })); } catch (e) {}
@@ -3128,8 +3233,8 @@ function actualStartMode(mode) {
       .map((q,i) => soloSelectedCats.has(q.category) ? i : -1)
       .filter(i => i !== -1);
     questionOrder = filtered.length > 0
-      ? filtered.sort(() => Math.random() - 0.5)
-      : [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
+      ? freshOrder(filtered)
+      : freshOrder([...Array(allQuestions.length).keys()]);
     currentIndex = 0;
   }
 
@@ -3165,7 +3270,7 @@ function actualStartMode(mode) {
   } else if (mode === 'blitz') {
     document.getElementById('comp-bar').classList.remove('show');
     blitzCorrect = 0; blitzAnswered = 0; blitzScore = 0;
-    questionOrder = [...Array(allQuestions.length).keys()].sort(() => Math.random() - 0.5);
+    questionOrder = freshOrder([...Array(allQuestions.length).keys()]);
     currentIndex = 0;
   } else if (mode === 'daily') {
     document.getElementById('comp-bar').classList.remove('show');
@@ -3338,6 +3443,7 @@ function recordCatStat(cat, correct) {
   s[cat].t++;
   if (correct) s[cat].c++;
   saveCatStats(s);
+  MGBadges.record('answer', { correct: !!correct, rating: (typeof question !== 'undefined' && question) ? question.rating : 0 });
 }
 
 function showCatStats() {
@@ -3390,68 +3496,41 @@ function submitReport(reason) {
   showToast('Danke für dein Feedback!', 2000);
 }
 
-// ── Achievement system ────────────────────────────────────────────────────────
-const ACHIEVEMENTS = [
-  { id:'first_correct',   icon:'', name:'Erster Treffer',    desc:'Erste richtige Antwort',      check: (s,cs) => cs.totalCorrect >= 1 },
-  { id:'mob_expert',      icon:'', name:'Mob-Experte',       desc:'20x Mobs korrekt beantwortet', check: (s,cs) => (cs.cats['Mobs']||0) >= 20 },
-  { id:'nether_lord',     icon:'', name:'Nether-Herr',       desc:'10x Dimensionen richtig',     check: (s,cs) => (cs.cats['Dimensionen']||0) >= 10 },
-  { id:'craft_master',    icon:'', name:'Handwerksmeister',  desc:'15x Crafting richtig',        check: (s,cs) => (cs.cats['Crafting']||0) >= 15 },
-  { id:'redstone_guru',   icon:'', name:'Redstone-Guru',     desc:'10x Redstone richtig',        check: (s,cs) => (cs.cats['Redstone']||0) >= 10 },
-  { id:'potion_master',   icon:'', name:'Trank-Meister',     desc:'10x Tränke richtig',          check: (s,cs) => (cs.cats['Tränke']||0) >= 10 },
-  { id:'blitz_rookie',    icon:'', name:'Blitz-Neuling',     desc:'Blitz-Modus gespielt',        check: (s,cs) => s.blitzGames >= 1 },
-  { id:'daily_3',         icon:'', name:'3er Streak',        desc:'3 Tage tägl. Challenge',      check: (s,cs) => getDailyStreak() >= 3 },
-  { id:'daily_7',         icon:'', name:'7er Streak',        desc:'7 Tage tägl. Challenge',      check: (s,cs) => getDailyStreak() >= 7 },
-  { id:'100_played',      icon:'', name:'Centurio',          desc:'100 Fragen gespielt',         check: (s,cs) => s.played >= 100 },
-];
-
-function getEarnedBadges() {
-  try { return new Set(JSON.parse(localStorage.getItem('mg_badges') || '[]')); } catch(e) { return new Set(); }
-}
-function saveEarnedBadges(set) { localStorage.setItem('mg_badges', JSON.stringify([...set])); }
-
-function getAchievementStats() {
-  const gs = getStats();
-  const cs_raw = getCatStats();
-  const cats = {};
-  Object.keys(cs_raw).forEach(k => { cats[k] = cs_raw[k].c; });
-  const totalCorrect = Object.values(cs_raw).reduce((a,v) => a + v.c, 0);
-  const blitzGames   = parseInt(localStorage.getItem('mg_blitz_games') || '0');
-  return { ...gs, cats, totalCorrect, blitzGames };
-}
-
-function checkAchievements() {
-  const earned = getEarnedBadges();
-  const s = getAchievementStats();
-  let newOnes = [];
-  ACHIEVEMENTS.forEach(a => {
-    if (!earned.has(a.id) && a.check(s, s)) {
-      earned.add(a.id); newOnes.push(a);
-    }
-  });
-  saveEarnedBadges(earned);
-  newOnes.forEach((a, i) => {
-    setTimeout(() => showBadgeUnlockToast(a), i * 1500);
-  });
-}
+// ── Achievement system (Daten und Logik: mg-badges.js) ────────────────────────
+const ACHIEVEMENTS = MGBadges.list;
+function getEarnedBadges() { return MGBadges.earned(); }
+function getAchievementStats() { return MGBadges.stats(); }
+function checkAchievements() { MGBadges.check(); }
 
 function showBadgeUnlockToast(a) {
   const el = document.createElement('div');
   el.className = 'badge-unlock-toast';
-  el.innerHTML = MGIcon.html('badge.' + a.id, 24) + ' Abzeichen: ' + escHtml(a.name) + ' freigeschaltet!';
+  el.innerHTML = MGIcon.tex(a.texture, 24) + ' Abzeichen: ' + escHtml(a.name) + ' freigeschaltet!';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 3000);
 }
 
+MGBadges.onUnlock = showBadgeUnlockToast;
+
+const RARITY_DE = { common: 'Gewöhnlich', uncommon: 'Ungewöhnlich', rare: 'Selten', epic: 'Episch', legendary: 'Legendär' };
 function showBadges() {
   const earned = getEarnedBadges();
   const grid = document.getElementById('badge-grid');
   if (!grid) return;
-  grid.innerHTML = ACHIEVEMENTS.map(a => `
-    <div class="badge-item ${earned.has(a.id) ? 'earned' : 'locked'}">
-      <div class="bi-icon">${MGIcon.html('badge.' + a.id, 32, a.name)}</div>
-      <div class="bi-name">${a.name}</div>
-      <div class="bi-desc">${a.desc}</div>
-    </div>`).join('');
+  const total = ACHIEVEMENTS.length, got = ACHIEVEMENTS.filter(a => earned.has(a.id)).length;
+  const head = document.querySelector('#badge-modal h2');
+  if (head) head.textContent = 'Deine Abzeichen (' + got + '/' + total + ')';
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const ok = earned.has(a.id), pr = (!ok && MGBadges.progress) ? MGBadges.progress(a.id) : null;
+    const pct = pr && pr.target ? Math.min(100, Math.round(pr.value / pr.target * 100)) : 0;
+    return '<div class="badge-item r-' + a.rarity + ' ' + (ok ? 'earned' : 'locked') + '">' +
+      '<div class="bi-icon">' + MGIcon.tex(a.texture, 32, '') + '</div>' +
+      '<div class="bi-name">' + escHtml(a.name) + '</div>' +
+      '<div class="bi-rarity">' + (RARITY_DE[a.rarity] || '') + '</div>' +
+      '<div class="bi-desc">' + (ok ? '' : 'Bedingung: ') + escHtml(a.desc) + '</div>' +
+      (!ok && pr && pr.target > 1 ? '<div class="bi-bar" aria-label="Fortschritt ' + pr.value + ' von ' + pr.target + '"><i style="width:' + pct + '%"></i></div><div class="bi-prog">' + Math.min(pr.value, pr.target) + ' / ' + pr.target + '</div>' : '') +
+      '</div>';
+  }).join('');
   document.getElementById('badge-modal').classList.add('show');
 }
 
@@ -3544,9 +3623,39 @@ if ('serviceWorker' in navigator) {
     return r;
   };
 })();
+// Menü: Rang/Streak-Leiste und Texturbänder der Modus-Karten
+(function () {
+  (function () {
+    var el = document.getElementById('menu-pano');
+    function pano() { if (window.MGPanorama) MGPanorama.mount(el); }
+    if (window.MGVideo) MGVideo.mount(el, { fallback: pano }); else pano();
+  })();
+  var ms = document.getElementById('mode-screen');
+  function sync() { document.body.classList.toggle('menu-hidden', ms.classList.contains('hidden')); }
+  new MutationObserver(sync).observe(ms, { attributes: true, attributeFilter: ['class'] }); sync();
+  var bands = ['block/grass_block_top', 'block/gold_block', 'block/oak_planks', 'block/redstone_block', 'block/stone_bricks'];
+  document.querySelectorAll('#mode-screen .mode-card').forEach(function (c, i) {
+    c.style.setProperty('--band', 'url(assets/mc/' + bands[i % bands.length] + '.png)');
+  });
+  window.renderMenuStatus = function () {
+    var el = document.getElementById('menu-status');
+    if (!el || typeof MGRanked === 'undefined' || typeof rankedEnsure !== 'function' || typeof rankIngots !== 'function') return;
+    try {
+      var info = MGRanked.rankInfo(rankedEnsure().mmr), st = getStats(), pct = info.next ? Math.round(info.progress * 100) : 100;
+      el.innerHTML = '<span class="ms-rank">' + rankIngots(info, 22) + escHtml(info.label) + '</span>' +
+        '<span class="ms-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '"><i style="width:' + pct + '%"></i></span>' +
+        '<span class="ms-streak">' + info.mmr + ' MMR · Serie ' + (st.streak || 0) + '</span>';
+    } catch (e) {}
+  };
+  setTimeout(window.renderMenuStatus, 600);
+  document.addEventListener('mg:ranked', function () { setTimeout(window.renderMenuStatus, 50); });
+})();
 MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
 if (window.MGSpotify) MGSpotify.mount(document.getElementById('spotify-slot'));
-MGSkin.mountChip(document.getElementById('mode-profile'));</script>
+if (window.MGSettings) MGSettings.mount(document.getElementById('settings-slot'));
+if (window.MGRanklist) MGRanklist.mount(document.getElementById('mini-rank'));
+MGSkin.mountChip(document.getElementById('mode-profile'));
+if (window.MGSettings) MGSettings.mount(document.getElementById('mode-profile'));</script>
 <script>document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.getElementById('lb-modal'); if (m && !m.classList.contains('hidden')) m.classList.add('hidden'); } });</script>
 </body>
 </html>

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "clip-01",
+    "mp4": "assets/video/clip-01.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-01.mp4",
+    "poster": "assets/video/poster/clip-01.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-02",
+    "mp4": "assets/video/clip-02.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-02.mp4",
+    "poster": "assets/video/poster/clip-02.webp",
+    "duration": 7,
+    "tone": "dunkel"
+  },
+  {
+    "id": "clip-03",
+    "mp4": "assets/video/clip-03.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-03.mp4",
+    "poster": "assets/video/poster/clip-03.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-04",
+    "mp4": "assets/video/clip-04.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-04.mp4",
+    "poster": "assets/video/poster/clip-04.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-05",
+    "mp4": "assets/video/clip-05.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-05.mp4",
+    "poster": "assets/video/poster/clip-05.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-06",
+    "mp4": "assets/video/clip-06.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-06.mp4",
+    "poster": "assets/video/poster/clip-06.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-07",
+    "mp4": "assets/video/clip-07.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-07.mp4",
+    "poster": "assets/video/poster/clip-07.webp",
+    "duration": 7,
+    "tone": "dunkel"
+  },
+  {
+    "id": "clip-08",
+    "mp4": "assets/video/clip-08.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-08.mp4",
+    "poster": "assets/video/poster/clip-08.webp",
+    "duration": 7,
+    "tone": "dunkel"
+  },
+  {
+    "id": "clip-09",
+    "mp4": "assets/video/clip-09.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-09.mp4",
+    "poster": "assets/video/poster/clip-09.webp",
+    "duration": 7,
+    "tone": "dunkel"
+  },
+  {
+    "id": "clip-10",
+    "mp4": "assets/video/clip-10.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-10.mp4",
+    "poster": "assets/video/poster/clip-10.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-11",
+    "mp4": "assets/video/clip-11.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-11.mp4",
+    "poster": "assets/video/poster/clip-11.webp",
+    "duration": 7,
+    "tone": "hell"
+  },
+  {
+    "id": "clip-12",
+    "mp4": "assets/video/clip-12.mp4",
+    "mp4Mobile": "assets/video/mobile/clip-12.mp4",
+    "poster": "assets/video/poster/clip-12.webp",
+    "duration": 7,
+    "tone": "hell"
+  }
+]

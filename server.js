@@ -13,6 +13,7 @@ const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
 const MGAnswer   = require('./answer-check.js');
+const MGRanked   = require('./ranked.js');
 
 const app    = express();
 const server = http.createServer(app);
@@ -20,7 +21,7 @@ const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 96
 
 // ── Statische Dateien (Server-/Config-Dateien nicht ausliefern) ──────────────
 const BLOCKED = [
-  /^\/(node_modules|\.git|\.claude|docs)(\/|$)/i,
+  /^\/(node_modules|\.git|\.claude|docs|data|tools)(\/|$)/i,
   /^\/(server|fetch-wiki)\.js$/i,
   /^\/package(-lock)?\.json$/i,
   /^\/google-services\.json$/i,
@@ -32,12 +33,99 @@ app.use((req, res, next) => {
   if (BLOCKED.some(r => r.test(p))) return res.status(404).end();
   next();
 });
+// ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
+// Speicher: RAM + data/ranked.json. Auf Hosts mit fluechtigem Dateisystem (z. B. Render) geht die Datei beim Neustart verloren.
+app.set('trust proxy', 1);
+const RANKED_FILE = path.join(__dirname, 'data', 'ranked.json');
+const RANKED_MAX_ENTRIES = 5000;
+const rankedStore = new Map();            // key -> Eintrag
+try {
+  const arr = JSON.parse(fs.readFileSync(RANKED_FILE, 'utf8'));
+  if (Array.isArray(arr)) arr.forEach(e => { if (e && typeof e.key === 'string' && Number.isInteger(e.mmr)) rankedStore.set(e.key, e); });
+} catch (e) { /* noch keine Datei */ }
+let rankedSaveTimer = null;
+function saveRankedSoon() {
+  if (rankedSaveTimer) return;
+  rankedSaveTimer = setTimeout(() => {
+    rankedSaveTimer = null;
+    try {
+      fs.mkdirSync(path.dirname(RANKED_FILE), { recursive: true });
+      const tmp = RANKED_FILE + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify([...rankedStore.values()]));
+      fs.renameSync(tmp, RANKED_FILE);
+    } catch (e) { console.warn('ranked.json nicht gespeichert:', e.message); }
+  }, 2000);
+}
+const ipBuckets = new Map();
+function ipAllowed(ip) {
+  const now = Date.now();
+  let b = ipBuckets.get(ip);
+  if (!b) { b = { tokens: 10, ts: now }; ipBuckets.set(ip, b); }
+  b.tokens = Math.min(10, b.tokens + (now - b.ts) / 6000);   // 10 Burst, 1 je 6 s
+  b.ts = now;
+  if (b.tokens < 1) return false;
+  b.tokens -= 1;
+  if (ipBuckets.size > 5000) ipBuckets.clear();
+  return true;
+}
+const keyHash = (k) => crypto.createHash('sha1').update(k).digest('hex').slice(0, 10);
+const ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
+
+app.get('/api/ranked', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const list = [...rankedStore.values()]
+    .sort((a, b) => b.mmr - a.mmr)
+    .slice(0, 100)
+    .map(e => ({ key: keyHash(e.key), uid: e.uid || null, name: e.name, tier: e.tier, division: e.division,
+                 mmr: e.mmr, lastPlayedDay: e.lastPlayedDay || '', mmrToday: e.mmrToday || 0 }));
+  res.json(list);
+});
+
+app.post('/api/ranked', express.json({ limit: '2kb' }), (req, res) => {
+  try {
+    if (!ipAllowed(req.ip)) return res.status(429).json({ ok: false });
+    const b = req.body || {};
+    const mmr = Number(b.mmr);
+    if (!Number.isInteger(mmr) || mmr < 0 || mmr > 20000) return res.status(400).json({ ok: false });
+    const name = cleanText(b.name, 20) || 'Spieler';
+    let key;
+    if (typeof b.uid === 'string' && ID_RE.test(b.uid)) key = 'u:' + b.uid;
+    else if (typeof b.gid === 'string' && ID_RE.test(b.gid)) key = 'g:' + b.gid;
+    else key = 'n:' + name.toLowerCase();
+    const now = Date.now();
+    const prev = rankedStore.get(key);
+    if (!prev && mmr > 5000) return res.status(400).json({ ok: false });
+    let hourStart = prev ? prev.hourStart : now, hourMmr = prev ? prev.hourMmr : mmr;
+    if (prev) {
+      if (mmr > prev.mmr + 500) return res.status(400).json({ ok: false });        // unplausibler Sprung je Meldung
+      if (now - hourStart > 3600000) { hourStart = now; hourMmr = prev.mmr; }
+      if (mmr > hourMmr + 1500) return res.status(400).json({ ok: false });        // und je Stunde
+    }
+    const rd = MGRanked.rankData(mmr);
+    const day = typeof b.lastPlayedDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(b.lastPlayedDay) ? b.lastPlayedDay : '';
+    const mmrToday = Math.max(-1500, Math.min(1500, Math.round(Number(b.mmrToday) || 0)));
+    rankedStore.set(key, {
+      key, uid: key.startsWith('u:') ? key.slice(2) : null, name, mmr, tier: rd.tier, division: rd.division,
+      lastPlayedDay: day, mmrToday, updatedAt: now, hourStart, hourMmr,
+    });
+    if (rankedStore.size > RANKED_MAX_ENTRIES) {
+      const drop = [...rankedStore.values()].sort((a, b2) => a.mmr - b2.mmr || a.updatedAt - b2.updatedAt)[0];
+      if (drop) rankedStore.delete(drop.key);
+    }
+    saveRankedSoon();
+    res.json({ ok: true, key: keyHash(key) });
+  } catch (e) {
+    res.status(400).json({ ok: false });
+  }
+});
+
 // Premium wurde abgeschafft: alte Links auf die Startseite
 app.get('/premium.html', (req, res) => res.redirect(301, '/'));
 app.use(express.static(path.join(__dirname), {
   dotfiles: 'ignore',
   setHeaders(res, file) {
     if (/\.(html|json|js|css)$/i.test(file)) res.setHeader('Cache-Control', 'no-cache');
+    else if (/[\\/]assets[\\/]/.test(file)) res.setHeader('Cache-Control', 'public, max-age=86400');   // Videos, Poster, Texturen (Range: express.static)
   },
 }));
 
@@ -77,11 +165,15 @@ const BUZZER_TIME  = 30;
 const ANSWER_TIME  = 10;          // Antwortphase fuer ALLE nach dem Laeuten (GeoGuessr-Stil)
 const RESULT_TIME  = 6;
 const MAX_PLAYERS  = 8;
-const MAX_ROUNDS   = 10;
+const DEFAULT_ROUNDS = 10;
+const ROUND_CHOICES  = [10, 25, 50, 100];
 const PTS_CORRECT  = 150;
 const PTS_SPEED    = 50;
 const PTS_WRONG    = 50;
-const PTS_FIRST_BONUS = 50;       // exakte Antwort des Laeutenden: 200 + Speedbonus statt 150 + Speedbonus
+const BELL_BONUS     = 50;        // Zusatz fuer den Laeutenden (exakt oder angenaehert im Band)
+const PTS_BELL_WRONG = 100;       // Laeutender komplett daneben / ohne Antwort
+const TOTEM_STREAK   = 3;         // Runden in Folge mit Punkten bis zum Totem
+const TOTEM_DECISION_MS = 5000;   // Bedenkzeit 'Abzug oder Totem einloesen?'
 const APPROACH_LIMIT = 0.35;       // relative Abweichung, bis zu der eine Zahl als 'Annaeherung' zaehlt
 const REVEAL_DELAY = 2500;         // ms zwischen answers_revealed und result           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
 const BUZZ_WINDOW  = 120;          // ms: gleichzeitige Buzzes werden latenzbereinigt verglichen
@@ -145,7 +237,7 @@ function buildPool(categories) {
   return pool;
 }
 
-function makeRoom({ id, displayName, isPublic, password, categories, permanent }) {
+function makeRoom({ id, displayName, isPublic, password, categories, permanent, rounds }) {
   return {
     id,
     displayName:   displayName || id,
@@ -153,6 +245,7 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent }
     password:      password || null,
     categories:    categories && categories.length ? categories : null,
     permanent:     !!permanent,
+    rounds:        ROUND_CHOICES.includes(rounds) ? rounds : DEFAULT_ROUNDS,
     players:       {},          // socketId → { id, name, score, skin, token, connected, dcTimer }
     ready:         new Set(),
     questionOrder: [],
@@ -172,6 +265,10 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent }
     answerSeq:     0,
     resolving:     false,
     lastReveal:    null,
+    deciding:      false,       // Totem-Entscheidung vor der Aufloesung
+    decisionDone:  false,
+    offers:        null,
+    decisionTimer: null,
     lastAnswer:    null,        // { playerId, text, correct, timeout, delta } fuer Snapshot/Sprechblase
     typingId:      null,
     starting:      false,
@@ -230,11 +327,11 @@ function uniqueName(room, base) {
 }
 
 function publicPlayer(p, room) {
-  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !p.totemUsed, ready: room ? room.ready.has(p.id) : false };
+  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0, ready: room ? room.ready.has(p.id) : false };
 }
 // Voller Datensatz inkl. Skin: nur einmalig (joined-Roster, player_joined, player_updated)
 function fullPlayer(p) {
-  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !p.totemUsed };
+  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0 };
 }
 function scoreList(room) {
   return Object.values(room.players)
@@ -261,6 +358,7 @@ function broadcastLobby(room) {
     lockedOut: [...room.lockedOut],
     currentBuzzer: room.currentBuzzer,
     firstBuzzer: room.firstBuzzer,
+    maxRounds: room.rounds,
     answered: [...room.answers.keys()],
     readyCount: room.ready.size,
     totalCount: connectedIds(room).length,
@@ -295,6 +393,7 @@ function questionPayload(room) {
     id: q.id, type: q.type, question: q.question, category: q.category,
     unit: q.unit || null, options: room.options || null,
     roundNum: room.roundNum,
+    maxRounds: room.rounds,
   };
 }
 
@@ -311,9 +410,16 @@ function nextQuestion(room) {
   room.answerSeq     = 0;
   room.resolving     = false;
   room.lastReveal    = null;
+  room.deciding      = false;
+  room.decisionDone  = false;
+  room.offers        = null;
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
+    const lastIdx = room.questionOrder.length ? room.questionOrder[room.questionOrder.length - 1] : -1;
     room.questionOrder = shuffle(buildPool(room.categories));
+    if (room.questionOrder.length > 1 && room.questionOrder[0] === lastIdx) {
+      const t = room.questionOrder[0]; room.questionOrder[0] = room.questionOrder[1]; room.questionOrder[1] = t;
+    }
     room.currentIndex  = 0;
   }
   room.question = allQuestions[room.questionOrder[room.currentIndex++]];
@@ -357,77 +463,130 @@ function startAnswerCountdown(room) {
 }
 
 // ── Antwortphase: alle antworten (10 s), Aufloesung am Ende oder wenn alle abgegeben haben ───
-function bandPoints(rel) {
-  if (rel == null) return 0;
-  return rel <= 0.05 ? 100 : rel <= 0.10 ? 80 : rel <= 0.20 ? 60 : rel <= APPROACH_LIMIT ? 40 : 0;
-}
-
-// Score nie < 0; liefert tatsaechlich angewendete Aenderung (<= 0)
-function takePenalty(p) {
+//  Punkte je Spieler (MAX = PTS_CORRECT + Speedbonus 0..PTS_SPEED der eigenen Abgabe):
+//   Laeutender  exakt: MAX + BELL_BONUS | angenaehert (im Band, keine exakte Antwort): round(MAX/2) + BELL_BONUS
+//               komplett daneben / keine Antwort: -PTS_BELL_WRONG
+//   Andere      exakt: MAX | angenaehert UND am naechsten (keine exakte Antwort): round(MAX/2)
+//               komplett daneben / keine Antwort: -PTS_WRONG
+//   Wer im Band liegt, aber nicht gewinnt: 0 (kein Abzug). Totem ueberspringt die Frage ohne Abzug.
+function takePenalty(p, amount) {
   const before = p.score;
-  p.score = Math.max(0, before - PTS_WRONG);
+  p.score = Math.max(0, before - amount);
   return p.score - before;
 }
+function penaltyFor(room, id) { return id === room.firstBuzzer ? PTS_BELL_WRONG : PTS_WRONG; }
 
 function answerDone(room) {
   const ids = connectedIds(room);
   return ids.length === 0 || ids.every(id => room.answers.has(id));
 }
 function checkAnswerPhaseDone(room) {
-  if (room.phase === 'answering' && !room.resolving && room.question && answerDone(room)) finishAnswerPhase(room, 'all');
+  if (room.phase === 'answering' && !room.resolving && !room.deciding && room.question && answerDone(room)) finishAnswerPhase(room, 'all');
 }
 
-// Gesamtauswertung. Punkte/Abzug werden erst hier vergeben, vorher sind Antworten verdeckt.
+// Ende der Antwortzeit: zuerst Totem-Angebot an Spieler ohne Antwort, dann Auswertung
 function finishAnswerPhase(room, reason) {
-  if (room.dead || room.phase !== 'answering' || room.resolving || !room.question) return;
+  if (room.dead || room.phase !== 'answering' || room.resolving || room.deciding || !room.question) return;
+  clearInterval(room.timerIv); room.timerIv = null;
+  if (!room.decisionDone) {
+    const pending = connectedIds(room).filter(id => !room.answers.has(id) && room.players[id] && room.players[id].hasTotem);
+    if (pending.length) {
+      room.deciding = true;
+      room.offers = new Set(pending);
+      pending.forEach(id => io.to(id).emit('totem_offer', { penalty: penaltyFor(room, id), seconds: TOTEM_DECISION_MS / 1000 }));
+      room.decisionTimer = later(room, () => proceedAfterDecision(room), TOTEM_DECISION_MS);
+      return;
+    }
+  }
+  resolveAnswers(room);
+}
+function proceedAfterDecision(room) {
+  if (room.dead || !room.deciding) return;
+  clearTimeout(room.decisionTimer);
+  room.deciding = false;
+  room.decisionDone = true;
+  room.offers = null;
+  finishAnswerPhase(room, 'decided');
+}
+function skipWithTotem(room, p) {
+  p.hasTotem = false;                                   // Serie bleibt unveraendert
+  room.answers.set(p.id, { playerId: p.id, playerName: p.name, text: '', correct: false, rel: null, skipped: true,
+                           order: ++room.answerSeq, timeLeft: room.timerLeft });
+  io.to(room.id).emit('totem_used', { playerId: p.id, playerName: p.name, skipped: true });
+  io.to(p.id).emit('totem_result', { kind: 'skip' });
+}
+
+function resolveAnswers(room) {
   room.resolving = true;
   room.answered = true;
-  clearInterval(room.timerIv); room.timerIv = null;
   const q = room.question;
   const entries = [...room.answers.values()].sort((a, b) => a.order - b.order);
-  const far = (e) => q.type === 'number' ? (e.rel != null && e.rel > APPROACH_LIMIT) : !e.correct;
+  const playing = entries.filter(e => !e.skipped);
+  const exact = playing.filter(e => e.correct);
+  const inBand = (e) => q.type === 'number' && e.rel != null && e.rel <= APPROACH_LIMIT;
 
-  // Gewinner: alle exakten; sonst bei Zahlen der am naechsten liegende (Gleichstand: frueher)
-  let winners = entries.filter(e => e.correct);
-  let mode = winners.length ? 'exact' : 'none';
-  if (!winners.length && q.type === 'number') {
-    let best = null;
-    for (const e of entries) {
-      if (bandPoints(e.rel) <= 0) continue;
-      if (!best || e.rel < best.rel - 1e-12 || (Math.abs(e.rel - best.rel) <= 1e-12 && e.order < best.order)) best = e;
+  let mode = exact.length ? 'exact' : 'none';
+  let closest = null;
+  if (!exact.length && q.type === 'number') {
+    for (const e of playing) {
+      if (!inBand(e)) continue;
+      if (!closest || e.rel < closest.rel - 1e-12 || (Math.abs(e.rel - closest.rel) <= 1e-12 && e.order < closest.order)) closest = e;
     }
-    if (best) { winners = [best]; mode = 'closest'; }
+    if (closest) mode = 'closest';
   }
-  const winSet = new Set(winners.map(e => e.playerId));
 
-  const answers = entries.map(e => {
+  const outcome = new Map();   // playerId -> { points, penalty }
+  const answers = [];
+  for (const e of entries) {
     const p = room.players[e.playerId];
     let points = 0, penalty = 0;
-    if (winSet.has(e.playerId)) {
-      if (mode === 'exact') {
-        const speed = Math.round(e.timeLeft / ANSWER_TIME * PTS_SPEED);
-        points = PTS_CORRECT + speed + (e.playerId === room.firstBuzzer ? PTS_FIRST_BONUS : 0);
-      } else {
-        points = bandPoints(e.rel);
+    if (!e.skipped && p) {
+      const isBell = e.playerId === room.firstBuzzer;
+      const max = PTS_CORRECT + Math.round(e.timeLeft / ANSWER_TIME * PTS_SPEED);
+      if (e.correct) points = max + (isBell ? BELL_BONUS : 0);
+      else if (mode === 'closest' && inBand(e)) {
+        if (isBell) points = Math.round(max / 2) + BELL_BONUS;
+        else if (closest && e.playerId === closest.playerId) points = Math.round(max / 2);
+      } else if (!inBand(e)) {
+        penalty = takePenalty(p, isBell ? PTS_BELL_WRONG : PTS_WRONG);      // komplett daneben
       }
-      if (p) p.score += points;
-    } else if (far(e) && p) {
-      penalty = takePenalty(p);                      // komplett daneben: -50 fuer jeden
+      if (points) p.score += points;
     }
-    return {
-      playerId: e.playerId, playerName: e.playerName, text: e.text.slice(0, 40), correct: !!e.correct,
+    outcome.set(e.playerId, { points, penalty, skipped: !!e.skipped });
+    answers.push({
+      playerId: e.playerId, playerName: e.playerName, text: (e.text || '').slice(0, 40), correct: !!e.correct,
       deviationPct: e.rel == null ? null : Math.round(e.rel * 1000) / 10,
-      points, delta: points + penalty, winner: winSet.has(e.playerId),
+      points, delta: points + penalty, winner: points > 0, skipped: !!e.skipped,
       firstBuzzer: e.playerId === room.firstBuzzer,
-    };
-  });
+    });
+  }
+  // Spieler ohne Antwort: -50 (Laeutender -100), nur verbundene bzw. der Laeutende
+  for (const p of Object.values(room.players)) {
+    if (room.answers.has(p.id)) continue;
+    if (!p.connected && p.id !== room.firstBuzzer) continue;
+    const isBell = p.id === room.firstBuzzer;
+    const penalty = takePenalty(p, isBell ? PTS_BELL_WRONG : PTS_WRONG);
+    outcome.set(p.id, { points: 0, penalty, skipped: false });
+    answers.push({
+      playerId: p.id, playerName: p.name, text: '', correct: false, deviationPct: null,
+      points: 0, delta: penalty, winner: false, skipped: false, firstBuzzer: isBell, noAnswer: true,
+    });
+    if (isBell) io.to(room.id).emit('answer_timeout', { playerId: p.id, playerName: p.name, delta: penalty, penalty: PTS_BELL_WRONG, score: p.score });
+  }
 
-  // Laeutender ohne Antwort: -50 (andere ohne Antwort: 0)
-  const fb = room.players[room.firstBuzzer];
-  if (fb && !room.answers.has(fb.id)) {
-    const delta = takePenalty(fb);
-    io.to(room.id).emit('answer_timeout', { playerId: fb.id, playerName: fb.name, delta, penalty: PTS_WRONG, score: fb.score });
-    room.lastAnswer = { playerId: fb.id, text: null, correct: false, timeout: true, delta };
+  // Totem-Serie: Punkte -> Serie +1, sonst Serie 0 (Totem-Einsatz aendert nichts)
+  for (const [id, o] of outcome) {
+    const p = room.players[id];
+    if (!p || o.skipped) continue;
+    if (o.points > 0) {
+      p.streak = Math.min(TOTEM_STREAK, (p.streak || 0) + 1);
+      if (p.streak >= TOTEM_STREAK && !p.hasTotem) {
+        p.hasTotem = true; p.streak = 0;
+        io.to(room.id).emit('totem_earned', { playerId: p.id, playerName: p.name });
+      }
+    } else {
+      p.streak = 0;
+    }
   }
 
   const top = answers.filter(a => a.winner).sort((a, b) => b.points - a.points)[0] || null;
@@ -441,13 +600,12 @@ function finishAnswerPhase(room, reason) {
   if (top && room.players[top.playerId]) {
     const w = room.players[top.playerId];
     io.to(room.id).emit('answer_broadcast', {
-      playerId: w.id, playerName: w.name, correct: true, submitted: top.text, score: w.score,
-      speedBonus: mode === 'exact' ? Math.max(0, top.points - PTS_CORRECT - (top.firstBuzzer ? PTS_FIRST_BONUS : 0)) : 0, delta: top.points,
+      playerId: w.id, playerName: w.name, correct: !!top.correct, submitted: top.text, score: w.score, speedBonus: 0, delta: top.points,
     });
     io.to(room.id).emit('answer_given', {
-      playerId: w.id, playerName: w.name, text: top.text, correct: true, delta: top.points, score: w.score, unit: q.unit || null,
+      playerId: w.id, playerName: w.name, text: top.text, correct: !!top.correct, delta: top.points, score: w.score, unit: q.unit || null,
     });
-    room.lastAnswer = { playerId: w.id, text: top.text, correct: true, timeout: false, delta: top.points };
+    room.lastAnswer = { playerId: w.id, text: top.text, correct: !!top.correct, timeout: false, delta: top.points };
   }
   broadcastLobby(room);
   later(room, () => revealResult(room, winnerId), REVEAL_DELAY);
@@ -466,7 +624,7 @@ function revealResult(room, winnerId) {
   io.to(room.id).emit('result', room.lastResult);
   broadcastLobby(room);
 
-  if (room.roundNum >= MAX_ROUNDS) {
+  if (room.roundNum >= room.rounds) {
     later(room, () => {
       room.phase = 'game_over';
       room.lastGameOver = { scores: scoreList(room), rounds: room.roundNum };
@@ -604,7 +762,7 @@ io.on('connection', (socket) => {
     let p = rejoinPlayer;
     if (!p) {
       p = { id: socket.id, name: uniqueName(room, name), score: 0, skin: skin || null, skinId: skinIdOf(skin),
-            character: validCharacter(character), totemUsed: false,
+            character: validCharacter(character), hasTotem: false, streak: 0,
             token: crypto.randomBytes(16).toString('hex'), connected: true, dcTimer: null };
       room.players[socket.id] = p;
     }
@@ -612,7 +770,7 @@ io.on('connection', (socket) => {
     socket.join(room.id);
     socket.emit('joined', {
       playerId: p.id, roomId: room.id, displayName: room.displayName, playerName: p.name,
-      isPublic: room.isPublic, categories: room.categories, skin: p.skin || null,
+      isPublic: room.isPublic, categories: room.categories, rounds: room.rounds, skin: p.skin || null,
       token: p.token, rejoined: !!rejoinPlayer,
       character: p.character,
       players: Object.values(room.players).map(fullPlayer),
@@ -674,7 +832,9 @@ io.on('connection', (socket) => {
       ? d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30)
       : [];
     const pw   = typeof d.password === 'string' ? d.password.slice(0, 40) : '';
+    const rounds = ROUND_CHOICES.includes(Number(d.rounds)) ? Number(d.rounds) : DEFAULT_ROUNDS;
     const room = makeRoom({
+      rounds,
       id: rid,
       displayName: cleanText(d.displayName, 30) || rid,
       isPublic: !!d.isPublic,
@@ -811,26 +971,33 @@ io.on('connection', (socket) => {
     checkAnswerPhaseDone(room);
   });
 
-  // TOTEM: ein Mal pro Spieler und Raum-Session (serverseitig), Wirkung = Solo-Joker "Tipp 1" ─────
+  // TOTEM: 3er-Gewinnserie ergibt eines (max. 1 gehalten). Einsatz = Frage ueberspringen, kein Abzug ─────
   on('use_totem', () => {
     const room = getRoom();
-    if (!room || room.phase !== 'answering' || room.resolving || !room.question) return socket.emit('totem_denied', { reason: 'phase' });
+    if (!room || !room.question) return socket.emit('totem_denied', { reason: 'phase' });
     const p = room.players[socket.id];
     if (!p || !p.connected) return;
-    if (p.totemUsed) return socket.emit('totem_denied', { reason: 'used' });
-    if (room.answers.has(socket.id)) return socket.emit('totem_denied', { reason: 'answered' });
-    p.totemUsed = true;
-    const q = room.question;
-    if (q.type === 'number') {
-      const margin = Math.max(Math.round(Math.abs(q.answer || 1) * 0.3), 3);
-      socket.emit('totem_result', { kind: 'range', from: q.answer - margin, to: q.answer + margin, unit: q.unit || null });
-    } else {
-      const wrong = (room.options || []).filter(o => !MGAnswer.check(q, o).correct);
-      const remove = shuffle(wrong).slice(0, 4);
-      socket.emit('totem_result', { kind: 'options', remove });
+    if (!p.hasTotem) return socket.emit('totem_denied', { reason: 'none' });
+    if (room.phase !== 'answering' || room.resolving) return socket.emit('totem_denied', { reason: 'phase' });
+    if (room.deciding) {                                    // Angebot statt Abzug einloesen
+      if (!room.offers || !room.offers.has(p.id)) return socket.emit('totem_denied', { reason: 'answered' });
+      room.offers.delete(p.id);
+      skipWithTotem(room, p);
+      broadcastLobby(room);
+      if (!room.offers.size) proceedAfterDecision(room);
+      return;
     }
-    io.to(room.id).emit('totem_used', { playerId: p.id, playerName: p.name });
+    if (room.answers.has(p.id)) return socket.emit('totem_denied', { reason: 'answered' });
+    skipWithTotem(room, p);                                 // vorab ueberspringen, keine Eingabe noetig
+    io.to(room.id).emit('answer_submitted', { playerId: p.id, playerName: p.name, skipped: true });
     broadcastLobby(room);
+    checkAnswerPhaseDone(room);
+  });
+  on('totem_decline', () => {
+    const room = getRoom();
+    if (!room || !room.deciding || !room.offers) return;
+    room.offers.delete(socket.id);
+    if (!room.offers.size) proceedAfterDecision(room);
   });
 
   // Weiterspielen ──────────────────────────────────────────────────────────────

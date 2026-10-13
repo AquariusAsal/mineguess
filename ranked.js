@@ -121,25 +121,42 @@
     };
   }
 
-  // Fragenauswahl nach MMR-Zone: meist nahe an der MMR, ab und zu leichter/schwerer.
+  // Fragenauswahl nach MMR-Zone, ohne Zuruecklegen:
+  //  - nie eine Frage aus 'used' (aktueller Lauf)
+  //  - zuerst nur noch nicht gesehene Fragen (opts.seen = IDs der zuletzt gesehenen, aelteste zuerst);
+  //    die Zone weitet sich automatisch, weil die naechstliegende ungesehene Frage gewaehlt wird
+  //  - erst wenn alles gesehen wurde: die aeltesten 25 % wieder zulassen
   function pickIndex(questions, mmr, used, rnd, opts) {
     rnd = rnd || Math.random;
     used = used || new Set();
+    var seen = (opts && opts.seen) || [];
+    var age = {};
+    for (var s = 0; s < seen.length; s++) age[seen[s]] = s;
     var r = rnd(), off;
-    if (r < 0.2) off = -300 + rnd() * 200;        // Aufwärmer
+    if (r < 0.2) off = -300 + rnd() * 200;        // Aufwaermer
     else if (r < 0.8) off = -150 + rnd() * 300;   // Kernzone
     else off = 100 + rnd() * 300;                 // Herausforderung
     var target = mmr + off;
-    var pool = [];
-    for (var i = 0; i < questions.length; i++) if (!used.has(i)) pool.push(i);
-    if (!pool.length) { used.clear(); for (var j = 0; j < questions.length; j++) pool.push(j); }
-    var best = pool[0], bestD = Infinity, n = Math.min(30, pool.length);
-    for (var s = 0; s < n; s++) {
-      var idx = pool[Math.floor(rnd() * pool.length)];
-      var q = questions[idx];
+    var fresh = [], old = [];
+    for (var i = 0; i < questions.length; i++) {
+      if (used.has(i)) continue;
+      (age[questions[i].id] === undefined ? fresh : old).push(i);
+    }
+    if (!fresh.length && !old.length) {           // Lauf hat alles gesehen: neu beginnen
+      used.clear();
+      for (var j = 0; j < questions.length; j++) (age[questions[j].id] === undefined ? fresh : old).push(j);
+    }
+    var pool = fresh;
+    if (!pool.length) {
+      old.sort(function (x, y) { return age[questions[x].id] - age[questions[y].id]; });
+      pool = old.slice(0, Math.max(10, Math.ceil(old.length * 0.25)));
+    }
+    var best = pool[0], bestD = Infinity;
+    for (var k = 0; k < pool.length; k++) {
+      var q = questions[pool[k]];
       var rt = q && typeof q.rating === 'number' ? q.rating : DEFAULT_RATING;
-      var dd = Math.abs(rt - target);
-      if (dd < bestD) { bestD = dd; best = idx; }
+      var d = Math.abs(rt - target) + rnd() * 60;  // Jitter gegen immer gleiche Auswahl
+      if (d < bestD) { bestD = d; best = pool[k]; }
     }
     return best;
   }

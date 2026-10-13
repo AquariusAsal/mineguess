@@ -182,3 +182,56 @@ Laden (game.html `loadLeaderboard`): ein Query `ranked orderBy mmr desc limit 10
 - Entfernt: `isPremium`, `?premium=1`, `localStorage.mg_premium`, Firestore-Feld `users/{uid}.premium` (wird nicht mehr gelesen oder geschrieben), Zahlungs-/Stripe-Logik (`buy.stripe.com/placeholder`).
 - Server: `GET /premium.html` antwortet mit 301 auf `/`. `premium.html` wird nicht mehr in `sw.js` gecacht.
 - Noch vom Frontend zu entfernen (Markup/Texte): `#premium-star`/`.premium-tag` und Link `premium.html` im Nutzermenü von game.html, Premium-Titel auf dem Kategorie-Screen, Premium-Block/Link in index.html, Kategorie-Filter-Sperre und `initPremiumUI`/`myPremium` in multiplayer.html, Datenschutz-Abschnitt "Zahlung (Premium)".
+
+
+---
+# Fragenauswahl ohne Wiederholung, Abzeichen, Leaderboard (Runde 10)
+- **Verlauf gesehener Fragen:** `localStorage.mg_seen` = Fragen-IDs (neueste zuletzt, max. 300). Jede angezeigte Frage wird eingetragen (`seenAdd` in `loadNextQuestion`, alle Solo-Modi).
+- **Ranked:** `MGRanked.pickIndex(questions, mmr, usedSet, rnd, {seen})` zieht ohne Zurücklegen im Lauf (`usedSet`) und bevorzugt nie gesehene Fragen; die Zone weitet sich automatisch (nächstliegende ungesehene Frage). Erst wenn alles gesehen wurde, kommen die ältesten 25 % wieder.
+- **Endlos/Blitz:** Reihenfolge per `freshOrder()`: ungesehene zuerst (gemischt), dann gesehene, älteste zuerst. Daily bleibt datumsgebunden (gleiche Fragen/Reihenfolge für alle, Seed = Datum).
+- Messung (100 Ranked-Runden à 10 Fragen, 5 Simulationen, 518 Fragen): vorher 73 % (Fenster 150) bzw. 87 % (Fenster 300) der Ziehungen waren Wiederholungen aus den letzten Ziehungen, jetzt 0 %. Die Wiederholung innerhalb eines Laufs war nie ein Problem (0). Nebenwirkung: bei langem Spielen wandert die Auswahl aus der Kernzone, wenn die Zone erschöpft ist.
+- **Abzeichen:** `mg-badges.js` (`MGBadges`), 34 Abzeichen, Doku/Tabelle/Datenformat in `docs/team/BADGES.md`. Cloud: `users/{uid}.badges` (Array IDs).
+- **Leaderboard:** Fehler und fehlende Berechtigung zeigen keinen Text mehr, still Rückfall auf den lokalen Rang; Details nur in `console.warn`.
+
+
+---
+# Runde 12: neue Multiplayer-Wertung, Totem, Rundenzahl, Rankliste-API (ersetzt Punkte-/Strafregeln aus Runde 8)
+
+## Wertung (Konstanten in server.js)
+`PTS_CORRECT = 150`, `PTS_SPEED = 50` (Speedbonus 0-50 nach Restzeit der eigenen Abgabe, Basis 10 s), `BELL_BONUS = 50`, `PTS_WRONG = 50`, `PTS_BELL_WRONG = 100`, `APPROACH_LIMIT = 0.35`. MAX = 150 + Speedbonus des Spielers. Score nie < 0 (angewendetes `delta` kann kleiner als der Betrag sein).
+
+| Fall | Läutender | Nicht-Läutende |
+|---|---|---|
+| exakt richtig (nach Toleranz; alle exakten zählen) | MAX + 50 (Glockenbonus) | MAX |
+| keine exakte Antwort, im Band (<= 35 %), und nächster (kleinste Abweichung; Gleichstand: frühere Abgabe) | round(MAX/2) + 50 | round(MAX/2) |
+| keine exakte Antwort, im Band, aber nicht der Nächste | round(MAX/2) + 50 (Läutender hat Vorrang) | 0, kein Abzug |
+| exakte Antwort existiert, Spieler liegt im Band | 0, kein Abzug | 0, kein Abzug |
+| komplett daneben (> 35 % bei Zahlen, falsche Entity-Antwort) | -100 | -50 |
+| nicht geantwortet (verbunden bzw. der Läutende) | -100 | -50 |
+| Totem eingelöst (Frage übersprungen) | 0 | 0 |
+
+Entity-Fragen: nur exakt zählt; falsch = Abzug wie oben. Antworten bleiben bis zur Auflösung verdeckt (siehe Runde 8). `answers_revealed.answers[]` enthält zusätzlich `skipped` (Totem) und `noAnswer` (Eintrag für Nichtantwortende mit `delta` = Abzug); `winner` = Spieler mit Punkten > 0; `winnerIds[]` entsprechend.
+
+## Totem (ersetzt den Hinweis-Joker)
+- Verdienen: **3 Runden in Folge mit positiven Punkten** -> ein Totem (`totem_earned {playerId, playerName}` an den Raum). Eine Runde mit 0 Punkten oder Abzug setzt die Serie auf 0. Es wird nur 1 Totem gehalten; nach Einsatz neu verdienen. Einsatz ändert die Serie nicht.
+- `room_state.players[]`: `totem` (bool, besitzt eins) und `streak` (0-3, aktuelle Gewinnserie). Bleibt über Reconnect und Folgespiele im Raum erhalten (Spielerobjekt).
+- **Vorab einsetzen:** `use_totem` in der Antwortphase, bevor man geantwortet hat -> `totem_used {playerId, playerName, skipped:true}` an alle, `totem_result {kind:'skip'}` an den Spieler, `answer_submitted {skipped:true}`; keine Eingabe nötig, kein Abzug, keine Punkte.
+- **Angebot statt Abzug:** Läuft die Antwortzeit ab und ein Spieler mit Totem hat nicht geantwortet, bekommt er `totem_offer {penalty, seconds:5}`. Der Server hält die Auflösung bis zu 5 s. `use_totem` = einlösen (kein Abzug), `totem_decline` oder Ablauf = Abzug. Antworten alle Angebotenen früher, geht es sofort weiter.
+- `totem_denied {reason: 'none'|'phase'|'answered'}`. Hinweis-Logik (`kind:'range'|'options'`) entfällt.
+
+## Rundenanzahl
+`create_room {rounds: 10|25|50|100}` (alles andere -> 10). Der Server nennt `rounds` in `joined`, `maxRounds` in `room_state` und `question`. Nach Erschöpfung des Fragenpools wird neu gemischt, die erste Frage ist nie die letzte des vorherigen Durchlaufs.
+
+## Rankliste-Fallback (`/api/ranked`)
+- `GET /api/ranked` (öffentlich): Top 100 nach MMR `[{key, uid|null, name, tier, division, mmr, lastPlayedDay, mmrToday}]` (`key` = Kurz-Hash des internen Schlüssels, zum Wiedererkennen der eigenen Zeile).
+- `POST /api/ranked` `{name, uid?, gid?, mmr, lastPlayedDay?, mmrToday?}`: Schlüssel `uid` (Firebase-UID, 6-64 Zeichen) sonst `gid` (zufällige Geräte-ID, localStorage `mg_gid`) sonst Name. Name wird bereinigt (<= 20 Zeichen, ohne `<>"&`), `tier`/`division` berechnet der Server aus `mmr`. Grenzen: 0 <= mmr <= 20000, neuer Eintrag <= 5000, Anstieg <= +500 je Meldung und <= +1500 je Stunde, 10 Meldungen Burst, 1 je 6 s pro IP, max. 5000 Einträge. Antwort `{ok, key}` (Client speichert `mg_ranked_key`).
+- Speicher: RAM + `data/ranked.json` (in `.gitignore`, nicht ausgeliefert). **Auf Render (flüchtiges Dateisystem) geht die Datei bei Neustart/Redeploy verloren**; Firestore bleibt die dauerhafte Quelle, sobald die Regeln veröffentlicht sind (FIRESTORE-RULES.md).
+- Client (game.html): `rankedPostApi` sendet nach jeder Ranked-Antwort (gedrosselt) auch als Gast; `loadLeaderboard` liest Firestore (falls erlaubt) und `/api/ranked`, führt nach UID/Key zusammen (höhere MMR gewinnt) und zeigt die Liste für alle. Keine Fehlertexte, Fehler nur in der Konsole. Name der Liste: "Rankliste".
+- Manipulierbarkeit: jeder Client kann bis zu den Sprunggrenzen MMR melden; kein Serverkonto, keine Antwortprüfung.
+
+---
+# Hintergrund-Videos (assets/video)
+- Quelle: eigenes Cinematic-Video des Auftraggebers (6:21, 1280x720 60 fps, liegt ausserhalb des Repos). Erzeugung: `tools/make-clips.js` (FFMPEG und SOURCE per Umgebungsvariable, ffmpeg-static ausserhalb des Projekts installieren). Die 12 Ausschnitte (je 7 s) wurden per Szenenwechsel-Erkennung (`scene > 0.3`) und Helligkeitsfilter gewaehlt, ohne Schnitt, HUD oder Text (Sichtkontrolle).
+- Dateien: `assets/video/clip-NN.mp4` (1280x720, 30 fps, H.264 CRF 30, ohne Ton, faststart, 0,3-1,0 MB), `assets/video/mobile/clip-NN.mp4` (854x480, 0,1-0,5 MB), `assets/video/poster/clip-NN.webp` (<= 80 KB, Standbild Clipmitte). Gesamt ca. 12 MB.
+- `assets/video/clips.json`: `[{id, mp4, mp4Mobile, poster, duration (Sekunden), tone: "hell"|"dunkel"}]`, Pfade relativ zum Webroot. `tone` aus der mittleren Helligkeit (YAVG >= 90 = hell) fuer die Textkontrast-Wahl.
+- Auslieferung: `express.static` mit Range-Requests (206 geprueft), `Cache-Control: public, max-age=86400` fuer `/assets/*` (clips.json: `no-cache`). Service Worker: nur `clips.json` und Poster vorgecacht, mp4 werden nicht abgefangen. `/server.js`, `/data/`, `/package.json`, `/docs/`, `/tools/` liefern 404.

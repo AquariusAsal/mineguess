@@ -10,6 +10,8 @@
     bell:    { src: 'sounds/bell.mp3', vol: 0.8 }
   };
   var ctx = null, started = false, buffers = {}, current = {};
+  function getVolume() { try { var v = parseFloat(localStorage.getItem('mg_volume')); return isFinite(v) ? Math.max(0, Math.min(1, v)) : 1; } catch (e) { return 1; } }
+  function setVolume(v) { try { localStorage.setItem('mg_volume', String(Math.max(0, Math.min(1, v)))); } catch (e) {} }
 
   function AC() { return global.AudioContext || global.webkitAudioContext; }
   function isOn() { try { return JSON.parse(localStorage.getItem('mg_sound') || 'true'); } catch (e) { return true; } }
@@ -36,7 +38,7 @@
     try {
       if (current[name]) { try { current[name].stop(); } catch (e) {} }
       var src = ctx.createBufferSource(), g = ctx.createGain();
-      src.buffer = b; g.gain.value = f.vol;
+      src.buffer = b; g.gain.value = f.vol * getVolume();
       src.connect(g); g.connect(ctx.destination);
       src.onended = function () { if (current[name] === src) delete current[name]; };
       current[name] = src; src.start(0);
@@ -61,10 +63,10 @@
     var f = STEPS[Math.max(0, Math.min(3, i))], go = i >= 3, t = ctx.currentTime;
     try {
       if (lastNote) { try { lastNote.stop(); } catch (e) {} }   // kein Ueberlappen
-      var g = ctx.createGain(), dur = go ? 0.4 : 0.22;
+      var g = ctx.createGain(), dur = go ? 0.4 : 0.22, vol = getVolume();
       g.connect(ctx.destination);
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(go ? 0.55 : 0.45, t + 0.006);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, (go ? 0.55 : 0.45) * vol), t + 0.006);
       g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       if (harp) {
         var s = ctx.createBufferSource(); s.buffer = harp; s.playbackRate.value = f / NOTE_BASE_HZ;
@@ -84,5 +86,5 @@
     global.addEventListener(ev, unlock, { once: true, passive: true });
   });
   load();
-  global.MGAudio = { play: play, isOn: isOn, setOn: setOn, unlock: unlock, countdown: countdown };
+  global.MGAudio = { setVolume: setVolume, getVolume: getVolume, play: play, isOn: isOn, setOn: setOn, unlock: unlock, countdown: countdown };
 })(window);

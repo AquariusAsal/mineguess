@@ -25,19 +25,19 @@
 
 <main id="main" class="legal">
   <h1>Datenschutzerklärung</h1>
-  <p class="meta">Stand: <span class="ph">[DATUM]</span></p>
+  <p class="meta">Stand: <span class="ph">13.10.2026</span></p>
 
   <h2>1. Verantwortlicher</h2>
   <address>
-    <span class="ph">[NAME]</span><br>
-    <span class="ph">[ANSCHRIFT]</span><br>
-    E-Mail: <span class="ph">[E-MAIL]</span>
+    <span class="ph">Cuma Asal</span><br>
+    <span class="ph">Herr</span><br>
+    E-Mail: <span class="ph">cumaasal2008@gmail.com</span>
   </address>
 
   <h2>2. Kurzfassung</h2>
   <ul>
     <li>Du kannst MineGuess ohne Konto spielen (Gastmodus). Spielstände liegen dann nur in deinem Browser.</li>
-    <li>Mit Google-Anmeldung werden Name, Profilbild und Spielstatistiken in einer Cloud-Datenbank gespeichert, damit Leaderboard und Statistiken funktionieren.</li>
+    <li>Mit Google-Anmeldung werden Name, Profilbild und Spielstatistiken in einer Cloud-Datenbank gespeichert, damit Rankliste und Statistiken funktionieren.</li>
     <li>Im Multiplayer werden dein Spielername, Antworten und optional dein Skin und deine Figurwahl (Steve oder Alex) nur für die Dauer der Runde im Arbeitsspeicher des Servers gehalten.</li>
     <li>Es gibt keine Werbung, kein Tracking und keine Analyse-Dienste.</li>
   </ul>
@@ -51,10 +51,10 @@
   <ul>
     <li>Nutzerkennung (UID), Anzeigename und Profilbild-URL deines Google-Kontos,</li>
     <li>Statistiken (Streak, Bestwert, gespielte Runden),</li>
-    <li>Leaderboard-Einträge (Punkte, richtige Antworten, Datum),</li>
+    <li>Ranklisten-Einträge (Punkte, richtige Antworten, Datum),</li>
     <li>Fragenmeldungen (Frage, Grund, Nutzerkennung bzw. „guest“, Zeitstempel).</li>
   </ul>
-  <p>Zweck ist die Bereitstellung von Rangliste und Statistiken. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Leaderboard-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
+  <p>Zweck ist die Bereitstellung von Rankliste und Statistiken. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Ranklisten-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
 
   <h2>5. Multiplayer (Echtzeitverbindung)</h2>
   <p>Für den Multiplayer besteht eine WebSocket-Verbindung (Socket.io) zum Spielserver. Übertragen und verarbeitet werden: dein gewählter Spielername, Raumname und Raumcode, ggf. ein Raumpasswort, Bereit-Status, Buzzer, Antworten und Punkte sowie, falls du ihn hochlädst, dein <strong>Skin</strong> (64x64-Bild) und deine Figurwahl.</p>
@@ -64,6 +64,8 @@
     <li>Spielername, Raum und Kopf sind für andere Spieler im selben Raum sichtbar; öffentliche Räume erscheinen in der Raumliste. Bitte verwende keinen Klarnamen oder personenbezogene Bilder.</li>
   </ul>
   <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO.</p>
+
+  <p>Rankliste: Dein Name und dein MMR-Wert werden (auch als Gast) an den Spieleserver gesendet und dort im Arbeitsspeicher sowie in einer Datei auf dem Server gespeichert, damit die öffentliche Rankliste angezeigt werden kann. Wähle dafür keinen Klarnamen.</p>
 
   <h2>6. Lokale Speicherung im Browser</h2>
   <p>MineGuess speichert Einstellungen und Spielstände lokal im Browser (localStorage), zum Beispiel Statistiken, Abzeichen, Blitz- und Daily-Ergebnisse, Theme, Ton, gemeldete Fragen und deinen Skin und deine Figurwahl (Steve oder Alex). Es wird keine Geschlechtsangabe gespeichert, nur der Figurenname. Für die Rückkehr in einen Multiplayer-Raum wird zusätzlich eine zufällige Sitzungskennung im sessionStorage abgelegt, die beim Schließen des Tabs gelöscht wird. Außerdem registriert die Seite einen Service Worker, der Dateien für die Offline-Nutzung zwischenspeichert. Diese Speicherung ist technisch erforderlich, um die gewünschte Funktion bereitzustellen (§ 25 Abs. 2 Nr. 2 TDDDG). Du kannst die Daten jederzeit in den Browser-Einstellungen löschen. Es werden keine Tracking-Cookies gesetzt.</p>

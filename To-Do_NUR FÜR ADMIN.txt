@@ -43,3 +43,5 @@ Bekomme ich Probleme mit Microsoft und Mojang bei den Texturen?
 
 To-Do
 Buzzer oder Minecraft Clocke?
+1. Derjenige der die Glocke betätigt, löst automatisch aus dass alle Spieler ihre antworten abgeben müssen. Man hat 10 Sekunden zeit. (wie geoguesser). Nach der Abgabe bekommt derjenige die Punkte der das richtige Antwort weißt oder der am nähersten schätzt. Diejenigen die komplett daneben sind bekommen Minuspunkte. Derjenige der die Glocke betätigt und sogar komplett richtig bekommt am meisten die punkte.
+2. Nametag aus Minecraft
