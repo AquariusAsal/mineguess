@@ -80,3 +80,6 @@ Bekannte Grenzen (nicht lösbar ohne Server-Konto/Cloud Function):
 - Der Client berechnet MMR selbst und schreibt es; jeder angemeldete Nutzer kann sich per Konsole/API einen beliebigen MMR bis 20000 setzen. Die Regeln begrenzen nur Wertebereich und Konsistenz (`correct <= answered`, `peak >= mmr`).
 - Optionaler Schutz: Regel `request.resource.data.mmr <= resource.data.mmr + 600` (max. Anstieg pro Schreibvorgang), dann ist ein Sprung auf 20000 nicht in einem Schritt möglich. Echte Absicherung nur über Cloud Function, die Antworten gegen die Fragen prüft.
 - Lokaler Rang (Gäste) ist per `localStorage` frei änderbar und nur auf diesem Gerät sichtbar.
+
+## Runde 6: neue Felder in ranked/{uid}
+Zusätzlich: `tier` (String-Rang-Id), `division` (1-3), `lastPlayedDay` (YYYY-MM-DD), `mmrToday` (int). Die Regel oben verbietet sie nicht; optional härten: `request.resource.data.division in [1,2,3]`, `request.resource.data.lastPlayedDay is string`, `request.resource.data.mmrToday is int`. Das Leaderboard-Query `orderBy(mmr)` braucht keinen Composite-Index; "Heute" wird clientseitig gefiltert.

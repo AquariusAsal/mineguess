@@ -1324,6 +1324,8 @@ header h1 { flex-shrink:0; }
 <script src="mg-scene.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-audio.js"></script>
+  <script src="spotify-config.js"></script>
+  <script src="mg-spotify.js"></script>
   <script src="firebase-config.js" onerror="window.FIREBASE_ENABLED=false;window.FIREBASE_CONFIG=null;"></script>
 </head>
 <body>
@@ -1543,6 +1545,7 @@ header h1 { flex-shrink:0; }
     <div class="stat"><span id="streak-val">0</span><span>STREAK</span></div>
     <div class="stat"><span id="best-val">0</span><span>BEST</span></div>
     <div class="stat"><span id="played-val">0</span><span>GESPIELT</span></div>
+    <span id="spotify-slot"></span>
     <span id="hdr-chip"></span>
     <button class="theme-btn" id="theme-toggle" title="Theme wechseln" aria-label="Hell/Dunkel wechseln"></button>
     <button class="sound-btn" id="sound-toggle" title="Ton ein/aus" aria-label="Ton ein oder aus" onclick="toggleSound()"></button>
@@ -2644,7 +2647,7 @@ async function loadLeaderboard(filter) {
       let docs = snap.docs;
       if (filter === 'today') {
         const today = getDateKey();
-        docs = docs.filter(d => d.data().lastDate === today);
+        docs = docs.filter(d => (d.data().lastPlayedDay || '') === MGRanked.dayKey());
       }
       docs = docs.slice(0, 20);
       if (docs.length === 0) {
@@ -2655,8 +2658,8 @@ async function loadLeaderboard(filter) {
           const ri = MGRanked.rankInfo(e.mmr);
           const prog = ri.next ? Math.round(ri.progress * 100) + '% bis ' + ri.nextName : 'Höchster Rang';
           return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">#' + (i + 1) + '</span>' +
-            rankBadge(ri, 20) + '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
-            '<span class="lb-meta">' + escHtml(ri.label) + ' · ' + prog + '</span>' +
+            rankIngots(ri, 18) + '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
+            '<span class="lb-meta">' + '' + (filter === 'today' && typeof e.mmrToday === 'number' ? (e.mmrToday >= 0 ? '+' : '') + e.mmrToday + ' heute' : prog) + '</span>' +
             '<span class="lb-score">' + ri.mmr.toLocaleString() + ' MMR</span></div>';
         }).join('');
       }
@@ -2668,10 +2671,9 @@ async function loadLeaderboard(filter) {
   }
 
   // Lokale Liste (nur auf diesem Geraet)
-  let local = lbLocalGet();
-  if (filter === 'today') local = local.filter(x => x.date === getDateKey());
+  let local = [];   // Punkte werden im Leaderboard nicht mehr angezeigt (nur MMR)
   let localHtml = '';
-  if (local.length) {
+  if (false && local.length) {   // lokale Punkte-Liste entfaellt: Anzeige nur MMR
     localHtml = '<div class="lb-empty" style="padding:12px 0 4px">Nur auf diesem Gerät gespeichert</div>' +
       local.slice(0, 10).map((x, i) =>
         '<div class="lb-row"><span class="lb-rank">#' + (i + 1) + '</span>' +
@@ -2682,10 +2684,11 @@ async function loadLeaderboard(filter) {
 
   const mine = MGRanked.rankInfo(rankedEnsure().mmr);
   const mineHtml = '<div class="lb-row me"><span class="lb-rank">Du</span>' +
-    '<span class="lb-name">' + escHtml(mine.label) + '</span>' +
+    rankIngots(mine, 18) + '<span class="lb-name">Du' + (isGuest ? ' (nur dieses Gerät)' : '') + '</span>' +
     '<span class="lb-meta">' + (mine.next ? Math.round(mine.progress * 100) + '% bis ' + escHtml(mine.nextName) : 'Höchster Rang') + '</span>' +
     '<span class="lb-score">' + mine.mmr.toLocaleString() + ' MMR</span></div>' +
-    (isGuest ? '<div class="lb-empty">Dein Rang wird nur auf diesem Gerät gespeichert.</div>' : '');
+    (isGuest ? '<div class="lb-empty">Dein Rang wird nur auf diesem Gerät gespeichert.</div>' : '') +
+    ((filter === 'today' && (rankedEnsure().lastPlayedDay || '') !== MGRanked.dayKey()) ? '<div class="lb-empty">Heute noch kein Ranked-Spiel.</div>' : '');
   list.innerHTML = (note ? '<div class="lb-empty" role="status">' + escHtml(note) + '</div>' : '') +
     mineHtml + globalHtml + localHtml +
     ((!globalHtml && !localHtml) ? '<div class="lb-empty">Noch keine Einträge.</div>' : '');
@@ -3048,7 +3051,9 @@ async function rankedSaveCloud(force) {
       photoURL: currentUser.photoURL || null,
       mmr: rankedProfile.mmr, peak: rankedProfile.peak,
       games: rankedProfile.games, answered: rankedProfile.answered, correct: rankedProfile.correct,
-      rank: info.rankId, tier: info.tier, lastDate: getDateKey(),
+      rank: info.rankId, tier: info.rankId, division: info.tier,
+      lastPlayedDay: rankedProfile.lastPlayedDay || '', mmrToday: rankedProfile.mmrToday || 0,
+      lastDate: getDateKey(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
   } catch (e) { console.warn('rankedSaveCloud:', e); }
@@ -3087,6 +3092,13 @@ function rankedAnswered(correct) {
   try { document.dispatchEvent(new CustomEvent('mg:ranked', { detail: r })); } catch (e) {}
 }
 // Textfallback fuer die Anzeige (Frontend kann das Event 'mg:ranked' / window.lastRanked eigenstaendig darstellen)
+function rankIngots(info, size) {
+  // Division I/II/III = 1/2/3 kleine Barren (Diamond = Diamant, Netherite = Netherite-Barren); aria-label z. B. "Copper 3"
+  const n = Math.max(1, Math.min(3, info.tier || 1));
+  let h = '';
+  for (let i = 0; i < n; i++) h += rankBadge(info, size || 18);
+  return '<span class="rk-ingots" role="img" aria-label="' + escHtml(info.name + ' ' + n) + '">' + h + '</span>';
+}
 function rankBadge(info, size) {
   // Rang-Badge: Barren-/Diamant-Textur (Netherite: netherite_ingot, Diamond: diamond)
   const tex = info.texture === 'diamond' ? 'item/diamond' : 'item/' + info.texture;
@@ -3128,8 +3140,8 @@ function rankedNote() {
   s.setAttribute('role', 'status');
   const sign = d > 0 ? '+' : d < 0 ? '−' : '±';
   const prog = a.next ? Math.round(a.progress * 100) : 100;
-  s.innerHTML = '<div class="rk-row">' + rankBadge(a, 24) +
-    '<span class="rk-label">' + escHtml(a.label) + '</span>' +
+  s.innerHTML = '<div class="rk-row">' + rankIngots(a, 22) +
+    '<span class="rk-label">' + escHtml(a.name) + '</span>' +
     '<span class="rk-delta ' + (d >= 0 ? 'plus' : 'minus') + '">' + sign + Math.abs(d) + ' MMR</span>' +
     '<span class="rk-mmr">' + a.mmr + '</span></div>' +
     '<div class="rk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + prog + '"><i style="width:' + prog + '%"></i></div>' +
@@ -3253,6 +3265,7 @@ function showCountdown(callback) {
     void numEl.offsetWidth;
     numEl.textContent = steps[i];
     lblEl.textContent  = labels[i];
+    if (window.MGAudio) MGAudio.countdown(i);
     numEl.className   = (i < 3) ? 'cd-pop' : 'cd-go';
     if (i < 3) { i++; setTimeout(tick, 850); }
     else {
@@ -3709,6 +3722,7 @@ if ('serviceWorker' in navigator) {
   };
 })();
 MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
+if (window.MGSpotify) MGSpotify.mount(document.getElementById('spotify-slot'));
 MGSkin.mountChip(document.getElementById('mode-profile'));</script>
 <script>document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.getElementById('lb-modal'); if (m && !m.classList.contains('hidden')) m.classList.add('hidden'); } });</script>
 </body>

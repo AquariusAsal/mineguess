@@ -54,9 +54,19 @@
     };
   }
 
-  // profile: { mmr, peak, games, answered, correct, lastDate }
+  // Kalendertag lokal als 'YYYY-MM-DD'
+  function dayKey(d) {
+    d = d || new Date();
+    var m = d.getMonth() + 1, day = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
+  }
+  // Rang als Daten: { tier: 'copper', division: 1..3 } (division 3 = hoechste Stufe des Rangs)
+  function rankData(mmr) { var i = rankInfo(mmr); return { tier: i.rankId, division: i.tier }; }
+
+  // profile: { mmr, peak, games, answered, correct, lastDate, lastPlayedDay, mmrDayStart, mmrToday }
   function newProfile() {
-    return { mmr: START_MMR, peak: START_MMR, games: 0, answered: 0, correct: 0, lastDate: '' };
+    return { mmr: START_MMR, peak: START_MMR, games: 0, answered: 0, correct: 0, lastDate: '',
+             lastPlayedDay: '', mmrDayStart: START_MMR, mmrToday: 0 };
   }
   function normalizeProfile(o) {
     var p = newProfile();
@@ -68,6 +78,9 @@
     p.answered = num(o.answered, 0, 0, 1e7);
     p.correct = Math.min(p.answered, num(o.correct, 0, 0, 1e7));
     p.lastDate = typeof o.lastDate === 'string' ? o.lastDate.slice(0, 12) : '';
+    p.lastPlayedDay = typeof o.lastPlayedDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.lastPlayedDay) ? o.lastPlayedDay : '';
+    p.mmrDayStart = num(o.mmrDayStart, p.mmr, 0, MAX_MMR);
+    p.mmrToday = Math.max(-MAX_MMR, Math.min(MAX_MMR, Math.round(Number(o.mmrToday) || 0)));
     return p;
   }
 
@@ -81,6 +94,8 @@
     var prof = normalizeProfile(profile);
     var R = Number(rating); if (!isFinite(R)) R = DEFAULT_RATING;
     var before = rankInfo(prof.mmr);
+    var today = dayKey();
+    if (prof.lastPlayedDay !== today) { prof.lastPlayedDay = today; prof.mmrDayStart = prof.mmr; }
     var p = expected(prof.mmr, R);
     var res = Math.max(0, Math.min(1, Number(result) || 0));
     var d = K * (res - p);
@@ -94,6 +109,7 @@
     d = newMmr - prof.mmr;                      // tatsächlich angewendet (MMR >= 0)
     prof.mmr = newMmr;
     prof.peak = Math.max(prof.peak, newMmr);
+    prof.mmrToday = newMmr - prof.mmrDayStart;
     prof.answered += 1;
     if (res > 0.5) prof.correct += 1;
     var after = rankInfo(newMmr);
@@ -130,7 +146,7 @@
 
   var api = {
     START_MMR: START_MMR, K: K, DEFAULT_RATING: DEFAULT_RATING, RANKS: RANKS,
-    expected: expected, rankInfo: rankInfo, newProfile: newProfile, normalizeProfile: normalizeProfile,
+    expected: expected, rankInfo: rankInfo, rankData: rankData, dayKey: dayKey, newProfile: newProfile, normalizeProfile: normalizeProfile,
     applyAnswer: applyAnswer, pickIndex: pickIndex
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

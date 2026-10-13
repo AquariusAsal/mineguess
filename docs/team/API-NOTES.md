@@ -112,3 +112,16 @@ Optionale Felder bei number-Fragen: `tolerancePct` (z. B. 10) und `toleranceMin`
 - Rangliste = `ranked` nach `mmr` desc (limit 100), Tab "Heute" filtert `lastDate`. Eigener Rang oben ("Du", Rang, Fortschritt), bei Gästen "nur auf diesem Gerät". Fehler/Gast: verständliche Meldung + lokaler Rang.
 - Die alte `leaderboard`-Collection wird nicht mehr beschrieben.
 - sw.js: `ranked.js`, `bell-minecraft.mp3` vorgecacht (Version über `tools/gen-sw-assets.js`).
+
+
+## Runde 6: Leaderboard nur MMR, Tabs Heute / Allzeit
+Dokument `ranked/{uid}` (und lokal `mg_ranked`) hat zusätzlich:
+- `tier`: Rang-Id `'copper'|'iron'|'gold'|'diamond'|'netherite'` (vorher Zahl), `division`: 1..3 (3 = höchste Stufe des Rangs, Anzeige "Copper III"), `rank` bleibt = `tier` (Kompatibilität).
+- `lastPlayedDay`: `'YYYY-MM-DD'` (lokaler Kalendertag des letzten Ranked-Spiels), `mmrToday`: MMR-Änderung seit der ersten Antwort des Tages (lokal zusätzlich `mmrDayStart`).
+- Es gibt keine Punkte im Ranked-Dokument. Der Wettkampf-Punktespeicher (`sessionPoints`, `mg_lb_local` für Blitz/Daily) bleibt intern, wird im Leaderboard nicht angezeigt.
+
+Laden (game.html `loadLeaderboard`): ein Query `ranked orderBy mmr desc limit 100` (kein Composite-Index nötig).
+- **Allzeit**: die Liste wie geladen. Zeile: Name, Rang (`MGRanked.rankInfo(mmr)`: `rankId`, `tier` = Division, `label`), MMR.
+- **Heute**: dieselbe Liste, clientseitig gefiltert auf `lastPlayedDay === MGRanked.dayKey()`, Reihenfolge nach aktuellem MMR; Zeile zeigt zusätzlich `mmrToday` ("+37 heute").
+- Lokaler Fallback: eigene Zeile "Du" (Rang, Fortschritt, MMR); Tab Heute ohne Spiel heute: Hinweis "Heute noch kein Ranked-Spiel."
+- Helfer: `MGRanked.rankData(mmr)` -> `{tier:'copper', division:3}`, `MGRanked.dayKey()`.

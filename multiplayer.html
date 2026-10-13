@@ -11,6 +11,8 @@
   <script src="mg-skin.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-audio.js"></script>
+  <script src="spotify-config.js"></script>
+  <script src="mg-spotify.js"></script>
   <script src="mg-scene.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -259,6 +261,7 @@
   <span class="tag tag-blue beta">Beta</span>
   <div class="header-right">
     <span class="room-status" id="room-status" aria-live="polite">Multiplayer</span>
+    <span id="spotify-slot"></span>
     <span id="hdr-chip"></span>
     <button type="button" class="btn btn-ghost sound-toggle" id="mute-btn" onclick="toggleMute()" aria-label="Ton ein oder aus" title="Ton ein/aus" style="min-height:44px;min-width:44px;padding:6px 8px"></button>
     <a href="game.html" class="btn btn-ghost" onclick="leaveRoom()" style="min-height:44px;padding:6px 14px">Solo</a>
@@ -601,6 +604,7 @@ function initPremiumUI() {
   if (window.MGSkin && el('skin-box')) MGSkin.mountUploader(el('skin-box'));
   if (window.MGSkin) {
     MGSkin.mountChip(el('hdr-chip'), { className: 'compact' });
+    if (window.MGSpotify) MGSpotify.mount(el('spotify-slot'));
     const nm = el('input-name');
     if (nm && !nm.value) nm.value = MGSkin.getName();
     nm.addEventListener('input', () => MGSkin.setName(nm.value));
@@ -785,6 +789,7 @@ function showMpCountdown(callback) {
     void numEl.offsetWidth;
     numEl.textContent = steps[i];
     lblEl.textContent = labels[i];
+    if (window.MGAudio) MGAudio.countdown(i);
     numEl.className   = i < 3 ? 'cd-pop' : 'cd-go';
     if (i < 3) { i++; setTimeout(tick, 750); }
     else {

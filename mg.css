@@ -265,3 +265,15 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 @keyframes ruImpact { 0% { transform:scale(3.2); opacity:0; } 60% { transform:scale(.92); opacity:1; } 100% { transform:scale(1); } }
 @keyframes ruUp { from { opacity:0; transform:translateY(10px); } }
 @media (prefers-reduced-motion: reduce) { .ru-flash, .ru-ring { display:none; } .ru-badge .mc-icon, .ru-title, .ru-name, .ru-bar, .ru-hint { animation:none; } .ru-bar i { transition:none; } }
+
+/* Musik-Insel (Spotify, Click-to-load) */
+.mg-island { position:fixed; top:calc(64px + var(--safe-t)); left:50%; width:min(380px,calc(100vw - 24px)); z-index:1400; background:var(--bg1); border:2px solid var(--border2); border-radius:22px; padding:12px 14px 10px; transform:translateX(-50%) scale(1); transform-origin:top center; opacity:1; transition:transform .22s var(--ease), opacity .18s; }
+.mg-island.closed { transform:translateX(-50%) scale(.6); opacity:0; pointer-events:none; visibility:hidden; transition:transform .2s var(--ease), opacity .15s, visibility 0s .2s; }
+.mg-island-head { display:flex; align-items:center; justify-content:space-between; font:700 .85rem var(--font-px); margin-bottom:8px; }
+.mg-island-close { min-height:44px; padding:0 12px; background:transparent; border:2px solid var(--border2); border-radius:var(--r); color:var(--text); font:600 .8rem var(--font); cursor:pointer; }
+.mg-island-body iframe { border:0; border-radius:12px; display:block; }
+.mg-island-body p { margin:0 0 10px; font-size:.9rem; color:var(--muted); }
+.mg-island-note { margin:8px 0 0; font-size:.72rem; color:var(--muted2); }
+@media (prefers-reduced-motion: reduce) { .mg-island, .mg-island.closed { transition:none; } }
+.rk-ingots { display:inline-flex; gap:1px; vertical-align:middle; flex:none; }
+.rk-ingots .mc-icon { width:18px; height:18px; }
