@@ -228,3 +228,40 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 
 .mg-scene { aspect-ratio:4/3; max-height:520px; }
 @media (max-width:480px) { .mg-scene.many { aspect-ratio:1/1; min-height:300px; } }
+
+/* Solo-Reporter-Szene: kompakt, dekorativ */
+.mg-scene.solo { aspect-ratio:16/7; min-height:150px; max-height:240px; margin:0; }
+.mg-scene.solo .mg-fig-label { display:none; }
+.mg-bubble.ask { font-size:.72rem; padding:5px 10px; font-weight:500; max-width:min(300px,calc(100% - 16px)); }
+@media (max-width:480px) { .mg-scene.solo { aspect-ratio:16/8; min-height:130px; max-height:30vh; } }
+.sound-toggle:not(.on) .mc-icon { opacity:.35; }
+
+/* Ranked-Anzeige */
+#ranked-note { display:flex; flex-direction:column; gap:6px; padding:10px 12px; background:var(--bg2); border:2px solid var(--border); border-radius:var(--r); }
+.rk-row { display:flex; align-items:center; gap:8px; }
+.rk-label { font-weight:700; flex:1; }
+.rk-delta { font-family:var(--font-px); font-size:.8rem; }
+.rk-delta.plus { color:var(--green); } .rk-delta.minus { color:var(--red); }
+.rk-mmr { color:var(--muted); font-size:.8rem; }
+.rk-bar { height:8px; background:var(--bg); border:2px solid var(--border); border-radius:2px; overflow:hidden; }
+.rk-bar i { display:block; height:100%; background:var(--gold); }
+.rk-sub { font-size:.78rem; color:var(--muted); }
+
+/* Rankup-Overlay (ruhig, ca. 2,5 s) */
+#rankup { position:fixed; inset:0; z-index:2000; background:rgba(8,9,10,.88); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; cursor:pointer; animation:ruFade .25s ease; }
+#rankup.out { opacity:0; transition:opacity .25s; }
+.ru-flash { position:absolute; inset:0; background:#fff; opacity:0; animation:ruFlash .5s .35s ease-out; pointer-events:none; }
+.ru-ring { position:absolute; width:120px; height:120px; border:3px solid var(--gold); border-radius:50%; opacity:0; animation:ruRing .9s .4s ease-out; pointer-events:none; }
+.ru-badge .mc-icon { width:128px; height:128px; animation:ruImpact .5s cubic-bezier(.2,1.4,.3,1) both; }
+.ru-title { font-family:var(--font-px); font-size:.8rem; letter-spacing:.2em; color:var(--muted); animation:ruUp .4s .5s both; }
+.ru-name { font-family:var(--font-px); font-size:clamp(1.6rem,7vw,2.6rem); color:var(--gold); animation:ruUp .4s .6s both; }
+.ru-name span { color:var(--text); }
+.ru-bar { width:min(280px,70vw); height:10px; animation:ruUp .4s .7s both; }
+.ru-bar i { transition:width 1.2s .9s var(--ease); }
+.ru-hint { font-size:.75rem; color:var(--muted2); animation:ruUp .4s 1.4s both; }
+@keyframes ruFade { from { opacity:0; } }
+@keyframes ruFlash { 0% { opacity:.55; } 100% { opacity:0; } }
+@keyframes ruRing { 0% { transform:scale(.4); opacity:.9; } 100% { transform:scale(5); opacity:0; } }
+@keyframes ruImpact { 0% { transform:scale(3.2); opacity:0; } 60% { transform:scale(.92); opacity:1; } 100% { transform:scale(1); } }
+@keyframes ruUp { from { opacity:0; transform:translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .ru-flash, .ru-ring { display:none; } .ru-badge .mc-icon, .ru-title, .ru-name, .ru-bar, .ru-hint { animation:none; } .ru-bar i { transition:none; } }

@@ -222,3 +222,23 @@ Die Richtlinien-Seiten selbst waren für mich nicht abrufbar (Web-Filter), dies 
 - **Kommerziell (Bezahl-Premium, Werbung, Spenden mit Gegenleistung):** Mojangs Richtlinien erlauben Gewinnerzielung mit ihren Assets/Marke nur in eng umrissenen Fällen (z. B. Server nach den Commercial Usage Guidelines, bestimmte Merchandise-Lizenzen). Ein bezahltes Quiz-Premium mit Original-Texturen und Charakteren (Steve/Alex sind markenrechtlich Kernfiguren) gilt als **riskant bis nicht gedeckt**. Mögliche Folgen: Abmahnung/Takedown, im Extremfall Konto/Domain-Meldung.
 - Wiki-Fakten stehen unter CC BY-NC-SA: Namensnennung nötig, Weitergabe unter gleicher Lizenz, **keine kommerzielle Nutzung**.
 - Wege: (a) reines Fan-Projekt ohne Bezahlfunktion, mit Hinweis und Credits; (b) bei Bezahl-Premium eigene Pixelfiguren/Texturen und eigene Fragetexte; (c) Anfrage an Mojang/Microsoft vor Start. Entscheidung beim Auftraggeber.
+
+## 12. Reporter (Solo, Runde 4)
+
+Referenz `docs/team/ref/reporter-alex.png`: Figur hält mit **beiden Händen** eine Karte (Item "Map") vor Brust und Gesicht. Textur der Karte: `assets/mc/map/map_background.png` (Papier-Hintergrund der Karte, 64x64), alternativ `item/paper.png` (16x16, kleiner) oder `item/filled_map.png`. Karte als flache Platte 14×14×0,3 Einheiten vor der Brust (Mittelpunkt (0, 21, −7) in Figurkoordinaten, leicht nach hinten gekippt rotX −10°).
+
+Szene: Tisch (ohne Glocke) in der Mitte, Spieler links, Reporter gegenüber (rechts, schaut nach links zum Tisch/Spieler). Figurabstand wie Runde 3 (17 Einheiten). Alle Posen mit denselben Pivots/Easings wie §5; Karte ist ein Kind des Körpers, mit den Armen verbunden (beim Armheben folgt die Karte).
+
+| Pose | Dauer | Keyframes |
+|---|---|---|
+| `report_hold` (Standard, Loop) | 3200 ms | Beide Arme rotX −80°, rotY ±15° nach innen, Ellbogen "gebeugt" durch Armneigung, Karte vor Brust. Atmung wie idle, Kopf hinter Karte leicht auf/ab (rotX ±2° bei 2400 ms) |
+| `report_ask` (Frage stellen) | 700 ms | 0: hold; 150: Karte 4 Einheiten nach vorn/unten, Kopf rotX +10° (liest); 400: Kopf rotX −6° (schaut zum Spieler); 700: hold. Sprechblase der Frage erscheint bei 150 ms |
+| `report_note` (Notiz schreiben, nach Antwort) | 900 ms | Linker Arm rotX −70° bleibt, rechter Arm: 0–150 ms zur Karte (−95°), dann 4 × kleine Schreibstriche rotZ ±4° im Abstand 120 ms, zurück auf hold bei 900 |
+| `report_nod` (richtig) | 700 ms | Kopf rotX 0 → +14° → 0 → +10° → 0 (zweimaliges Nicken), Karte bleibt |
+| `report_shake` (falsch) | 800 ms | Kopf rotY −16° → +16° → −10° → +10° → 0, 130 ms je Schritt; Karte leicht nach unten (−2 Einheiten) |
+| `report_wait` (Spieler tippt) | Loop 1800 ms | wie hold, Kopf rotZ 4° ↔ 0°, alle 5 s ein Blick auf die Karte (rotX +8° für 500 ms) |
+
+Spielerfigur links: idle (§5.1), beim Tippen `denken` (§5.3, Blasenpunkte), bei richtig `richtig` (§5.4), bei falsch `falsch` (§5.5). Reporter-Auswahl: zufällig Steve (wide) oder Alex (slim) pro Runde, anderer Charakter als der Spieler, falls der Spieler Standard-Steve/-Alex nutzt (§ Round 4).
+
+Karteninhalt: Frage nicht auf die Karte rendern (nicht lesbar auf Mobile), sondern in der Sprechblase über dem Reporter und zusätzlich als DOM-Text; auf der Karte nur Kategorie-Icon und "?" (kleines Textur-Icon aus `docs/team/TEXTURE-MAP.json`). Reduced Motion: statisch `report_hold`, Blase ohne Animation.
+Performance: Szene höchstens ca. 35 % der Höhe, Render nur bei Zustandswechsel und währenddessen 60 fps, im Blitz-Modus Idle-Loop auf 15 fps oder statisch.

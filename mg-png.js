@@ -55,12 +55,13 @@
       var chans = { 0: 1, 2: 3, 3: 1, 4: 2, 6: 4 }[ct];
       if (!chans || (ct === 3 && [1, 2, 4, 8].indexOf(bd) < 0) || (ct !== 3 && bd !== 8 && bd !== 16)) return Promise.resolve(null);
       // Chunks sammeln
-      var pos = 8, idat = [], total = 0, trns = null;
+      var pos = 8, idat = [], total = 0, trns = null, plte = null;
       while (pos + 12 <= bytes.length) {
         var len = u32(bytes, pos), type = String.fromCharCode(bytes[pos + 4], bytes[pos + 5], bytes[pos + 6], bytes[pos + 7]);
         var d = bytes.subarray(pos + 8, pos + 8 + len);
         if (type === 'IDAT') { idat.push(d); total += d.length; }
         else if (type === 'tRNS') trns = d;
+        else if (type === 'PLTE') plte = d;
         else if (type === 'IEND') break;
         pos += 12 + len;
       }
@@ -70,7 +71,7 @@
       var bpp = Math.max(1, (chans * bd) >> 3), stride = Math.ceil(hd.w * chans * bd / 8);
       return inflate(all).then(function (raw) {
         if (raw.length < (stride + 1) * hd.h) return null;
-        var out = new Uint8Array(hd.w * hd.h), prev = new Uint8Array(stride), cur = new Uint8Array(stride);
+        var out = new Uint8Array(hd.w * hd.h), rgb = new Uint32Array(hd.w * hd.h), prev = new Uint8Array(stride), cur = new Uint8Array(stride);
         for (var y = 0; y < hd.h; y++) {
           var ft = raw[y * (stride + 1)], line = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
           for (var i = 0; i < stride; i++) {
@@ -95,14 +96,30 @@
               else { var perByte = 8 / bd, by = cur[Math.floor(px / perByte)], sh = 8 - bd * (px % perByte + 1); idx = (by >> sh) & ((1 << bd) - 1); }
               al = trns && idx < trns.length ? trns[idx] : 255;
             }
+            var cr = 0, cg = 0, cb = 0, st = bd === 16 ? 2 : 1;
+            if (ct === 6) { cr = cur[px * 4 * st]; cg = cur[px * 4 * st + st]; cb = cur[px * 4 * st + 2 * st]; }
+            else if (ct === 2) { cr = cur[px * 3 * st]; cg = cur[px * 3 * st + st]; cb = cur[px * 3 * st + 2 * st]; }
+            else if (ct === 0 || ct === 4) { cr = cg = cb = cur[px * chans * st]; }
+            else if (ct === 3 && plte) { var pi = bd === 8 ? cur[px] : idx; cr = plte[pi * 3] || 0; cg = plte[pi * 3 + 1] || 0; cb = plte[pi * 3 + 2] || 0; }
+            rgb[y * hd.w + px] = (cr << 16) | (cg << 8) | cb;
             out[y * hd.w + px] = al;
           }
           var t = prev; prev = cur; cur = t;
         }
-        return { w: hd.w, h: hd.h, alpha: out };
+        return { w: hd.w, h: hd.h, alpha: out, rgb: rgb };
       }).catch(function () { return null; });
     } catch (e) { return Promise.resolve(null); }
   }
 
-  global.MGPng = { header: header, alpha: alpha, dataUrlBytes: dataUrlBytes, toDataUrl: toDataUrl, isPng: isPng };
+  // Rauschen-Erkennung: echte Skins haben im Gesicht (8x8) und Rumpf (8x12) wenige Farben, Rauschen fast pro Pixel eine
+  function plausible(res) {
+    if (!res || !res.rgb || res.w !== 64 || res.h < 32) return true;
+    function distinct(x0, y0, w, h) {
+      var m = {}, n = 0, x, y, v;
+      for (y = y0; y < y0 + h; y++) for (x = x0; x < x0 + w; x++) { v = res.rgb[y * res.w + x]; if (!m[v]) { m[v] = 1; n++; } }
+      return n;
+    }
+    return !(distinct(8, 8, 8, 8) >= 40 || distinct(20, 20, 8, 12) >= 55);
+  }
+  global.MGPng = { plausible: plausible, header: header, alpha: alpha, dataUrlBytes: dataUrlBytes, toDataUrl: toDataUrl, isPng: isPng };
 })(window);

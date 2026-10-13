@@ -99,6 +99,7 @@
         var opaque = 0, i;
         for (i = 0; i < res.alpha.length; i++) if (res.alpha[i] > 0) opaque++;
         if (opaque < res.w * res.h * 0.05) throw new Error('empty');
+        if (global.MGPng && !global.MGPng.plausible(res)) throw new Error('noise');
         if (h !== 32) {
           var clear = true, yy, xx;
           for (yy = 20; yy < 32 && clear; yy++) for (xx = 54; xx < 56; xx++) if (res.alpha[yy * res.w + xx] !== 0) { clear = false; break; }
@@ -291,10 +292,24 @@
   function ease(t) { return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t); }
   function damp(cur, target, dt, k) { return cur + (target - cur) * (1 - Math.exp(-k * dt)); }
 
-  function newPose() { return { headX: 0, headY: 0, headZ: 0, armRx: 0, armRz: 0, armLx: 0, armLz: 0, lean: 0, hop: 0, tilt: 0 }; }
+  function newPose() { return { lift: 0, bend: 0, headX: 0, headY: 0, headZ: 0, armRx: 0, armRz: 0, armLx: 0, armLz: 0, lean: 0, hop: 0, tilt: 0 }; }
 
   // Zielpose je Zustand (Zeit t in Sekunden seit Zustandsbeginn, ph = Phasenversatz der Figur)
+  function reachAngle(f) { // Armwinkel zur Glockenmitte (Körper bei 11,5, Glocke Mitte y=28)
+    return Math.atan2(9, (f.lift || 0));   // Glocke (Skala 0.85): Mitte y=22
+  }
+  function reporterPose(f, t, now) {
+    var p = newPose(), w = REDUCED ? 0 : 1, ph = f.phase;
+    p.armRx = -1.25 + Math.sin(now * 1.1 + ph) * 0.03 * w; p.armLx = p.armRx;
+    p.armRz = -0.42; p.armLz = 0.42;
+    p.headX = 0.1; p.headY = Math.sin(now * 0.5 + ph) * 0.1 * w;
+    if (f.state === 'cheer') { p.headX = 0.1 + Math.sin(t * 10) * 0.28 * Math.max(0, 1 - t / 1.0) * w; }
+    else if (f.state === 'wrong') { p.headY = Math.sin(t * 14) * 0.45 * Math.max(0, 1 - t / 0.9) * w; }
+    p.hop = Math.sin(now * 1.3 + ph) * 0.1 * w;
+    return p;
+  }
   function targetPose(f, t, now) {
+    if (f.reporter) return reporterPose(f, t, now);
     var p = newPose(), ph = f.phase, w = REDUCED ? 0 : 1;
     // Idle: Atmen + leichter Armschwung, Blick zur Tischmitte
     p.armRx = Math.sin(now * 1.3 + ph) * 0.05 * w;
@@ -309,12 +324,12 @@
         // 0-0.18s: Schritt vor + Arm hebt; 0.18-0.30s: Schlag; danach Hand auf Buzzer
         var a = ease(t / 0.18);
         p.lean = f.reach * a;
-        p.armRx = -(1.2 * a + (t > 0.18 && t < 0.3 ? 0.22 * Math.sin((t - 0.18) / 0.12 * Math.PI) : 0));
-        p.armRz = 0; p.headX = 0.2 + 0.1 * a; p.headY = 0;
+        p.armRx = -(reachAngle(f) * a + (t > 0.18 && t < 0.3 ? 0.25 * Math.sin((t - 0.18) / 0.12 * Math.PI) : 0)); p.lift = f.lift * a;
+        p.armRz = 0; p.headX = 0.2 + 0.1 * a; p.headY = 0; p.bend = 0.1 * a;
         break;
       }
       case 'hold': // nach dem Buzz, Hand bleibt kurz auf dem Buzzer, Blick zum Publikum
-        p.lean = f.reach; p.armRx = -1.14; p.armRz = 0; p.headX = 0.15;
+        p.lean = f.reach; p.lift = f.lift; p.armRx = -reachAngle(f); p.armRz = 0; p.headX = 0.15; p.bend = 0.1;
         break;
       case 'think': {
         var bob = Math.sin(t * 2.4) * 0.05 * w;
@@ -355,6 +370,7 @@
     this.box = container;
     this.myId = opts.myId || null;
     this.preview = !!opts.preview;
+    this.solo = !!opts.solo;
     this.players = [];
     this.figs = {};
     this.bubbles = {};
@@ -369,6 +385,7 @@
     this.view = null;
 
     container.classList.add('mg-scene');
+    if (opts.solo) container.classList.add('solo');
     container.innerHTML = '<canvas class="mg-scene-canvas" aria-hidden="true"></canvas><div class="mg-scene-layer"></div>';
     this.canvas = container.querySelector('canvas');
     this.layer = container.querySelector('.mg-scene-layer');
@@ -399,7 +416,14 @@
       cylRim: R.buffer(cylinder(5.4, 2.0, 36), true),
       cylBtn: R.buffer(cylinder(4.7, 3.2, 36), true),
       cylCap: R.buffer(cylinder(3.2, 0.35, 36), true),
-      floor: R.buffer(cylinder(1, 0.01, 40), true)
+      floor: R.buffer(cylinder(1, 0.01, 40), true),
+      post: R.buffer(plainBox(2, 13, 4, { all: [0, 0, 1, 1] })),
+      beam: R.buffer(plainBox(12, 2, 2, { all: [0, 0, 1, 1] })),
+      bellBody: R.buffer(boxVerts(6, 7, 6, 0, 0, 0, 32, 32)),
+      bellLip: R.buffer(boxVerts(8, 2, 8, 0, 13, 0, 32, 32)),
+      card: R.buffer(plainBox(11, 13, 0.6, { all: [0, 0, 1, 1] })),
+      cardInner: R.buffer(plainBox(8.5, 10.5, 0.2, { all: [0, 0, 1, 1] })),
+      paper: R.buffer(plainBox(9, 0.3, 11, { all: [0, 0, 1, 1] }))
     };
     this.tex = { top: null, side: null };
     function img(src, key) {
@@ -407,6 +431,10 @@
     }
     img(BASE + 'block/scaffolding_top.png', 'top');
     img(BASE + 'block/scaffolding_side.png', 'side');
+    img(BASE + 'block/stone.png', 'stone');
+    img(BASE + 'block/oak_log.png', 'log');
+    img(BASE + 'entity/bell/bell_body.png', 'bell');
+    img(BASE + 'item/paper.png', 'paper');
   };
 
   Scene.prototype.resize = function () {
@@ -421,9 +449,27 @@
   Scene.prototype.layout = function () {
     var n = this.players.length, A, R, rows = n > 4 ? 2 : 1, perRow = Math.ceil(n / rows);
     if (this.preview) { this.ring = { R: 0, A: 0 }; return; }
+    if (this.solo) {
+      // Spieler links vom Tisch, Reporter gegenüber (keine Glocke)
+      var pi, pf;
+      for (pi = 0; pi < n; pi++) {
+        pf = this.figs[this.players[pi].id]; if (!pf) continue;
+        var rep = this.players[pi].id === 'reporter';
+        pf.x = rep ? 15 : -15; pf.z = 0; pf.yaw = rep ? -Math.PI / 2 : Math.PI / 2; pf.reach = 0; pf.lift = 0; pf.reporter = rep;
+      }
+      this.tableScale = 1; this.ring = { R: 15, A: 0 };
+      var el0 = this.elev = 0.62, ce0 = Math.cos(el0), se0 = Math.sin(el0), th0 = Math.tan(16 * Math.PI / 180), asp0 = this.w / this.h;
+      var uMax0 = 41 * ce0 + 12 * se0, uMin0 = -12 * se0, Hh0 = (uMax0 - uMin0) / 2 + 2;
+      this.camDist = Math.max(Hh0 / th0, 24 / (th0 * asp0));
+      this.camTargetY = ((uMax0 + uMin0) / 2) / ce0;
+      this.needsRender = true;
+      return;
+    }
     this.box.classList.toggle('many', n > 5);
     A = n <= 1 ? 0 : n === 2 ? 0.95 : rows === 2 ? 1.3 : Math.min(1.5, 0.7 + 0.19 * perRow);
-    R = n <= 1 ? 13.5 : Math.max(rows === 2 ? 17 : 13.5, 11 * (perRow - 1) / (2 * A));
+    var ts = this.tableScale = n <= 2 ? 1 : Math.min(2.2, 1 + 0.25 * (n - 2));
+    var Rt = 10 * ts + 7;   // Platz zwischen Tischkante und Figuren
+    R = n <= 1 ? 13.5 : Math.max(Rt, 11 * (perRow - 1) / (2 * A));
     var R2 = rows === 2 ? R + 11 : R;
     this.ring = { R: R2, A: A };
     var i, f, a, row, rr, k, idxInRow, maxX = 12, maxZnear = 10, maxZfar = 10;
@@ -437,11 +483,13 @@
       rr = row === 1 ? R2 : R;
       f.x = Math.sin(a) * rr; f.z = -Math.cos(a) * rr;
       f.yaw = -a;
-      f.reach = Math.max(0, rr - 12.5);
+      f.reach = Math.max(0, rr - 11.5);   // Körper bis 11,5 an die Glocke heran
+      f.lift = (10 * ts + 1.5 > 11.5) ? 14 : 0;   // bei großem Tisch steigt die Figur auf die Platte
       maxX = Math.max(maxX, Math.abs(f.x) + 6);
       maxZnear = Math.max(maxZnear, f.z + 5);
       maxZfar = Math.max(maxZfar, -f.z + 5);
     }
+    maxX = Math.max(maxX, 10 * ts + 3); maxZnear = Math.max(maxZnear, 10 * ts + 6);   // Tisch bleibt im Bild
     // Kamera so wählen, dass alles knapp den Rahmen füllt (Tisch + Buzzer frei)
     var el = this.elev = n > 5 ? 0.78 : 0.7, ce = Math.cos(el), se = Math.sin(el);
     var uMax = 41 * ce + maxZfar * se, uMin = -maxZnear * se;      // Bildschirm-oben/-unten (inkl. Blase über dem Kopf)
@@ -500,6 +548,7 @@
     this.activeId = id;
     this.setState(id, 'buzz');
     this.buzzTimer = performance.now();
+    this.bellT0 = performance.now();
     var self = this;
     clearTimeout(this._holdT);
     this._holdT = setTimeout(function () { var f = self.figs[id]; if (f && f.state === 'buzz') self.setState(id, 'hold'); }, 420);
@@ -519,7 +568,7 @@
       this.layer.appendChild(b);
     }
     b.className = 'mg-bubble ' + (kind || 'neutral');
-    b.textContent = String(text).slice(0, 60); // nie als HTML
+    b.textContent = String(text).slice(0, kind === 'ask' ? 70 : 60); // nie als HTML
     if (kind === 'think') { b.textContent = ''; b.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>'; }
     if (kind !== 'think') { var f = this.figs[id]; if (f && f.state === 'think') this.setState(id, 'speak'); }
     this.needsRender = true;
@@ -584,6 +633,13 @@
     else this.buzzPress = this.activeId ? 0.35 : 0;
     this.buzzLight = this.activeId ? 1 : 0;
 
+    // Glockenrahmen dreht sich weich zum aktiven Spieler (offene Seite zeigt zur Figur)
+    var af = this.activeId && this.figs[this.activeId];
+    if (af && !this.solo) {
+      var dyaw = af.yaw - (this.bellYawCur || 0);
+      dyaw = Math.atan2(Math.sin(dyaw), Math.cos(dyaw));
+      this.bellYawCur = (this.bellYawCur || 0) + dyaw * Math.min(1, REDUCED ? 1 : (dt || 0.016) * 8);
+    }
     Object.keys(this.figs).forEach(function (id) {
       var f = self.figs[id], t = performance.now() / 1000 - f.stateT;
       var tp = targetPose(f, t, now), om = f.state === 'buzz' ? 30 : (f.state === 'cheer' ? 16 : 11), key, d = dt || 0.016;
@@ -625,16 +681,27 @@
       // Tisch
       var top = this.tex.top || white, side = this.tex.side || white;
       var tint = this.tex.top ? [1, 1, 1] : [0.62, 0.52, 0.28];
-      R.draw(this.geo.table, M.t(0, 13, 0), top, tint);
-      var lx = [-9, 9], lz = [-9, 9];
+      var tsc = this.tableScale || 1;
+      R.draw(this.geo.table, M.mul(M.t(0, 13, 0), M.s(tsc, 1, tsc)), top, tint);
+      var lx = [-9 * tsc, 9 * tsc], lz = [-9 * tsc, 9 * tsc];
       for (i = 0; i < 4; i++) R.draw(this.geo.leg, M.t(lx[i & 1], 6, lz[i >> 1]), side, this.tex.side ? [1, 1, 1] : [0.55, 0.45, 0.22]);
-      // Buzzer
-      var press = this.buzzPress * 1.9;
-      var lit = this.buzzLight ? 1.0 : 0.88;
-      R.draw(this.geo.cylPlate, M.t(0, 14, 0), white, [0.64, 0.64, 0.68], 0.5);
-      R.draw(this.geo.cylRim, M.t(0, 14, 0), white, [0.2, 0.2, 0.23], 0.2);
-      R.draw(this.geo.cylBtn, M.t(0, 14.4 - press, 0), white, [0.86 * lit, 0.03, 0.03], 0.9);
-      R.draw(this.geo.cylCap, M.t(0, 17.6 - press, 0), white, [0.97 * lit, 0.2, 0.17], 1.0);
+      if (this.solo) {
+        /* Tischplatte bleibt frei */
+      } else {
+        // Glocke: Steinpfosten, Balken, goldene Glocke (Pendel um die Balkenachse), Rahmen dreht sich zum Läutenden
+        var G = M.mul(M.t(0, 14, 0), M.mul(M.ry(this.bellYawCur || 0), M.s(0.85, 0.85, 0.85)));
+        var stoneT = this.tex.stone || white, logT = this.tex.log || white, bellT = this.tex.bell || white;
+        var stTint = this.tex.stone ? [1, 1, 1] : [0.55, 0.55, 0.58], lgTint = this.tex.log ? [0.5, 0.38, 0.27] : [0.35, 0.25, 0.15];
+        R.draw(this.geo.post, M.mul(G, M.t(-7, 6.5, 0)), stoneT, stTint);
+        R.draw(this.geo.post, M.mul(G, M.t(7, 6.5, 0)), stoneT, stTint);
+        R.draw(this.geo.beam, M.mul(G, M.t(0, 14, 0)), logT, lgTint);
+        var bt = (performance.now() - (this.bellT0 || -1e9)) / 1000;
+        var sw = REDUCED ? (bt < 1.2 ? 0.25 : 0) : 0.55 * Math.exp(-bt / 1.15) * Math.sin(bt * 11.5);
+        var BM = M.mul(G, M.mul(M.t(0, 14, 0), M.mul(M.rx(sw), M.t(0, -14, 0))));
+        var bTint = this.tex.bell ? [1, 1, 1] : [0.95, 0.78, 0.2];
+        R.draw(this.geo.bellBody, M.mul(BM, M.t(0, 9.5, 0)), bellT, bTint, 0.35);
+        R.draw(this.geo.bellLip, M.mul(BM, M.t(0, 5, 0)), bellT, bTint, 0.35);
+      }
     }
 
     var ids = Object.keys(this.figs);
@@ -648,13 +715,14 @@
       base = M.mul(base, M.s(sc, sc, sc));
       var p = fg.pose;
       // Schritt zum Tisch (lean) entlang lokaler +z, Hüpfen, Neigung
-      base = M.mul(base, M.t(0, p.hop, p.lean));
+      base = M.mul(base, M.t(0, p.hop + (p.lift || 0), p.lean));
       base = M.mul(base, M.rz(p.tilt));
       var tintv = (!fg.connected) ? [0.45, 0.45, 0.45] : self.locked[fg.id] ? [0.7, 0.7, 0.7] : [1, 1, 1];
       var g = fg.geos;
+      var up = M.mul(base, M.mul(M.t(0, 12, 0), M.mul(M.rx(p.bend || 0), M.t(0, -12, 0))));
       function part(name, rx, ry, rz) {
         var d = g[name].def;
-        var m = M.mul(base, M.t(d.piv[0], d.piv[1], d.piv[2]));
+        var m = M.mul(name.indexOf('leg') === 0 ? base : up, M.t(d.piv[0], d.piv[1], d.piv[2]));
         if (rz) m = M.mul(m, M.rz(rz));
         if (ry) m = M.mul(m, M.ry(ry));
         if (rx) m = M.mul(m, M.rx(rx));
@@ -663,6 +731,11 @@
         R.draw(g[name].over, m, fg.tex, tintv);
       }
       part('legR', 0, 0, 0); part('legL', 0, 0, 0);
+      if (fg.reporter) {
+        var cardM = M.mul(up, M.mul(M.t(0, 21, 11.5), M.mul(M.ry(0.7), M.rx(-0.18))));
+        R.draw(self.geo.card, cardM, R.white, [0.93, 0.9, 0.78]);                       // Karte
+        R.draw(self.geo.cardInner, M.mul(cardM, M.t(0, 0, 0.35)), R.white, [0.72, 0.66, 0.5]);  // Rahmenlinie
+      }
       part('body', 0, 0, 0);
       part('armR', p.armRx, 0, p.armRz); part('armL', p.armLx, 0, p.armLz);
       part('head', p.headX, p.headY, p.headZ);

@@ -81,3 +81,34 @@ Optionale Felder bei number-Fragen: `tolerancePct` (z. B. 10) und `toleranceMin`
 ## Sonstiges
 - `maxHttpBufferSize` 96 KB. sw.js Cache `mineguess-v7`. `public_rooms_update` enthält `hasPassword`.
 - Neustart des Servers nötig.
+
+
+---
+# Runde 4: Ranked (ersetzt Wettkampf + Online-Leaderboard)
+
+## Modul `ranked.js` (global `MGRanked`, auch `require('./ranked.js')`)
+- Ränge (je 1000 MMR): Copper 0, Iron 1000, Gold 2000, Diamond 3000, Netherite ab 4000 (offen). Unterstufen I-III je ~333 MMR. Start-MMR 500, K = 28, MMR >= 0.
+- `MGRanked.rankInfo(mmr)` -> `{mmr, idx, rankId, name, texture, tier(1-3), label ("Gold II"), floor, next, nextName, toNext, progress(0..1)}`. `texture` = Name der Barren-Textur (`copper_ingot`, `iron_ingot`, `gold_ingot`, `diamond`, `netherite_ingot`).
+- `MGRanked.applyAnswer(profile, rating, result, {speedFrac, streak})` -> `{profile, delta, p, rating, before, after, promoted, demoted}`.
+- `MGRanked.pickIndex(questions, mmr, usedSet, rnd)` wählt adaptiv nach MMR-Zone (20 % Aufwärmer -300..-100, 60 % Kernzone ±150, 20 % Herausforderung +100..+400).
+
+## Formel
+- `p = 1 / (1 + 10^((R_frage - MMR)/400))`, `delta = K * (Ergebnis - p)`, gerundet; Ergebnis 1.0 im Erstversuch, -0.15 je Fehlversuch, -0.1 je Tipp (min. 0.4 bei richtig), 0 bei Fehlschlag/Timeout.
+- Zusatz nur bei Ergebnis > 0.5, skaliert mit (1-p) (leichte Fragen bringen kaum Bonus): Speed bis +4 (`speedFrac` aus dem bestehenden Wettkampf-Speedtimer, 20 s), Serie bis +4 (0.8 je Treffer in Folge, max. 5). Verlust max. K * p; MMR nie < 0.
+- Beispiele (MMR 500): Frage 700 richtig +26, falsch -7; Frage 3800 richtig +28, falsch 0.
+
+## Frage-Ratings
+`questions.json`: `rating` (600-3900, Perzentil-kalibriert, 50er-Schritte) und `tier` (1 < 1200, 2 < 2200, 3 < 3200, 4 darüber). Heuristik und Skript: `tools/rate-questions.js` (Typ, Größenordnung, Dezimalzahl, Toleranz, schwer merkbare Zahlen, Antwortlänge, Rezept/Phrase, Kategorie). Neu hinzugefügte Fragen: Skript erneut laufen lassen (ratings werden dabei relativ neu verteilt).
+
+## Spielablauf (game.html, gameMode `competition`)
+- 10 Fragen pro Lauf, Speedtimer 20 s, Serie/Streak-Multiplikator und Punkte-Anzeige bleiben. **Kein Versuchslimit/12h-Sperre mehr**; Fortschritt über MMR.
+- Pro Frage (nach richtig / Fehlschlag / Timeout nach letztem Versuch) `rankedAnswered()`: MMR-Update, lokal `localStorage.mg_ranked`, Cloud gedrosselt (alle 4 s) und am Lauf-Ende.
+- Event für die UI: `document.dispatchEvent(new CustomEvent('mg:ranked', {detail}))` mit `detail = {delta, p, rating, before, after, promoted, demoted, profile}`; zusätzlich `window.lastRanked`. Lauf: `rankedRun = {start, delta, answered, correct}`. Fallback-Text steht in `#ranked-note` (vom Frontend ersetzbar). Aktuelle MMR: `rankedEnsure().mmr`.
+- Modus-Tag `#comp-mode-tag` zeigt "Rang · MMR".
+
+## Persistenz / Datenformat
+- Lokal: `mg_ranked` = `{mmr, peak, games, answered, correct, lastDate}`.
+- Cloud (Account): Firestore `ranked/{uid}`: `{uid, displayName, photoURL, mmr, peak, games, answered, correct, rank, tier, lastDate, updatedAt}`. Beim Login: Cloud gewinnt, außer lokal wurde mehr beantwortet (Gast-Start) -> lokal wird hochgeladen.
+- Rangliste = `ranked` nach `mmr` desc (limit 100), Tab "Heute" filtert `lastDate`. Eigener Rang oben ("Du", Rang, Fortschritt), bei Gästen "nur auf diesem Gerät". Fehler/Gast: verständliche Meldung + lokaler Rang.
+- Die alte `leaderboard`-Collection wird nicht mehr beschrieben.
+- sw.js: `ranked.js`, `bell-minecraft.mp3` vorgecacht (Version über `tools/gen-sw-assets.js`).

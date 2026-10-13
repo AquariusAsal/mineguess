@@ -40,3 +40,6 @@ Toleranzen für Haltbarkeit weil keiner die exakte Zahl weiß.
 Premium soll ohne Werbung sein.
 Werbeanbieter finden.
 Bekomme ich Probleme mit Microsoft und Mojang bei den Texturen?
+
+To-Do
+Buzzer oder Minecraft Clocke?

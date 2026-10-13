@@ -10,6 +10,7 @@
   <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
   <script src="mg-icons.js"></script>
+  <script src="mg-audio.js"></script>
   <script src="mg-scene.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -259,6 +260,7 @@
   <div class="header-right">
     <span class="room-status" id="room-status" aria-live="polite">Multiplayer</span>
     <span id="hdr-chip"></span>
+    <button type="button" class="btn btn-ghost sound-toggle" id="mute-btn" onclick="toggleMute()" aria-label="Ton ein oder aus" title="Ton ein/aus" style="min-height:44px;min-width:44px;padding:6px 8px"></button>
     <a href="game.html" class="btn btn-ghost" onclick="leaveRoom()" style="min-height:44px;padding:6px 14px">Solo</a>
   </div>
 </header>
@@ -376,12 +378,12 @@
       </div>
     </div>
 
-    <div id="mp-scene" class="mg-scene-host" role="img" aria-label="Szene: Spieler stehen um einen Tisch mit rotem Buzzer"></div>
+    <div id="mp-scene" class="mg-scene-host" role="img" aria-label="Szene: Spieler stehen um einen Tisch mit einer Glocke"></div>
     <div class="sr-only" id="scene-live" aria-live="polite"></div>
 
     <div id="buzzer-area">
-      <button class="buzzer-btn" id="buzzer-btn" onclick="pressBuzzer()">BUZZ</button>
-      <div class="buzzer-hint">Drücke den Buzzer, um zu antworten.</div>
+      <button class="buzzer-btn" id="buzzer-btn" onclick="pressBuzzer()">Läuten</button>
+      <div class="buzzer-hint">Läute die Glocke, um zu antworten.</div>
       <div class="keyboard-hint">Tastatur: <kbd>Leertaste</kbd></div>
     </div>
 
@@ -831,7 +833,7 @@ socket.on('question', (q) => {
     // Show buzzer
     el('buzzer-area').classList.add('show');
     el('buzzer-btn').disabled = false;
-    el('buzzer-btn').textContent = 'BUZZ';
+    el('buzzer-btn').textContent = 'Läuten';
 
     // Timer
     el('timer-num').textContent   = 30;
@@ -1167,12 +1169,25 @@ function sendTyping() {
   lastTyping = now; socket.emit('typing');
 }
 function nameOf(id) { const r = roster[id]; return r ? r.name : 'Spieler'; }
+// ── Glockenton: vorgeladen und dekodiert, Autoplay beim ersten Klick freigeschaltet, Mute über mg_sound ──
+const Bell = { on() { return MGAudio.isOn(); }, play() { MGAudio.play('bell'); } };
+function toggleMute() {
+  MGAudio.setOn(!MGAudio.isOn());
+  renderMute();
+}
+function renderMute() {
+  const b = el('mute-btn'); if (!b) return;
+  b.classList.toggle('on', Bell.on());
+  b.setAttribute('aria-pressed', Bell.on() ? 'true' : 'false');
+  b.innerHTML = window.MGIcon ? MGIcon.html('ui.sound', 24, 'Ton') : 'Ton';
+}
 function doBuzz(id) {
   if (!scene) return;
   const now = Date.now();
   if (lastBuzz.id === id && now - lastBuzz.t < 400) return;
   lastBuzz = { id, t: now };
   scene.buzz(id);
+  Bell.play();
   setTimeout(() => { if (lastBuzz.id === id && !lastGiven[id]) scene.think(id, true); }, 650);
   sceneLive(nameOf(id) + ' hat den Buzzer gedrückt');
 }
@@ -1181,6 +1196,7 @@ socket.on('buzzer_won', ({ playerId }) => doBuzz(playerId));
 socket.on('typing', ({ playerId }) => { if (scene && lastBuzz.id === playerId && !lastGiven[playerId]) scene.think(playerId, true); });
 function giveAnswer(playerId, text, correct, delta, unit) {
   lastGiven[playerId] = Date.now();
+  MGAudio.play(correct ? 'correct' : 'wrong');
   if (typeof delta === 'number') {
     deltas[playerId] = delta;
     if (delta < 0) penaltyTotal[playerId] = (penaltyTotal[playerId] || 0) + Math.abs(delta);
@@ -1196,6 +1212,7 @@ function giveAnswer(playerId, text, correct, delta, unit) {
 socket.on('answer_given', (d) => giveAnswer(d.playerId, d.text, d.correct, d.delta, d.unit));
 socket.on('answer_timeout', ({ playerId, delta }) => {
   if (typeof delta === 'number') { deltas[playerId] = delta; }
+  MGAudio.play('wrong');
   if (scene) { scene.say(playerId, 'Zeit abgelaufen', 'wrong'); scene.react(playerId, 'timeout'); }
   sceneLive(nameOf(playerId) + ': Zeit abgelaufen');
 });
@@ -1251,7 +1268,7 @@ window.addEventListener('mg-skin-change', () => {
 
 // ── Connection ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { if (typeof initPremiumUI === 'function') initPremiumUI(); });
-document.addEventListener('DOMContentLoaded', () => { if (window.MGSkin) MGSkin.ensureCharacter(); });
+document.addEventListener('DOMContentLoaded', () => { renderMute(); if (window.MGSkin) MGSkin.ensureCharacter(); });
 socket.on('connect', () => {
   const s = loadSession();
   if (s && s.roomId && s.token) { socket.emit('rejoin_room', { roomId: s.roomId, token: s.token }); showToast('Verbinde mit deinem Raum …'); }

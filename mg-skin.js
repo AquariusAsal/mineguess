@@ -28,6 +28,14 @@
 
   function get() { var s = lsGet(KEY_SKIN); return isValid(s) ? s : null; }          // Ganzkörper-Skin (Data-URL) oder null
   function save(s) { lsSet(KEY_SKIN, s || null); emit(); }
+  // Gespeicherten Skin einmal prüfen: verrauschte/beschädigte Skins verwerfen (Standardfigur greift)
+  (function purge() {
+    var cur = null; try { cur = localStorage.getItem(KEY_SKIN); } catch (e) {}
+    if (!cur || !global.MGPng) return;
+    var b = global.MGPng.dataUrlBytes(cur);
+    if (!b) { lsSet(KEY_SKIN, null); return; }
+    global.MGPng.alpha(b).then(function (res) { if (res && !global.MGPng.plausible(res)) save(null); });
+  })();
   function getCharacter() { var c = lsGet(KEY_CHAR); return c === 'alex' || c === 'steve' ? c : null; }
   function setCharacter(c) { lsSet(KEY_CHAR, c === 'alex' ? 'alex' : c === 'steve' ? 'steve' : null); emit(); }
   function getName() { return (lsGet(KEY_NAME) || '').slice(0, 20); }
@@ -71,6 +79,7 @@
             var vis = false, y, x;
             for (y = 8; y < 16 && !vis; y++) for (x = 8; x < 16; x++) if (res.alpha[y * res.w + x] > 0) { vis = true; break; }
             if (!vis) return reject(fail('Der Skin enthält an der Gesichtsstelle keine sichtbaren Pixel.'));
+            if (!P.plausible(res)) return reject(fail('Der Skin sieht verrauscht oder beschädigt aus (zufällige Pixel). Bitte die Original-PNG verwenden.'));
             var opaque = 0; for (var i = 0; i < res.alpha.length; i++) if (res.alpha[i] > 0) opaque++;
             if (opaque < res.w * res.h * 0.05) return reject(fail('Der Skin ist praktisch leer (fast alles transparent).'));
           }

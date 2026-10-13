@@ -59,3 +59,8 @@
 - **A4 Toleranzen**: `tolerancePct`/`toleranceMin` in `answer-check.js`; angewendet auf 30 Haltbarkeits-Fragen (ids 153, 159, 160, 343-368, 666), 15 Sprengwiderstände (313-327), XP (29, 463, 495). Y-Level-Fragen (28, 522, 527, 530, 531) auf ±5 absolut.
   - Weitere "unmerkbare" Zahlen, die noch exakt bewertet werden und ggf. ebenfalls Toleranz brauchen (Entscheidung Lead/forscher): Lichtlevel (329-342: Lerninhalt, exakt ok), Haltbarkeits-Ersatz "Wie viele Schüsse..." (160 bereits), Nahrungspunkte (557-576, 1-10, exakt vertretbar), Drop-/Spawn-Chancen in % (14: 0,164 %, 33: 10 %, 43: 80 %, 50: 20 %, 624: 5 %, 621: 0,083 %), Level-Kosten, Piglin-/Dorfbewohner-Distanzen (Blöcke).
 - **Zusatz**: `submitReport` schrieb nie nach Firestore (`window.fbDb` undefined) - behoben.
+
+## Runde 4: Ranked
+- Heuristik der Frage-Ratings, Formel und Persistenz: siehe API-NOTES.md "Runde 4". Bekannte Grenze: MMR wird clientseitig berechnet und geschrieben, daher manipulierbar (Firestore-Regeln begrenzen nur Wertebereich, siehe FIRESTORE-RULES.md).
+- Entscheidungen: 12h-Versuchssperre und seed-fixe Tagesfragen des Wettkampfs entfallen (Ranked ist unbegrenzt, adaptiv). Punkte-Anzeige, Speedtimer, Serie bleiben; Speed und Serie fließen als kleiner Bonus in die MMR (max. +8 pro Frage, skaliert mit 1-p).
+- Ratings sind relativ (Perzentil): nach dem Hinzufügen neuer Fragen `node tools/rate-questions.js` erneut ausführen.

@@ -1323,6 +1323,7 @@ header h1 { flex-shrink:0; }
   <script src="mg-skin.js"></script>
 <script src="mg-scene.js"></script>
   <script src="mg-icons.js"></script>
+  <script src="mg-audio.js"></script>
   <script src="firebase-config.js" onerror="window.FIREBASE_ENABLED=false;window.FIREBASE_CONFIG=null;"></script>
 </head>
 <body>
@@ -1594,6 +1595,8 @@ header h1 { flex-shrink:0; }
     <div class="comp-speed-track"><div id="comp-speed-fill"></div></div>
   </div>
 
+  <div id="solo-scene" aria-hidden="true"></div>
+
   <div class="question-card" id="question-text">Lade Frage…</div>
 
   <div class="attempts-bar" id="attempts-bar"></div>
@@ -1671,6 +1674,7 @@ header h1 { flex-shrink:0; }
 })();
 </script>
 <script src="answer-check.js"></script>
+<script src="ranked.js"></script>
 <script>
 // ── Entity list for autocomplete ─────────────────────────────────────────────
 const ENTITIES = [
@@ -1973,13 +1977,9 @@ function showResult(won, ptsThisQuestion, speedBonus) {
       const _att = (window._compAttemptsUsed || 0) + 1;
       const _prev = window._compData || {};
       const _isBest = compScore > (_prev.bestScore || 0);
-      localStorage.setItem(window._compPeriodKey || ('mg_comp_'+get12hKey()), JSON.stringify({
-        attempts:    _att,
-        bestScore:   _isBest ? compScore   : (_prev.bestScore   || 0),
-        bestCorrect: _isBest ? compCorrect : (_prev.bestCorrect || 0)
-      }));
+      rankedSaveCloud(true);
       setTimeout(() => showCompEnd(compScore, compCorrect, COMP_TOTAL), 3500);
-      document.getElementById('next-countdown').textContent = 'Wettkampf abgeschlossen!';
+      document.getElementById('next-countdown').textContent = 'Ranked-Lauf abgeschlossen!';
       return;
     }
   }
@@ -2057,7 +2057,9 @@ function startTimer() {
           if (!isGuest) { const stats = getStats(); stats.played++; stats.streak = 0; saveStats(stats); saveCloudStats(); updateStatsDisplay(); }
           recordCatStat(question ? question.category : null, false);
           playSound('wrong');
-          showResult(false, questionPoints);
+          if (gameMode === 'competition') rankedAnswered(false);
+    showResult(false, questionPoints);
+    rankedNote();
         } else {
           saveTodayState(state);
           showToast('Zeit abgelaufen! Nächster Versuch…');
@@ -2251,7 +2253,9 @@ function submitGuess() {
     if (gameMode === 'competition') compCorrect++;
     if (!isGuest) { const s=getStats(); s.played++; const yd=localStorage.getItem('mg_today_'+getYesterdayKey()); const ydS=yd?JSON.parse(yd):null; s.streak=(ydS&&ydS.done)?s.streak+1:1; s.best=Math.max(s.best,s.streak); saveStats(s); saveCloudStats(); updateStatsDisplay(); }
     recordCatStat(question.category, true);
+    if (gameMode === 'competition') rankedAnswered(true);
     showResult(true, Math.max(0, questionPoints), speedBonus);
+    rankedNote();
     return;
   }
 
@@ -2266,7 +2270,9 @@ function submitGuess() {
     if (!isGuest) { const s=getStats(); s.played++; s.streak=0; saveStats(s); saveCloudStats(); updateStatsDisplay(); }
     recordCatStat(question ? question.category : null, false);
     playSound('wrong');
+    if (gameMode === 'competition') rankedAnswered(false);
     showResult(false, questionPoints);
+    rankedNote();
   } else {
     playSound('tick');
     startTimer();
@@ -2380,10 +2386,15 @@ function loadNextQuestion() {
 
   resetHints();
   questionPoints = 0;
+  window.lastRanked = null;
+  const _rn = document.getElementById('ranked-note'); if (_rn) _rn.remove();
 
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) return; // handled by showResult
-    question = allQuestions[compOrder[compIndex]];
+    // Ranked: Frage passend zur aktuellen MMR-Zone (adaptiv), keine Wiederholung im Lauf
+    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed);
+    compUsed.add(_ri);
+    question = allQuestions[_ri];
     compIndex++;
     updateCompBar();
     if (compIndex === COMP_TOTAL) setTimeout(() => showToast('Letzte Frage! Alles geben!', 2500), 300);
@@ -2537,6 +2548,7 @@ async function loadCloudStats() {
       isPremium = !!d.premium;
     }
     updateStatsDisplay();
+    await loadRankedCloud();
   } catch(e) { console.warn('loadCloudStats:', e); }
 }
 
@@ -2628,24 +2640,24 @@ async function loadLeaderboard(filter) {
     note = 'Online-Bestenliste ist nicht verfügbar. Es werden nur Ergebnisse von diesem Gerät angezeigt.';
   } else {
     try {
-      const snap = await fbDb.collection('leaderboard').orderBy('score', 'desc').limit(100).get();
+      const snap = await fbDb.collection('ranked').orderBy('mmr', 'desc').limit(100).get();
       let docs = snap.docs;
       if (filter === 'today') {
         const today = getDateKey();
-        docs = docs.filter(d => d.data().date === today);
+        docs = docs.filter(d => d.data().lastDate === today);
       }
       docs = docs.slice(0, 20);
       if (docs.length === 0) {
         globalHtml = '<div class="lb-empty">' + (filter === 'today' ? 'Heute noch keine Einträge.' : 'Noch keine Einträge.') + '</div>';
       } else {
-        const medals = ['1', '2', '3'];
         globalHtml = docs.map((d, i) => {
           const e = d.data(), isMe = currentUser && e.uid === currentUser.uid;
-          const pct = e.total ? Math.round(e.correct / e.total * 100) : 0;
-          return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">' + (medals[i] || '#' + (i + 1)) + '</span>' +
-            '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
-            '<span class="lb-meta">' + (e.correct || 0) + '/' + (e.total || 10) + ' · ' + pct + '%</span>' +
-            '<span class="lb-score">' + (e.score || 0).toLocaleString() + ' Pkt.</span></div>';
+          const ri = MGRanked.rankInfo(e.mmr);
+          const prog = ri.next ? Math.round(ri.progress * 100) + '% bis ' + ri.nextName : 'Höchster Rang';
+          return '<div class="lb-row' + (isMe ? ' me' : '') + '"><span class="lb-rank">#' + (i + 1) + '</span>' +
+            rankBadge(ri, 20) + '<span class="lb-name">' + escHtml(e.displayName) + (isMe ? ' (Du)' : '') + '</span>' +
+            '<span class="lb-meta">' + escHtml(ri.label) + ' · ' + prog + '</span>' +
+            '<span class="lb-score">' + ri.mmr.toLocaleString() + ' MMR</span></div>';
         }).join('');
       }
       if (isGuest) note = 'Als Gast kannst du dich nicht eintragen. Melde dich an, um in die Online-Liste zu kommen.';
@@ -2668,8 +2680,14 @@ async function loadLeaderboard(filter) {
         '<span class="lb-score">' + (x.score || 0).toLocaleString() + ' Pkt.</span></div>').join('');
   }
 
+  const mine = MGRanked.rankInfo(rankedEnsure().mmr);
+  const mineHtml = '<div class="lb-row me"><span class="lb-rank">Du</span>' +
+    '<span class="lb-name">' + escHtml(mine.label) + '</span>' +
+    '<span class="lb-meta">' + (mine.next ? Math.round(mine.progress * 100) + '% bis ' + escHtml(mine.nextName) : 'Höchster Rang') + '</span>' +
+    '<span class="lb-score">' + mine.mmr.toLocaleString() + ' MMR</span></div>' +
+    (isGuest ? '<div class="lb-empty">Dein Rang wird nur auf diesem Gerät gespeichert.</div>' : '');
   list.innerHTML = (note ? '<div class="lb-empty" role="status">' + escHtml(note) + '</div>' : '') +
-    globalHtml + localHtml +
+    mineHtml + globalHtml + localHtml +
     ((!globalHtml && !localHtml) ? '<div class="lb-empty">Noch keine Einträge.</div>' : '');
 }
 
@@ -2998,6 +3016,128 @@ function getCompGrade(pct) {
   return             { g:'D', lbl:'MEHR ÜBEN!',      css:'grade-d' };
 }
 
+// ── Ranked: Profil, MMR-Update, Persistenz ───────────────────────────────────
+const RANKED_LOCAL_KEY = 'mg_ranked';
+let rankedProfile = null;
+let rankedRun = { start: 0, delta: 0, answered: 0, correct: 0 };
+let compUsed = new Set();
+let _rankedCloudAt = 0;
+
+function rankedEnsure() {
+  if (!rankedProfile) {
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(RANKED_LOCAL_KEY) || 'null'); } catch (e) {}
+    rankedProfile = MGRanked.normalizeProfile(o);
+  }
+  return rankedProfile;
+}
+function rankedSaveLocal() {
+  try { localStorage.setItem(RANKED_LOCAL_KEY, JSON.stringify(rankedProfile)); } catch (e) {}
+}
+// Cloud: pro Account Dokument ranked/{uid}; gedrosselt (force = sofort)
+async function rankedSaveCloud(force) {
+  if (!currentUser || !fbDb || isGuest || !rankedProfile) return;
+  const now = Date.now();
+  if (!force && now - _rankedCloudAt < 4000) return;
+  _rankedCloudAt = now;
+  try {
+    const info = MGRanked.rankInfo(rankedProfile.mmr);
+    await fbDb.collection('ranked').doc(currentUser.uid).set({
+      uid: currentUser.uid,
+      displayName: (currentUser.displayName || 'Spieler').slice(0, 40),
+      photoURL: currentUser.photoURL || null,
+      mmr: rankedProfile.mmr, peak: rankedProfile.peak,
+      games: rankedProfile.games, answered: rankedProfile.answered, correct: rankedProfile.correct,
+      rank: info.rankId, tier: info.tier, lastDate: getDateKey(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch (e) { console.warn('rankedSaveCloud:', e); }
+}
+async function loadRankedCloud() {
+  if (!currentUser || !fbDb) return;
+  try {
+    const snap = await fbDb.collection('ranked').doc(currentUser.uid).get();
+    const local = rankedEnsure();
+    if (snap.exists) {
+      const cloud = MGRanked.normalizeProfile(snap.data());
+      // Cloud ist massgeblich; lokal nur uebernehmen, wenn dort mehr gespielt wurde (z. B. als Gast gestartet)
+      if (cloud.answered >= local.answered) { rankedProfile = cloud; rankedSaveLocal(); }
+      else rankedSaveCloud(true);
+    } else if (local.answered > 0) {
+      rankedSaveCloud(true);
+    }
+  } catch (e) { console.warn('loadRankedCloud:', e); }
+}
+
+// Ergebnis einer Frage -> MMR. Ergebnisfaktor: Erstversuch 1.0, -0.15 je Fehlversuch, -0.1 je Tipp (min 0.4)
+function rankedAnswered(correct) {
+  const p = rankedEnsure();
+  const q = question || {};
+  const wrong = Math.max(0, attempts - (correct ? 1 : 0));
+  const result = correct ? Math.max(0.4, 1 - 0.15 * wrong - 0.1 * (questionHints || 0)) : 0;
+  const speedFrac = correct ? Math.max(0, Math.min(1, calcSpeedBonus() / COMP_SPEED_PTS)) : 0;
+  const r = MGRanked.applyAnswer(p, q.rating, result, { speedFrac: speedFrac, streak: compStreak });
+  rankedProfile = r.profile;
+  rankedProfile.lastDate = getDateKey();
+  rankedRun.delta += r.delta; rankedRun.answered++; if (correct) rankedRun.correct++;
+  if (rankedRun.answered === COMP_TOTAL) rankedProfile.games += 1;
+  rankedSaveLocal();
+  rankedSaveCloud(false);
+  window.lastRanked = r;
+  try { document.dispatchEvent(new CustomEvent('mg:ranked', { detail: r })); } catch (e) {}
+}
+// Textfallback fuer die Anzeige (Frontend kann das Event 'mg:ranked' / window.lastRanked eigenstaendig darstellen)
+function rankBadge(info, size) {
+  // Rang-Badge: Barren-/Diamant-Textur (Netherite: netherite_ingot, Diamond: diamond)
+  const tex = info.texture === 'diamond' ? 'item/diamond' : 'item/' + info.texture;
+  return '<img class="mc-icon" src="assets/mc/' + tex + '.png" width="' + (size || 24) + '" height="' + (size || 24) + '" alt="" onerror="this.hidden=true">';
+}
+function showRankUp(info, promoted) {
+  const old = document.getElementById('rankup'); if (old) old.remove();
+  const o = document.createElement('div');
+  o.id = 'rankup'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Rang ' + info.label);
+  const roman = ['', 'I', 'II', 'III'][info.tier] || '';
+  o.innerHTML = '<div class="ru-flash"></div><div class="ru-ring"></div>' +
+    '<div class="ru-badge">' + rankBadge(info, 128) + '</div>' +
+    '<div class="ru-title">' + (promoted ? 'RANG AUFGESTIEGEN' : 'NEUER RANG') + '</div>' +
+    '<div class="ru-name">' + escHtml(info.name) + ' <span>' + roman + '</span></div>' +
+    '<div class="rk-bar ru-bar"><i style="width:0%"></i></div>' +
+    '<div class="ru-hint">Klicken oder Taste zum Überspringen</div>';
+  document.body.appendChild(o);
+  MGAudio.play('rankup');
+  const bar = o.querySelector('.ru-bar i'), pct = Math.round((info.progress || 0) * 100);
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = pct + '%'; }));
+  let done = false;
+  function close() { if (done) return; done = true; document.removeEventListener('keydown', close); o.classList.add('out'); setTimeout(() => o.remove(), 250); }
+  o.addEventListener('click', close); document.addEventListener('keydown', close);
+  setTimeout(close, 2800);
+}
+document.addEventListener('mg:ranked', function (e) {
+  const d = e.detail;
+  if (d && d.promoted && d.after) setTimeout(() => showRankUp(d.after, true), 400);
+});
+
+function rankedNote() {
+  if (gameMode !== 'competition' || !window.lastRanked) return;
+  const r = window.lastRanked;
+  const el = document.getElementById('pts-earned');
+  if (!el || document.getElementById('ranked-note')) return;
+  const a = r.after, d = r.delta;
+  const s = document.createElement('div');
+  s.id = 'ranked-note';
+  s.setAttribute('role', 'status');
+  const sign = d > 0 ? '+' : d < 0 ? '−' : '±';
+  const prog = a.next ? Math.round(a.progress * 100) : 100;
+  s.innerHTML = '<div class="rk-row">' + rankBadge(a, 24) +
+    '<span class="rk-label">' + escHtml(a.label) + '</span>' +
+    '<span class="rk-delta ' + (d >= 0 ? 'plus' : 'minus') + '">' + sign + Math.abs(d) + ' MMR</span>' +
+    '<span class="rk-mmr">' + a.mmr + '</span></div>' +
+    '<div class="rk-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + prog + '"><i style="width:' + prog + '%"></i></div>' +
+    '<div class="rk-sub">' + (a.next ? 'Noch ' + a.toNext + ' MMR bis ' + escHtml(a.nextName) : 'Höchster Rang erreicht') +
+    (r.promoted ? ' · Aufstieg zu ' + escHtml(a.label) : r.demoted ? ' · Abstieg zu ' + escHtml(a.label) : '') + '</div>';
+  el.parentNode.insertBefore(s, el.nextSibling);
+}
+
 function showCompEnd(score, correct, total) {
   stopCompSpeedTimer();
   compStreak = 0; updateStreakBadge();
@@ -3030,7 +3170,7 @@ function showCompEnd(score, correct, total) {
   const maxAtt  = window._maxCompAttempts || 3;
   const ceNote  = document.getElementById('ce-lb-note');
   if (ceNote) {
-    if (attUsed >= maxAtt) {
+    if (false) {
       function tick() {
         const next = getNext12hTime();
         const diff = Math.max(0, next - Date.now());
@@ -3040,12 +3180,11 @@ function showCompEnd(score, correct, total) {
       }
       tick(); setInterval(tick, 1000);
     } else {
-      ceNote.textContent = 'Versuch ' + attUsed + ' von ' + maxAtt + ' verwendet.';
+      ceNote.textContent = 'Ranked-Lauf abgeschlossen: ' + (rankedRun.delta >= 0 ? '+' : '') + rankedRun.delta + ' MMR';
     }
   }
 
-  recordLocalLb('Wettkampf', score, correct, total);
-  if (!isGuest && FIREBASE_ENABLED) submitLeaderboard(score, correct, total);
+  rankedSaveCloud(true);
 }
 
 // ── Category filter state (solo) ──────────────────────────────────────────────
@@ -3169,37 +3308,22 @@ function actualStartMode(mode) {
   document.getElementById('sess-points').textContent = '0';
 
   if (mode === 'competition') {
-    const MAX_COMP_ATTEMPTS = 3;
-    const periodKey = 'mg_comp_' + get12hKey();
-    const saved     = localStorage.getItem(periodKey);
-    let   compData  = null;
-    try { compData = saved ? JSON.parse(saved) : null; } catch(e) {}
-    const attemptsUsed = compData ? (compData.attempts || 0) : 0;
+    // Ranked: kein Versuchslimit, Fortschritt ueber MMR (siehe ranked.js / MGRanked)
+    const rinfo = MGRanked.rankInfo(rankedEnsure().mmr);
     const tagEl = document.getElementById('comp-mode-tag');
-    if (tagEl) tagEl.textContent = attemptsUsed >= MAX_COMP_ATTEMPTS
-      ? 'GESPERRT' : ('VERSUCH ' + (attemptsUsed+1) + '/3');
+    if (tagEl) tagEl.textContent = rinfo.label + ' · ' + rinfo.mmr + ' MMR';
     const dtag = document.getElementById('daily-mode-tag');
     if (dtag) {
       const dd = getDailyData();
       dtag.textContent = dd && dd.done ? 'Erledigt' : 'Täglich';
     }
-    if (attemptsUsed >= MAX_COMP_ATTEMPTS && compData) {
-      showCompEnd(compData.bestScore || 0, compData.bestCorrect || 0, COMP_TOTAL);
-      return;
-    }
-    const HARD_CATS = new Set(['Redstone','Crafting','Hardcore-Wissen',
-      'Verzauberungen','Tränke','Dimensionen','Spielmechanik','Geschichte & Updates']);
-    const hardQIdx = allQuestions
-      .map((q,i) => (HARD_CATS.has(q.category) || q.type === 'number') ? i : -1)
-      .filter(i => i !== -1);
-    const pool = hardQIdx.length >= COMP_TOTAL ? hardQIdx : [...Array(allQuestions.length).keys()];
-    const seed  = parseInt(get12hKey().replace(/[^0-9]/g, ''), 10);
-    compOrder   = lcgShuffle(pool, seed).slice(0, COMP_TOTAL);
+    compUsed = new Set();
+    rankedRun = { start: rankedEnsure().mmr, delta: 0, answered: 0, correct: 0 };
+    window._compPeriodKey    = null;
+    window._compAttemptsUsed = 0;
+    window._compData         = null;
+    window._maxCompAttempts  = 0;
     compIndex   = 0; compScore = 0; compCorrect = 0;
-    window._compPeriodKey    = periodKey;
-    window._compAttemptsUsed = attemptsUsed;
-    window._compData         = compData;
-    window._maxCompAttempts  = MAX_COMP_ATTEMPTS;
     document.getElementById('comp-bar').classList.add('show');
     updateCompBar();
   } else if (mode === 'blitz') {
@@ -3343,60 +3467,18 @@ document.getElementById('btn-guest-play').addEventListener('click', function() {
   isGuest = true; finishAuth();
 });
 
-// ── Sound engine (Web Audio API) ─────────────────────────────────────────────
-let _audioCtx = null;
-let _soundOn  = JSON.parse(localStorage.getItem('mg_sound') || 'true');
-
-function getAudioCtx() {
-  if (!_audioCtx) {
-    try { _audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-  }
-  return _audioCtx;
-}
-
-function playSynthSound(freq, type, duration, vol, delay) {
-  const ctx = getAudioCtx(); if (!ctx || !_soundOn) return;
-  try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = type || 'sine';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime + (delay||0));
-    gain.gain.setValueAtTime(vol || 0.15, ctx.currentTime + (delay||0));
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (delay||0) + (duration||0.3));
-    osc.start(ctx.currentTime + (delay||0));
-    osc.stop(ctx.currentTime + (delay||0) + (duration||0.3));
-  } catch(e) {}
-}
-
+// ── Sound: ein Modul (mg-audio.js) ──────────────────────────────────────
+let _soundOn = MGAudio.isOn();
 function playSound(type) {
-  if (!_soundOn) return;
-  if (type === 'correct') {
-    playSynthSound(523, 'sine', 0.15, 0.2);
-    playSynthSound(659, 'sine', 0.2, 0.18, 0.12);
-    playSynthSound(784, 'sine', 0.25, 0.22, 0.22);
-  } else if (type === 'wrong') {
-    playSynthSound(220, 'sawtooth', 0.18, 0.15);
-    playSynthSound(180, 'sawtooth', 0.25, 0.15, 0.12);
-  } else if (type === 'joker') {
-    playSynthSound(440, 'triangle', 0.1, 0.12);
-    playSynthSound(550, 'triangle', 0.12, 0.14, 0.1);
-  } else if (type === 'tick') {
-    playSynthSound(900, 'square', 0.05, 0.06);
-  } else if (type === 'pb') {
-    [523,659,784,1047].forEach((f,i)=>playSynthSound(f,'sine',0.2,0.18,i*0.1));
-  } else if (type === 'end') {
-    playSynthSound(440, 'sawtooth', 0.5, 0.15);
-    playSynthSound(330, 'sawtooth', 0.6, 0.15, 0.15);
-  }
+  // Zuordnung: richtig -> orb, falsch -> anvil, Joker -> totem. Andere Ereignisse sind still.
+  if (type === 'correct' || type === 'wrong' || type === 'joker') MGAudio.play(type);
 }
-
 function toggleSound() {
   _soundOn = !_soundOn;
-  localStorage.setItem('mg_sound', JSON.stringify(_soundOn));
+  MGAudio.setOn(_soundOn);
   const btn = document.getElementById('sound-toggle');
   if (btn) { btn.innerHTML = MGIcon.html('ui.sound', 24, 'Ton'); btn.className = 'sound-btn' + (_soundOn ? ' on' : ''); }
-  if (_soundOn) playSound('correct');
+  if (_soundOn) MGAudio.play('correct');
 }
 
 // ── Flash effect (blitz correct) ──────────────────────────────────────────────
@@ -3578,7 +3660,55 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 </script>
-<script>MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
+<script>
+// ── Solo-Reporter-Szene (dekorativ, aria-hidden): Spieler links, Reporter gegenüber, keine Glocke ──
+(function () {
+  var scene = null, repChar = null;
+  function pickReporter() {
+    var pc = (window.MGSkin && MGSkin.getCharacter()) || 'steve', hasSkin = !!(window.MGSkin && MGSkin.get());
+    var c = Math.random() < 0.5 ? 'steve' : 'alex';
+    if (!hasSkin && c === pc) c = c === 'steve' ? 'alex' : 'steve';
+    return c;
+  }
+  function players() {
+    return [
+      { id: 'player', name: 'Du', skin: window.MGSkin ? MGSkin.get() : null, character: (window.MGSkin && MGSkin.getCharacter()) || 'steve' },
+      { id: 'reporter', name: 'Reporter', character: repChar }
+    ];
+  }
+  function ensure() {
+    if (scene) return scene;
+    var host = document.getElementById('solo-scene');
+    if (!host || !window.MGScene) return null;
+    repChar = pickReporter();
+    try { scene = MGScene.create(host, { solo: true }); scene.setPlayers(players()); } catch (e) { scene = null; }
+    window.addEventListener('mg-skin-change', function () { if (scene) scene.setPlayers(players()); });
+    return scene;
+  }
+  var _load = window.loadNextQuestion;
+  window.loadNextQuestion = loadNextQuestion = function () {
+    var r = _load.apply(this, arguments);
+    try {
+      var s = ensure();
+      if (s && typeof question !== 'undefined' && question) { s.resetRound(); s.say('reporter', question.question, 'ask'); }
+    } catch (e) {}
+    return r;
+  };
+  var _add = window.addGuessRow;
+  window.addGuessRow = addGuessRow = function (value, unit, fb) {
+    var r = _add.apply(this, arguments);
+    try {
+      if (scene && fb) {
+        var ok = !!fb.correct, txt = String(unit ? value + ' ' + unit : value);
+        scene.say('player', txt, ok ? 'correct' : 'wrong');
+        scene.react('player', ok ? 'correct' : 'wrong');
+        scene.react('reporter', ok ? 'correct' : 'wrong');
+      }
+    } catch (e) {}
+    return r;
+  };
+})();
+MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
 MGSkin.mountChip(document.getElementById('mode-profile'));</script>
 <script>document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.getElementById('lb-modal'); if (m && !m.classList.contains('hidden')) m.classList.add('hidden'); } });</script>
 </body>
