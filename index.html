@@ -31,21 +31,11 @@ section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); mar
 .grid .card { display:flex; flex-direction:column; gap:8px; padding:20px; }
 .grid .card h3 { font-size:1.05rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .grid .card p { margin:0; color:var(--muted); font-size:.92rem; }
-.pxicon { width:28px; height:28px; flex:none; image-rendering:pixelated; }
 
 .cats { display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0; list-style:none; }
 
-.premium { display:grid; grid-template-columns:1.3fr 1fr; gap:32px; align-items:center; border-color:var(--gold); }
-.premium h2 { color:var(--text); }
-.premium ul { list-style:none; margin:16px 0 0; padding:0; display:grid; gap:8px; }
-.premium li { padding-left:22px; position:relative; font-size:.95rem; }
-.premium li::before { content:""; position:absolute; left:2px; top:.5em; width:8px; height:8px; background:var(--gold); }
-.price { font-family:var(--font-px); font-size:2.2rem; color:var(--gold); line-height:1.1; }
-.price small { font-family:var(--font); font-size:.9rem; color:var(--muted); }
-.premium .side { display:flex; flex-direction:column; gap:12px; align-items:flex-start; }
-
 @media (max-width:820px) {
-  .grid, .grid.two, .premium { grid-template-columns:1fr; }
+  .grid, .grid.two { grid-template-columns:1fr; }
   .hero { padding:40px 0 40px; }
 }
 @media (max-width:480px) {
@@ -68,7 +58,6 @@ section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); mar
   <nav class="mg-nav-links" aria-label="Hauptnavigation">
     <span id="nav-chip"></span>
     <a class="mg-nav-link hide-sm" href="#modi">Modi</a>
-    <a class="mg-nav-link hide-sm" href="premium.html">Premium</a>
     <a class="btn btn-primary" href="game.html">Spielen</a>
   </nav>
 </header>
@@ -153,27 +142,6 @@ section h2 { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.8rem); mar
     </div>
   </section>
 
-  <section id="premium" style="border-bottom:0">
-    <div class="wrap">
-      <div class="card premium">
-        <div>
-          <span class="tag tag-gold">Premium</span>
-          <h2 style="margin-top:12px">Mehr Kontrolle</h2>
-          <ul>
-            <li>+50 % XP bei richtigen Antworten</li>
-            <li>Eigene Kategorien im Multiplayer wählen</li>
-            <li>Premium-Abzeichen beim Namen</li>
-            <li>Früher Zugang zu neuen Funktionen</li>
-          </ul>
-        </div>
-        <div class="side">
-          <div class="price">5&nbsp;€ <small>/ Monat</small></div>
-          <p style="margin:0;color:var(--muted);font-size:.9rem">Jederzeit kündbar. Das Spiel selbst bleibt kostenlos.</p>
-          <a class="btn btn-gold" href="premium.html">Premium ansehen</a>
-        </div>
-      </div>
-    </div>
-  </section>
 </main>
 
 <footer class="mg-footer">

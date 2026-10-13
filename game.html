@@ -249,7 +249,6 @@ main {
 .timer-ring .bg  { fill: none; stroke: var(--border2); stroke-width: 3; }
 .timer-ring .fg  { fill: none; stroke: var(--green); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
 .timer-ring .fg.warn  { stroke: var(--yellow); }
-.timer-ring .fg.crit  { stroke: var(--red); }
 .timer-num {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
@@ -364,30 +363,6 @@ main {
   flex-shrink: 0;
 }
 
-/* Multiple choice buttons */
-.mc-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.mc-btn {
-  background: var(--bg1);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 12px 16px;
-  color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 500;
-  cursor: pointer;
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s;
-  font-family: var(--font);
-}
-.mc-btn:hover:not(:disabled) { border-color: var(--green); background: rgba(108,191,60,0.04); }
-.mc-btn:disabled { opacity: 0.5; cursor: default; }
-.mc-btn.correct { border-color: var(--green); background: rgba(108,191,60,0.1); color: var(--green); }
-.mc-btn.wrong   { border-color: var(--red);   background: rgba(229,96,77,0.08); color: var(--red); }
-
 /* Number input */
 .number-wrap {
   display: flex; gap: 8px; align-items: center;
@@ -472,14 +447,6 @@ main {
   color: var(--muted);
 }
 .result-answer strong { color: var(--text); }
-.result-icon {
-  display: flex; align-items: center; justify-content: center;
-  margin: 4px 0;
-}
-.result-icon img {
-  width: 56px; height: 56px;
-  image-rendering: pixelated;
-}
 
 .funfact-box {
   background: var(--bg2);
@@ -657,7 +624,6 @@ main {
   gap: 6px;
 }
 .mode-card:hover { background: var(--bg2); border-color: var(--border2); transform: translateY(-2px); }
-.mode-icon { font-size: 1.5rem; margin-bottom: 10px; display: block; }
 .mode-name {
   font-weight: 700;
   font-size: 1rem;
@@ -764,10 +730,7 @@ main {
   flex-shrink: 0;
 }
 .lb-rank.gold   { color: var(--yellow); }
-.lb-rank.silver { color: #9ca3af; }
-.lb-rank.bronze { color: #cd7c4b; }
 .lb-name { flex: 1; color: var(--text); font-weight: 500; }
-.lb-pts  { font-family: var(--font-px); font-weight: 700; color: var(--green); }
 .lb-empty { text-align: center; color: var(--muted); padding: 24px 0; font-size: 0.85rem; }
 
 /* ── COMP END SCREEN ── */
@@ -1039,7 +1002,7 @@ main {
 @keyframes cdGo{0%{transform:scale(0.5);opacity:0}50%{transform:scale(1.25);opacity:1}100%{transform:scale(1);opacity:1}}
 @keyframes cdOut{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
 #countdown-label{font-size:1rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-/* ── Category Screen (Solo Premium) ───────────────────────────────────── */
+/* ── Category Screen (Solo) ───────────────────────────────────── */
 #cat-screen{width:100%;max-width:700px;margin:0 auto;padding:32px 20px 60px;display:flex;flex-direction:column;align-items:center;gap:14px;animation:slideUp 0.4s ease both}
 #cat-screen.hidden{display:none}
 .cat-chips-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:4px 0 10px;max-width:680px}
@@ -1086,7 +1049,6 @@ main {
 #blitz-end{display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.85);align-items:center;justify-content:center;flex-direction:column;gap:24px;padding:24px}
 #blitz-end.show{display:flex}
 .blitz-card{background:var(--bg1);border:1px solid var(--border2);border-radius: 4px;padding:32px 28px;max-width:380px;width:100%;text-align:center;display:flex;flex-direction:column;gap:16px;align-items:center}
-.blitz-icon{font-size:3.5rem;animation:popIn .4s ease}
 .blitz-title{font-family:var(--font-px);font-size:1.4rem;font-weight:700}
 .blitz-big{font-family:var(--font-px);font-size:3.5rem;font-weight:700;color:var(--green);line-height:1}
 .blitz-sub{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
@@ -1175,8 +1137,6 @@ main {
   .header-stats { gap: 3px; }
   .stat { padding: 4px 7px; font-size:.72rem; gap: 4px; }
   .stat span:first-child { font-size: 0.8rem; }
-  /* Hide less-critical stats on mobile */
-  .stat:nth-child(3) { display: none; }
   .btn-lb-header { padding: 5px 8px; font-size: 0.72rem; }
   .sound-btn { padding: 4px 7px; font-size: 0.8rem; }
   #user-menu { right: 8px; min-width: 140px; }
@@ -1187,7 +1147,6 @@ main {
   .mode-title { font-size: 1.2rem; margin-bottom: 12px; }
   .mode-grid { grid-template-columns: 1fr; gap: 8px; }
   .mode-card { padding: 14px 16px; }
-  .mode-icon { font-size: 1.6rem; }
   .mode-name { font-size: 0.85rem; }
   .mode-desc { font-size: 0.85rem; }
   .mode-tag { font-size:.72rem; padding: 3px 7px; }
@@ -1286,12 +1245,10 @@ main {
 .user-chip { font-family:var(--font); color:var(--text); min-height:44px; }
 .sound-btn:not(.on) { text-decoration:line-through; }
 .um-link, .um-btn { display:flex; align-items:center; width:100%; min-height:44px; padding:8px 12px; font:600 .9rem var(--font); text-decoration:none; background:none; border:0; border-radius:4px; cursor:pointer; text-align:left; }
-.um-link { color:var(--gold); }
 .um-btn { color:var(--muted); }
 .um-link:hover, .um-btn:hover { background:var(--bg2); }
 .mode-actions { display:flex; gap:8px; margin-top:8px; justify-content:center; flex-wrap:wrap; }
 .timer-num, .number-input { font-family:var(--font); font-variant-numeric:tabular-nums; }
-.premium-tag { font-family:var(--font-px); font-size:.7rem; color:var(--gold); border:2px solid var(--gold); border-radius:4px; padding:1px 6px; margin-left:6px; }
 .lb-rank { min-width:2.4ch; }
 .lb-row.me { background:var(--bg2); }
 .lb-meta { color:var(--muted); font-size:.78rem; white-space:nowrap; }
@@ -1378,7 +1335,7 @@ header h1 { flex-shrink:0; }
       <span class="mode-desc">10 schwere Fragen alle 12 Stunden. 3 Versuche pro Runde, das beste Ergebnis zählt.</span>
       <span class="mode-tag" id="comp-mode-tag">Nur Accounts</span>
     </button>
-    <button type="button" class="mode-card" onclick="window.location.href='multiplayer.html'+(isPremium?'?premium=1':'')">
+    <button type="button" class="mode-card" onclick="window.location.href='multiplayer.html'">
       <span class="mode-name"><img class="mc-icon" src="assets/mc/item/ender_eye.png" width="24" height="24" alt="">Multiplayer <span class="mode-tag" style="display:inline-block;margin:0 0 0 6px">Beta</span></span>
       <span class="mode-desc">Gegen andere Spieler in Echtzeit. Öffentliche oder private Räume.</span>
       <span class="mode-tag">Echtzeit</span>
@@ -1403,9 +1360,9 @@ header h1 { flex-shrink:0; }
   </div>
 </div>
 
-<!-- ── Category Screen (Premium Solo) ─────────────────────────────────────── -->
+<!-- ── Category Screen (Solo) ─────────────────────────────────────── -->
 <div id="cat-screen" class="hidden">
-  <div class="mode-welcome">Premium: Kategorien wählen</div>
+  <div class="mode-welcome">Kategorien wählen</div>
   <div class="mode-title" style="margin-bottom:4px">Welche Themen willst du spielen?</div>
   <div class="cat-chips-grid" id="cat-chips-solo"></div>
   <div class="cat-count-hint" id="cat-count-hint">Alle Fragen aktiv (keine Filterung)</div>
@@ -1553,12 +1510,9 @@ header h1 { flex-shrink:0; }
     <button type="button" class="user-chip" id="user-chip" style="display:none" onclick="toggleUserMenu()" aria-haspopup="true">
       <img id="user-avatar" src="" alt=""/>
       <span class="uname" id="user-name"></span>
-      <span id="premium-star" class="premium-tag" style="display:none">Premium</span>
       <span class="caret" aria-hidden="true"></span>
     </button>
     <div id="user-menu" style="display:none;position:absolute;top:52px;right:16px;background:var(--bg1);border:2px solid var(--border);border-radius:4px;padding:6px;min-width:170px;z-index:200;">
-      <a class="um-link" href="premium.html">Premium</a>
-      <div style="height:2px;background:var(--border);margin:4px 0;"></div>
       <button class="um-btn" onclick="doSignOut()">Abmelden</button>
       </div>
   </div>
@@ -1705,24 +1659,6 @@ const ENTITIES = [
 
 // ── Minecraft Wiki icon helper ─────────────────────────────────────────────────
 // Known mob names (prefer sprite sheet images over Invicon)
-const MOB_NAMES = new Set([
-  'Zombie','Skeleton','Skelett','Creeper','Spider','Spinne','Enderman',
-  'Blaze','Lohe','Ghast','Witch','Hexe','Slime','Guardian','Wächter',
-  'Elder Guardian','Shulker','Wither','Bat','Fledermaus','Cat','Katze',
-  'Chicken','Huhn','Cow','Kuh','Donkey','Esel','Fox','Fuchs','Horse','Pferd',
-  'Llama','Lama','Mule','Maulesel','Ocelot','Ozelot','Panda','Parrot',
-  'Papagei','Pig','Schwein','Polar Bear','Eisbär','Rabbit','Kaninchen',
-  'Sheep','Schaf','Squid','Tintenfisch','Glow Squid','Turtle','Schildkröte',
-  'Wolf','Bee','Biene','Dolphin','Delfin','Drowned','Ertrunkener','Phantom',
-  'Ender Dragon','Ender-Drache','Endermite','Iron Golem','Eisengolem',
-  'Snow Golem','Schneegolem','Villager','Dorfbewohner','Wandering Trader',
-  'Warden','Frog','Frosch','Allay','Vex','Axolotl','Piglin','Hoglin',
-  'Zoglin','Strider','Lurchstrider','Ravager','Verwüster','Pillager',
-  'Evoker','Beschwörer','Vindicator','Bestraferer','Silverfish',
-  'Silberfischchen','Magma Cube','Magmawürfel','Zombie Piglin',
-  'Witherskelett','Witch','Witch','Mooshroom','Pilzkuh','Hüllenträger',
-  'Sniffer','Camel','Kamel','Breeze','Bogged'
-]);
 
 function getMinecraftIcon(name) {
   const en = (typeof getEnglishName === 'function') ? getEnglishName(name.trim()) : '';
@@ -1740,7 +1676,6 @@ function setIconWithFallback(imgEl, name) {
 
 // ── Config ───────────────────────────────────────────────────────────────────
 const MAX_ATTEMPTS = 3;   // 3 Versuche pro Frage (Runde 7)
-const CLOSE_THRESHOLD_PERCENT = 0.15;
 const TIMER_SECONDS_NUMBER = 15;  // 15 s pro Versuch
 const TIMER_SECONDS_ENTITY = 15;
 let   TIMER_SECONDS        = 40; // set dynamically per question type
@@ -1781,19 +1716,7 @@ function getDateKey() {
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
 
-function get12hKey() {
-  const d = new Date();
-  const half = d.getHours() < 12 ? 'AM' : 'PM';
-  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}-${half}`;
-}
 
-function getNext12hTime() {
-  const d = new Date();
-  const next = new Date(d);
-  if (d.getHours() < 12) { next.setHours(12,0,0,0); }
-  else { next.setDate(next.getDate()+1); next.setHours(0,0,0,0); }
-  return next;
-}
 
 function getYesterdayKey() {
   const d = new Date();
@@ -1801,25 +1724,8 @@ function getYesterdayKey() {
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
 
-function pickQuestion(questions, dateKey) {
-  // Deterministic daily question based on date
-  let hash = 0;
-  for (let i = 0; i < dateKey.length; i++) hash = (hash * 31 + dateKey.charCodeAt(i)) >>> 0;
-  return questions[hash % questions.length];
-}
 
 // ── Countdown to next question ───────────────────────────────────────────────
-function updateCountdown() {
-  const now = new Date();
-  const midnight = new Date(now);
-  midnight.setHours(24, 0, 0, 0);
-  const diff = midnight - now;
-  const h = Math.floor(diff / 3_600_000);
-  const m = Math.floor((diff % 3_600_000) / 60_000);
-  const s = Math.floor((diff % 60_000) / 1_000);
-  document.getElementById('countdown').innerHTML =
-    `Nächste Frage in: <strong>${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</strong>`;
-}
 
 function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -1924,7 +1830,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   const ptsEl = document.getElementById('pts-earned');
   const pts = ptsThisQuestion || 0;
   if (won) {
-    const boostLabel = isPremium ? ' <span style="font-size:0.7rem;color:var(--yellow)">+50 %</span>' : '';
+    const boostLabel = '';
     const _spd = (speedBonus && speedBonus > 0 && gameMode === 'competition') ? ' <span style="font-size:.75rem;color:var(--yellow)">+' + speedBonus + ' Speed</span>' : '';
     ptsEl.innerHTML = '+' + Math.max(0, pts).toLocaleString() + ' Pkt.' + boostLabel + _spd;
     ptsEl.className = 'pts-earned';ptsEl.style.color='var(--green)';
@@ -1988,9 +1894,6 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   }
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) {
-      const _att = (window._compAttemptsUsed || 0) + 1;
-      const _prev = window._compData || {};
-      const _isBest = compScore > (_prev.bestScore || 0);
       rankedSaveCloud(true);
       setTimeout(() => showCompEnd(compScore, compCorrect, COMP_TOTAL), 3500);
       document.getElementById('next-countdown').textContent = 'Ranked-Lauf abgeschlossen!';
@@ -2011,18 +1914,6 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 }
 
 // ── Share result ──────────────────────────────────────────────────────────────
-function buildShareText(won) {
-  const dots = document.querySelectorAll('.attempt-dot');
-  const emojis = [...dots].map(d => {
-    if (d.classList.contains('correct')) return '+';
-    if (d.classList.contains('used'))    return 'o';
-    if (d.classList.contains('failed'))  return 'x';
-    return '-';
-  }).join('');
-
-  const result = won ? `${attempts}/${MAX_ATTEMPTS}` : 'X/' + MAX_ATTEMPTS;
-  return `MineGuess ${getDateKey()}\n${result}\n${emojis}\n\nSpiel selbst: [dein-link]`;
-}
 
 // ── Timer ─────────────────────────────────────────────────────────────────────
 function startTimer() {
@@ -2252,12 +2143,12 @@ function submitGuess() {
       const bonus = Math.round(blitzTimeLeft / BLITZ_DURATION * 200);
       base += bonus; speedBonus = bonus;
       blitzCorrect++;
-      blitzScore += isPremium ? Math.round(base * 1.5) : base;
+      blitzScore += base;
     } else if (gameMode === 'daily') {
       dailyCorrect++;
-      dailyScore += isPremium ? Math.round(base * 1.5) : base;
+      dailyScore += base;
     }
-    const earned = isPremium ? Math.round(base * 1.5) : base;
+    const earned = base;
     addPoints(earned - questionPoints);
     animateCard('correct');
     playSound('correct');
@@ -2294,27 +2185,6 @@ function submitGuess() {
 }
 
 // ── Restore today's session ───────────────────────────────────────────────────
-function restoreSession(state) {
-  if (!state) return;
-
-  state.guesses.forEach((g, i) => {
-    addGuessRow(g.val, question.type === 'number' ? question.unit : '', g.fb);
-    markDot(i, g.fb.correct ? 'correct' : 'used');
-  });
-  attempts = state.guesses.length;
-
-  if (state.done) {
-    finished = true;
-    // Check if last was wrong (lost)
-    const last = state.guesses[state.guesses.length - 1];
-    if (!last?.fb?.correct) {
-      markDot(attempts - 1, 'failed');
-    }
-    showResult(state.won);
-
-    // Banner removed in new design
-  }
-}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 let todayKey = '';
@@ -2486,7 +2356,7 @@ document.getElementById('btn-share').addEventListener('click', () => {
 });
 
 // ── Firebase & Auth ──────────────────────────────────────────────────────────
-let fbAuth = null, fbDb = null, currentUser = null, isGuest = true, isPremium = false;
+let fbAuth = null, fbDb = null, currentUser = null, isGuest = true;
 
 function initFirebase() {
   if (typeof FIREBASE_ENABLED === 'undefined' || !FIREBASE_ENABLED || !FIREBASE_CONFIG) return false;
@@ -2509,10 +2379,6 @@ async function signInGoogle() {
   } catch(e) { showToast('Anmeldung fehlgeschlagen'); console.error(e); }
 }
 
-function playAsGuest() {
-  currentUser = null; isGuest = true;
-  finishAuth();
-}
 
 let _authDone = false;
 function finishAuth() {
@@ -2524,15 +2390,13 @@ function finishAuth() {
   modeScreen.classList.remove('hidden');
   if (currentUser) {
     const name = currentUser.displayName || currentUser.email || 'Spieler';
-    const premBadge = isPremium ? '<span class="premium-tag">Premium</span>' : '';
+    const premBadge = '';
     document.getElementById('mode-welcome').innerHTML = `Willkommen zurück, <strong>${escHtml(name)}</strong>${premBadge}! Wähle einen Modus:`;
     // Show user chip in header
     const chip = document.getElementById('user-chip');
     chip.style.display = 'flex';
     document.getElementById('user-name').textContent = name.split(' ')[0];
     if (currentUser.photoURL) document.getElementById('user-avatar').src = currentUser.photoURL;
-    if (isPremium) document.getElementById('premium-star').style.display = 'inline';
-    if (isPremium) document.getElementById('premium-star').style.display = 'inline';
     // Unlock competition mode tag
     document.getElementById('comp-mode-tag').textContent = 'Alle 12 Std.';
     document.getElementById('btn-leaderboard').style.display = '';
@@ -2559,7 +2423,6 @@ async function loadCloudStats() {
     if (snap.exists) {
       const d = snap.data();
       localStorage.setItem('mg_stats', JSON.stringify({ streak: d.streak||0, best: d.best||0, played: d.played||0 }));
-      isPremium = !!d.premium;
     }
     updateStatsDisplay();
     await loadRankedCloud();
@@ -2608,29 +2471,12 @@ async function submitLeaderboard(score, correct, total) {
 }
 
 // ── Leaderboard: lokaler Fallback (nur auf diesem Geraet) ────────────────────
-const LB_LOCAL_KEY = 'mg_lb_local';
 function lbErrorText(e) {
   const c = e && e.code ? String(e.code) : '';
   if (c.indexOf('permission-denied') >= 0) return 'Bestenliste online nicht erreichbar: keine Berechtigung (Firestore-Regeln).';
   if (c.indexOf('unavailable') >= 0 || c.indexOf('network') >= 0) return 'Bestenliste online nicht erreichbar: keine Verbindung.';
   if (c.indexOf('failed-precondition') >= 0) return 'Bestenliste online nicht erreichbar: Index fehlt.';
   return 'Bestenliste online nicht erreichbar.';
-}
-function lbLocalGet() {
-  try { const a = JSON.parse(localStorage.getItem(LB_LOCAL_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
-}
-function recordLocalLb(mode, score, correct, total) {
-  try {
-    if (!(score > 0)) return;
-    const a = lbLocalGet();
-    if (a.some(x => x.mode === mode && x.date === getDateKey() && x.score === score && x.correct === correct)) return;
-    a.push({
-      name: (currentUser && currentUser.displayName) ? currentUser.displayName : 'Du',
-      mode: mode, score: score, correct: correct || 0, total: total || 0, date: getDateKey()
-    });
-    a.sort((x, y) => (y.score || 0) - (x.score || 0));
-    localStorage.setItem(LB_LOCAL_KEY, JSON.stringify(a.slice(0, 20)));
-  } catch (e) {}
 }
 
 let currentLbFilter = 'today';
@@ -2681,18 +2527,6 @@ async function loadLeaderboard(filter) {
     }
   }
 
-  // Lokale Liste (nur auf diesem Geraet)
-  let local = [];   // Punkte werden im Leaderboard nicht mehr angezeigt (nur MMR)
-  let localHtml = '';
-  if (false && local.length) {   // lokale Punkte-Liste entfaellt: Anzeige nur MMR
-    localHtml = '<div class="lb-empty" style="padding:12px 0 4px">Nur auf diesem Gerät gespeichert</div>' +
-      local.slice(0, 10).map((x, i) =>
-        '<div class="lb-row"><span class="lb-rank">#' + (i + 1) + '</span>' +
-        '<span class="lb-name">' + escHtml(x.name) + '</span>' +
-        '<span class="lb-meta">' + escHtml(x.mode || '') + ' · ' + (x.correct || 0) + '/' + (x.total || 0) + '</span>' +
-        '<span class="lb-score">' + (x.score || 0).toLocaleString() + ' Pkt.</span></div>').join('');
-  }
-
   const mine = MGRanked.rankInfo(rankedEnsure().mmr);
   const mineHtml = '<div class="lb-row me"><span class="lb-rank">Du</span>' +
     rankIngots(mine, 18) + '<span class="lb-name">Du' + (isGuest ? ' (nur dieses Gerät)' : '') + '</span>' +
@@ -2701,8 +2535,8 @@ async function loadLeaderboard(filter) {
     (isGuest ? '<div class="lb-empty">Dein Rang wird nur auf diesem Gerät gespeichert.</div>' : '') +
     ((filter === 'today' && (rankedEnsure().lastPlayedDay || '') !== MGRanked.dayKey()) ? '<div class="lb-empty">Heute noch kein Ranked-Spiel.</div>' : '');
   list.innerHTML = (note ? '<div class="lb-empty" role="status">' + escHtml(note) + '</div>' : '') +
-    mineHtml + globalHtml + localHtml +
-    ((!globalHtml && !localHtml) ? '<div class="lb-empty">Noch keine Einträge.</div>' : '');
+    mineHtml + globalHtml +
+    (!globalHtml ? '<div class="lb-empty">Noch keine Einträge.</div>' : '');
 }
 
 // ── Points system ─────────────────────────────────────────────────────────────
@@ -2849,7 +2683,6 @@ function showBlitzEnd() {
     playSound('pb');
   }
   _trackBlitzGame();
-  recordLocalLb('Blitz', blitzScore, blitzCorrect, blitzAnswered);
   document.getElementById('blitz-end').classList.add('show');
   checkAchievements();
 }
@@ -2926,7 +2759,6 @@ function showDailyEnd() {
   document.getElementById('game-wrapper').style.display = 'none';
   const pct = Math.round(dailyCorrect / DAILY_TOTAL * 100);
   saveDailyData({ done: true, score: dailyScore, correct: dailyCorrect, pct });
-  recordLocalLb('Daily', dailyScore, dailyCorrect, DAILY_TOTAL);
   const streak = getDailyStreak();
   document.getElementById('daily-streak-num').textContent = streak;
   document.getElementById('daily-correct-num').textContent = dailyCorrect;
@@ -2947,7 +2779,6 @@ let gameMode       = 'endless';
 let compScore      = 0;
 let compCorrect    = 0;
 let compIndex      = 0;
-let compOrder      = [];
 let compStreak     = 0;
 let compSpeedBonus = 0;
 let compSpeedIv    = null;
@@ -3183,29 +3014,14 @@ function showCompEnd(score, correct, total) {
   if (spEl) spEl.textContent = compSpeedBonus > 0 ? 'Speed-Bonus gesamt: +' + compSpeedBonus.toLocaleString() + ' Pkt.' : '';
 
   // Personal best
-  const prev = window._compData;
+  const prev = null;
   const pbEl = document.getElementById('ce-pb-banner');
   if (pbEl && score > 0 && (!prev || score > (prev.bestScore || 0))) pbEl.style.display = '';
 
   document.getElementById('comp-end').classList.remove('hidden');
 
-  const attUsed = (window._compAttemptsUsed || 0) + 1;
-  const maxAtt  = window._maxCompAttempts || 3;
-  const ceNote  = document.getElementById('ce-lb-note');
-  if (ceNote) {
-    if (false) {
-      function tick() {
-        const next = getNext12hTime();
-        const diff = Math.max(0, next - Date.now());
-        const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
-        const pad = n => String(n).padStart(2,'0');
-        ceNote.textContent = 'Neue Runde in ' + pad(h) + ':' + pad(m) + ':' + pad(s);
-      }
-      tick(); setInterval(tick, 1000);
-    } else {
-      ceNote.textContent = 'Ranked-Lauf abgeschlossen: ' + (rankedRun.delta >= 0 ? '+' : '') + rankedRun.delta + ' MMR';
-    }
-  }
+  const ceNote = document.getElementById('ce-lb-note');
+  if (ceNote) ceNote.textContent = 'Ranked-Lauf abgeschlossen: ' + (rankedRun.delta >= 0 ? '+' : '') + rankedRun.delta + ' MMR';
 
   rankedSaveCloud(true);
 }
@@ -3296,8 +3112,8 @@ function selectMode(mode) {
   }
   document.getElementById('mode-screen').classList.add('hidden');
   pendingMode = mode;
-  // Premium users see category picker before Endless mode
-  if (isPremium && mode === 'endless') {
+  // Kategorie-Auswahl vor dem Endlosmodus (fuer alle)
+  if (mode === 'endless') {
     buildSoloCatChips();
     document.getElementById('cat-screen').classList.remove('hidden');
   } else {
@@ -3343,10 +3159,6 @@ function actualStartMode(mode) {
     }
     compUsed = new Set();
     rankedRun = { start: rankedEnsure().mmr, delta: 0, answered: 0, correct: 0 };
-    window._compPeriodKey    = null;
-    window._compAttemptsUsed = 0;
-    window._compData         = null;
-    window._maxCompAttempts  = 0;
     compIndex   = 0; compScore = 0; compCorrect = 0;
     document.getElementById('comp-bar').classList.add('show');
     updateCompBar();

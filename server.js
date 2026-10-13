@@ -32,6 +32,8 @@ app.use((req, res, next) => {
   if (BLOCKED.some(r => r.test(p))) return res.status(404).end();
   next();
 });
+// Premium wurde abgeschafft: alte Links auf die Startseite
+app.get('/premium.html', (req, res) => res.redirect(301, '/'));
 app.use(express.static(path.join(__dirname), {
   dotfiles: 'ignore',
   setHeaders(res, file) {
@@ -72,13 +74,14 @@ function shuffle(arr) {
 
 // ── Konstanten ────────────────────────────────────────────────────────────────
 const BUZZER_TIME  = 30;
-const ANSWER_TIME  = 15;
+const ANSWER_TIME  = 10;          // Antwortphase fuer ALLE nach dem Laeuten (GeoGuessr-Stil)
 const RESULT_TIME  = 6;
 const MAX_PLAYERS  = 8;
 const MAX_ROUNDS   = 10;
 const PTS_CORRECT  = 150;
 const PTS_SPEED    = 50;
 const PTS_WRONG    = 50;
+const PTS_FIRST_BONUS = 50;       // exakte Antwort des Laeutenden: 200 + Speedbonus statt 150 + Speedbonus
 const APPROACH_LIMIT = 0.35;       // relative Abweichung, bis zu der eine Zahl als 'Annaeherung' zaehlt
 const REVEAL_DELAY = 2500;         // ms zwischen answers_revealed und result           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
 const BUZZ_WINDOW  = 120;          // ms: gleichzeitige Buzzes werden latenzbereinigt verglichen
@@ -168,7 +171,6 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent }
     answers:       new Map(),   // socketId -> Antworteintrag (verdeckt bis zur Aufloesung)
     answerSeq:     0,
     resolving:     false,
-    penalized:     false,
     lastReveal:    null,
     lastAnswer:    null,        // { playerId, text, correct, timeout, delta } fuer Snapshot/Sprechblase
     typingId:      null,
@@ -308,7 +310,6 @@ function nextQuestion(room) {
   room.answers       = new Map();
   room.answerSeq     = 0;
   room.resolving     = false;
-  room.penalized     = false;
   room.lastReveal    = null;
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
@@ -355,16 +356,14 @@ function startAnswerCountdown(room) {
   }, 1000);
 }
 
-// ── Antwortphase: alle antworten, Auswertung "am naechsten dran" ───────────────
+// ── Antwortphase: alle antworten (10 s), Aufloesung am Ende oder wenn alle abgegeben haben ───
 function bandPoints(rel) {
   if (rel == null) return 0;
   return rel <= 0.05 ? 100 : rel <= 0.10 ? 80 : rel <= 0.20 ? 60 : rel <= APPROACH_LIMIT ? 40 : 0;
 }
 
-// Abzug nur fuer den ersten Laeutenden, hoechstens einmal je Frage, Score nie < 0
-function applyPenalty(room, p) {
-  if (!p || room.penalized) return 0;
-  room.penalized = true;
+// Score nie < 0; liefert tatsaechlich angewendete Aenderung (<= 0)
+function takePenalty(p) {
   const before = p.score;
   p.score = Math.max(0, before - PTS_WRONG);
   return p.score - before;
@@ -378,74 +377,80 @@ function checkAnswerPhaseDone(room) {
   if (room.phase === 'answering' && !room.resolving && room.question && answerDone(room)) finishAnswerPhase(room, 'all');
 }
 
-function emitFirstBuzzerTimeout(room) {
-  const fb = room.players[room.firstBuzzer];
-  if (!fb || room.answers.has(fb.id) || room.penalized) return;
-  const delta = applyPenalty(room, fb);
-  io.to(room.id).emit('answer_timeout', { playerId: fb.id, playerName: fb.name, delta, penalty: PTS_WRONG, score: fb.score });
-}
-
-// Ergebnis der Antwortphase verkuenden, danach (REVEAL_DELAY) result
-function concludeAnswerPhase(room, mode, winnerId, points) {
+// Gesamtauswertung. Punkte/Abzug werden erst hier vergeben, vorher sind Antworten verdeckt.
+function finishAnswerPhase(room, reason) {
+  if (room.dead || room.phase !== 'answering' || room.resolving || !room.question) return;
   room.resolving = true;
   room.answered = true;
   clearInterval(room.timerIv); room.timerIv = null;
   const q = room.question;
   const entries = [...room.answers.values()].sort((a, b) => a.order - b.order);
+  const far = (e) => q.type === 'number' ? (e.rel != null && e.rel > APPROACH_LIMIT) : !e.correct;
+
+  // Gewinner: alle exakten; sonst bei Zahlen der am naechsten liegende (Gleichstand: frueher)
+  let winners = entries.filter(e => e.correct);
+  let mode = winners.length ? 'exact' : 'none';
+  if (!winners.length && q.type === 'number') {
+    let best = null;
+    for (const e of entries) {
+      if (bandPoints(e.rel) <= 0) continue;
+      if (!best || e.rel < best.rel - 1e-12 || (Math.abs(e.rel - best.rel) <= 1e-12 && e.order < best.order)) best = e;
+    }
+    if (best) { winners = [best]; mode = 'closest'; }
+  }
+  const winSet = new Set(winners.map(e => e.playerId));
+
   const answers = entries.map(e => {
-    const win = e.playerId === winnerId;
-    const pts = win ? points : 0;
+    const p = room.players[e.playerId];
+    let points = 0, penalty = 0;
+    if (winSet.has(e.playerId)) {
+      if (mode === 'exact') {
+        const speed = Math.round(e.timeLeft / ANSWER_TIME * PTS_SPEED);
+        points = PTS_CORRECT + speed + (e.playerId === room.firstBuzzer ? PTS_FIRST_BONUS : 0);
+      } else {
+        points = bandPoints(e.rel);
+      }
+      if (p) p.score += points;
+    } else if (far(e) && p) {
+      penalty = takePenalty(p);                      // komplett daneben: -50 fuer jeden
+    }
     return {
       playerId: e.playerId, playerName: e.playerName, text: e.text.slice(0, 40), correct: !!e.correct,
       deviationPct: e.rel == null ? null : Math.round(e.rel * 1000) / 10,
-      points: pts, delta: pts + (e.penalty || 0), winner: win,
+      points, delta: points + penalty, winner: winSet.has(e.playerId),
+      firstBuzzer: e.playerId === room.firstBuzzer,
     };
   });
-  // erster Laeutender ohne Antwort: Abzug als eigener Eintrag
+
+  // Laeutender ohne Antwort: -50 (andere ohne Antwort: 0)
   const fb = room.players[room.firstBuzzer];
-  const fbAnswered = room.answers.has(room.firstBuzzer);
+  if (fb && !room.answers.has(fb.id)) {
+    const delta = takePenalty(fb);
+    io.to(room.id).emit('answer_timeout', { playerId: fb.id, playerName: fb.name, delta, penalty: PTS_WRONG, score: fb.score });
+    room.lastAnswer = { playerId: fb.id, text: null, correct: false, timeout: true, delta };
+  }
+
+  const top = answers.filter(a => a.winner).sort((a, b) => b.points - a.points)[0] || null;
+  const winnerId = top ? top.playerId : null;
   room.lastReveal = {
-    mode, winnerId: winnerId || null, firstBuzzerId: room.firstBuzzer || null, answers,
+    mode, winnerId, winnerIds: answers.filter(a => a.winner).map(a => a.playerId),
+    firstBuzzerId: room.firstBuzzer || null, answers,
     correctAnswer: q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer,
   };
   io.to(room.id).emit('answers_revealed', room.lastReveal);
-  if (winnerId && room.players[winnerId]) {
-    const w = room.players[winnerId];
-    const win = entries.find(e => e.playerId === winnerId);
+  if (top && room.players[top.playerId]) {
+    const w = room.players[top.playerId];
     io.to(room.id).emit('answer_broadcast', {
-      playerId: w.id, playerName: w.name, correct: true, submitted: win ? win.text : '',
-      score: w.score, speedBonus: win && mode === 'exact' ? Math.max(0, points - PTS_CORRECT) : 0, delta: points,
+      playerId: w.id, playerName: w.name, correct: true, submitted: top.text, score: w.score,
+      speedBonus: mode === 'exact' ? Math.max(0, top.points - PTS_CORRECT - (top.firstBuzzer ? PTS_FIRST_BONUS : 0)) : 0, delta: top.points,
     });
     io.to(room.id).emit('answer_given', {
-      playerId: w.id, playerName: w.name, text: win ? win.text.slice(0, 40) : '', correct: true,
-      delta: points, score: w.score, unit: q.unit || null,
+      playerId: w.id, playerName: w.name, text: top.text, correct: true, delta: top.points, score: w.score, unit: q.unit || null,
     });
-    room.lastAnswer = { playerId: w.id, text: win ? win.text : '', correct: true, timeout: false, delta: points };
-  } else if (fb && !fbAnswered) {
-    room.lastAnswer = { playerId: fb.id, text: null, correct: false, timeout: true, delta: 0 };
+    room.lastAnswer = { playerId: w.id, text: top.text, correct: true, timeout: false, delta: top.points };
   }
   broadcastLobby(room);
-  later(room, () => revealResult(room, winnerId || null), REVEAL_DELAY);
-}
-
-// Ende der 15 s oder alle haben geantwortet: Annaeherungswertung
-function finishAnswerPhase(room, reason) {
-  if (room.dead || room.phase !== 'answering' || room.resolving || !room.question) return;
-  clearInterval(room.timerIv); room.timerIv = null;
-  emitFirstBuzzerTimeout(room);
-  let winnerId = null, mode = 'none', points = 0;
-  if (room.question.type === 'number') {
-    let best = null;
-    for (const a of room.answers.values()) {
-      if (bandPoints(a.rel) <= 0) continue;
-      if (!best || a.rel < best.rel - 1e-12 || (Math.abs(a.rel - best.rel) <= 1e-12 && a.order < best.order)) best = a;
-    }
-    if (best && room.players[best.playerId]) {
-      winnerId = best.playerId; mode = 'closest'; points = bandPoints(best.rel);
-      room.players[winnerId].score += points;
-    }
-  }
-  concludeAnswerPhase(room, mode, winnerId, points);
+  later(room, () => revealResult(room, winnerId), REVEAL_DELAY);
 }
 
 // ── Aufloesung ────────────────────────────────────────────────────────────────
@@ -521,7 +526,6 @@ function resolveBuzz(room) {
   room.answers       = new Map();
   room.answerSeq     = 0;
   room.resolving     = false;
-  room.penalized     = false;
   room.answered      = false;
   room.timerLeft     = ANSWER_TIME;
 
@@ -627,8 +631,6 @@ io.on('connection', (socket) => {
     const p = room.players[id];
     if (!p) return;
 
-    // Erster Laeutender weg ohne Antwort → Abzug wie Timeout, Runde laeuft fuer die anderen weiter
-    if (room.firstBuzzer === id && room.phase === 'answering' && !room.resolving) emitFirstBuzzerTimeout(room);
     room.ready.delete(id);
 
     const finalize = () => {
@@ -799,24 +801,12 @@ io.on('connection', (socket) => {
     if (q.type === 'number') rel = Math.max(0, result.diff - MGAnswer.tolerance(q)) / Math.max(Math.abs(q.answer), 5);
     const entry = {
       playerId: socket.id, playerName: player.name, text: cleanText(raw, 60),
-      correct: !!result.correct, rel, order: ++room.answerSeq, timeLeft: room.timerLeft, penalty: 0,
+      correct: !!result.correct, rel, order: ++room.answerSeq, timeLeft: room.timerLeft,
     };
     room.answers.set(socket.id, entry);
     room.typingId = null;
-
-    if (result.correct) {
-      // sofort volle Punkte, Runde endet, andere Antworten werden ignoriert
-      const speedBonus = Math.round(room.timerLeft / ANSWER_TIME * PTS_SPEED);
-      const gain = PTS_CORRECT + speedBonus;
-      player.score += gain;
-      concludeAnswerPhase(room, 'exact', socket.id, gain);
-      return;
-    }
-    // nicht exakt: Abzug nur fuer den ersten Laeutenden und nur ausserhalb des Annaeherungsbereichs
-    if (socket.id === room.firstBuzzer && (q.type !== 'number' || rel > APPROACH_LIMIT)) {
-      entry.penalty = applyPenalty(room, player);
-    }
-    io.to(room.id).emit('answer_submitted', { playerId: socket.id, playerName: player.name, delta: entry.penalty, score: player.score });
+    // Antworten bleiben verdeckt; Punkte/Abzug erst bei der Aufloesung (alle abgegeben oder Zeit um)
+    io.to(room.id).emit('answer_submitted', { playerId: socket.id, playerName: player.name });
     broadcastLobby(room);
     checkAnswerPhaseDone(room);
   });

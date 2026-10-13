@@ -39,7 +39,7 @@
     <li>Du kannst MineGuess ohne Konto spielen (Gastmodus). Spielstände liegen dann nur in deinem Browser.</li>
     <li>Mit Google-Anmeldung werden Name, Profilbild und Spielstatistiken in einer Cloud-Datenbank gespeichert, damit Leaderboard und Statistiken funktionieren.</li>
     <li>Im Multiplayer werden dein Spielername, Antworten und optional dein Skin und deine Figurwahl (Steve oder Alex) nur für die Dauer der Runde im Arbeitsspeicher des Servers gehalten.</li>
-    <li>Es gibt keine Werbung (auch nicht für Premium-Nutzer relevant: MineGuess ist werbefrei), kein Tracking und keine Analyse-Dienste.</li>
+    <li>Es gibt keine Werbung, kein Tracking und keine Analyse-Dienste.</li>
   </ul>
 
   <h2>3. Hosting und Server-Logdateien</h2>
@@ -50,11 +50,11 @@
   <p>Bei Anmeldung mit Google speichern wir:</p>
   <ul>
     <li>Nutzerkennung (UID), Anzeigename und Profilbild-URL deines Google-Kontos,</li>
-    <li>Statistiken (Streak, Bestwert, gespielte Runden), ggf. Premium-Status,</li>
+    <li>Statistiken (Streak, Bestwert, gespielte Runden),</li>
     <li>Leaderboard-Einträge (Punkte, richtige Antworten, Datum),</li>
     <li>Fragenmeldungen (Frage, Grund, Nutzerkennung bzw. „guest“, Zeitstempel).</li>
   </ul>
-  <p>Zweck ist die Bereitstellung von Rangliste, Statistiken und Premium-Funktionen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Leaderboard-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
+  <p>Zweck ist die Bereitstellung von Rangliste und Statistiken. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (Nutzung des Dienstes) bzw. lit. a bei der freiwilligen Anmeldung. Leaderboard-Name und -Bild sind für andere Spieler sichtbar. Die Daten werden gespeichert, bis du die Löschung verlangst oder dein Konto gelöscht wird. Eine Datenübermittlung in die USA kann stattfinden; sie stützt sich auf <span class="ph">[Prüfen: EU-US Data Privacy Framework / Standardvertragsklauseln]</span>.</p>
 
   <h2>5. Multiplayer (Echtzeitverbindung)</h2>
   <p>Für den Multiplayer besteht eine WebSocket-Verbindung (Socket.io) zum Spielserver. Übertragen und verarbeitet werden: dein gewählter Spielername, Raumname und Raumcode, ggf. ein Raumpasswort, Bereit-Status, Buzzer, Antworten und Punkte sowie, falls du ihn hochlädst, dein <strong>Skin</strong> (64x64-Bild) und deine Figurwahl.</p>
@@ -72,7 +72,6 @@
   <ul>
     <li><strong>Schriften</strong> (Inter, Silkscreen) werden lokal von unserem Server ausgeliefert. Es werden keine Schriften von Google geladen.</li>
     <li><strong>Icons und Texturen</strong> (Mobs, Blöcke, Items) werden von unserem eigenen Server ausgeliefert. Es werden keine Bilder von Drittanbietern nachgeladen.</li>
-    <li><strong>Zahlung (Premium):</strong> Beim Klick auf „Jetzt bezahlen“ wirst du zu Stripe weitergeleitet. Dort gilt die Datenschutzerklärung von Stripe. Zahlungsdaten erhalten wir nicht. <span class="ph">[Prüfen: Stand der Zahlungsanbindung]</span></li>
   </ul>
 
   <h2>7a. Musik (Spotify, nur nach Klick)</h2>

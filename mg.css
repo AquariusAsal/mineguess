@@ -1,5 +1,5 @@
 /* MineGuess – gemeinsame Design-Tokens und Basis-Komponenten.
-   Ruhig, flach, Erdtöne. Ein Grün, ein Gold (nur Premium), eckige Kanten, Pixel-Akzent nur an Rahmen/Buttons. */
+   Ruhig, flach, Erdtöne. Ein Grün, ein Gold (Sieg/Akzent), eckige Kanten, Pixel-Akzent nur an Rahmen/Buttons. */
 
 @font-face { font-family:'Inter'; font-style:normal; font-weight:400 800; font-display:swap;
   src:url('fonts/inter-400-800-latin.woff2') format('woff2'); }
@@ -80,9 +80,6 @@ a { color:var(--green); }
 .btn:active { transform:translateY(2px); box-shadow:inset 0 -1px 0 rgba(0,0,0,.28); }
 .btn-primary { background:var(--green); border-color:var(--green-d); color:var(--on-green); }
 .btn-primary:hover { background:var(--green-d); }
-.btn-gold { background:var(--gold); border-color:var(--gold); color:#14110a; }
-[data-theme="light"] .btn-gold { color:#fff; }
-.btn-gold:hover { filter:brightness(.92); background:var(--gold); }
 .btn-ghost { background:transparent; box-shadow:none; }
 .btn[disabled], .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
 .btn-block { width:100%; }
@@ -171,10 +168,7 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 
 /* Minecraft-Icons (feste Größe, pixelscharf, kein Layout-Sprung) */
 .mc-icon { display:inline-block; width:24px; height:24px; image-rendering:pixelated; image-rendering:crisp-edges; vertical-align:-.3em; flex:none; }
-.mc-icon.s16 { width:16px; height:16px; } .mc-icon.s32 { width:32px; height:32px; } .mc-icon.s48 { width:48px; height:48px; }
 .mc-pix { vertical-align:-.15em; }
-/* Gedämpfte Block-Textur als Akzent (nie unter Text ohne Dämpfung) */
-.tex-dirt { background-image:linear-gradient(rgba(21,23,26,.88),rgba(21,23,26,.88)), url('assets/mc/block/dirt.png'); background-size:auto, 64px 64px; image-rendering:pixelated; }
 
 /* Textur-Akzent: gedimmte Dirt-Kachel im Footer und in der Nav-Unterkante (Text bleibt auf deckender Dämpfung) */
 :root { --tex-dim: rgba(21,23,26,.9); }
@@ -231,7 +225,6 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 
 /* Solo-Reporter-Szene: kompakt, dekorativ */
 .mg-scene.solo { aspect-ratio:16/7; min-height:150px; max-height:240px; margin:0; }
-.mg-scene.solo .mg-fig-label { display:none; }
 .mg-bubble.ask { font-size:.72rem; padding:5px 10px; font-weight:500; max-width:min(300px,calc(100% - 16px)); }
 @media (max-width:480px) { .mg-scene.solo { aspect-ratio:16/8; min-height:130px; max-height:30vh; } }
 .sound-toggle:not(.on) .mc-icon { opacity:.35; }
@@ -289,3 +282,9 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 #totem-row { margin:10px 0 0; display:flex; justify-content:center; }
 .totem-btn { gap:10px; }
 .totem-btn.used { opacity:.55; }
+
+/* Minecraft-Nametag: halbtransparenter dunkler Kasten, weisser Text mit Schatten, Pixelschrift, eckig */
+.mg-fig-label { background:rgba(0,0,0,.4); color:#fff; border:0; border-radius:0; padding:2px 6px; font:400 .72rem/1.3 var(--font-px); letter-spacing:.02em; text-shadow:1px 1px 0 #3f3f3f; max-width:140px; transform-origin:50% 100%; }
+.mg-fig-label.me, .mg-fig-label.gone { border:0; }
+.mg-fig-label.gone { opacity:.55; }
+.mg-fig-label.short { max-width:72px; }

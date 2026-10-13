@@ -25,9 +25,9 @@ const mc = walk(path.join(root, 'assets', 'mc'), [])
   .sort();
 
 const rootCandidates = [
-  '/', '/index.html', '/game.html', '/multiplayer.html', '/premium.html', '/impressum.html', '/datenschutz.html',
+  '/', '/index.html', '/game.html', '/multiplayer.html', '/impressum.html', '/datenschutz.html',
   '/mg.css', '/mg-audio.js', '/mg-spotify.js', '/spotify-config.js', '/mg-skin.js', '/mg-icons.js', '/mg-scene.js', '/mg-png.js', '/answer-check.js', '/ranked.js', '/sounds/bell.mp3', '/sounds/orb.mp3', '/sounds/totem.mp3', '/sounds/rare-achievement.mp3', '/sounds/anvil-drop.mp3', '/questions.json',
-  '/multiplayer-config.js', '/logo-green.png', '/logo-transparent.png', '/logo-64.png', '/logo-128.png',
+  '/multiplayer-config.js', '/logo-64.png', '/logo-128.png',
 ];
 const rootFiles = rootCandidates.filter(f => f === '/' || fs.existsSync(path.join(root, f)));
 const fonts = fs.existsSync(path.join(root, 'fonts'))

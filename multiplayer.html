@@ -55,8 +55,6 @@
       box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); transition:transform .12s var(--ease), background .12s; }
     .btn-primary { border:2px solid var(--green-d); background:var(--green); color:var(--on-green); }
     .btn-primary:hover { background:var(--green-d); }
-    .btn-secondary { border:2px solid var(--border2); background:var(--bg2); color:var(--text); }
-    .btn-secondary:hover { background:var(--bg3); }
     .btn-primary:active, .btn-secondary:active { transform:translateY(2px); box-shadow:inset 0 -1px 0 rgba(0,0,0,.28); }
     .btn-primary:disabled { opacity:.55; }
     .btn-primary.is-on { background:var(--bg2); border-color:var(--green); color:var(--text); }
@@ -222,8 +220,6 @@
     @keyframes cdPop { from { transform:scale(.6); opacity:0; } to { transform:scale(1); opacity:1; } }
     @keyframes cdOut { to { transform:scale(1.4); opacity:0; } }
     #mp-cd-lbl { font-family:var(--font-px); font-size:.9rem; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; }
-
-    .buzz-won-anim { animation:buzzerWon .3s var(--ease); }
     @keyframes buzzerWon { 50% { transform:scale(1.03); } }
 
     .skin-box { margin-bottom:16px; }
@@ -303,16 +299,12 @@
         <label class="form-label" for="input-create-pw">Passwort</label>
         <input class="form-input" type="text" id="input-create-pw" placeholder="Passwort" maxlength="20" autocomplete="off"/>
       </div>
-      <!-- Premium: Kategorien-Filter -->
+      <!-- Kategorien-Filter (für alle Hosts) -->
       <div class="form-group" id="cat-filter-group">
         <span class="form-label" style="display:flex;align-items:center;gap:8px">
           Kategorien-Filter
-          <span id="cat-premium-badge" class="tag tag-gold">Premium</span>
         </span>
-        <button type="button" id="cat-filter-locked" class="card" style="padding:14px;text-align:center;cursor:pointer;color:var(--muted);font:inherit;width:100%" onclick="showPremiumTeaser()">
-          Nur Redstone, nur Tränke … Eigene Kategorien wählen.<br><span style="color:var(--gold);font-weight:700">Premium für 5&nbsp;€/Monat</span>
-        </button>
-        <div id="cat-filter-unlocked" style="display:none">
+        <div id="cat-filter-unlocked">
           <div style="display:flex;flex-wrap:wrap;gap:6px" id="cat-chips"></div>
           <div style="font-size:.78rem;color:var(--muted);margin-top:8px">Nichts gewählt = alle Kategorien</div>
         </div>
@@ -566,7 +558,7 @@ function createRoom() {
   const name     = el('input-name').value.trim() || 'Spieler';
   const roomName = el('input-room-name').value.trim() || name + 's Raum';
   const password = roomIsPublic ? null : (el('input-create-pw').value.trim() || null);
-  const cats     = (myPremium && selectedCats.size > 0) ? [...selectedCats] : null;
+  const cats     = (selectedCats.size > 0) ? [...selectedCats] : null;
   socket.emit('create_room', { playerName: name, displayName: roomName, isPublic: roomIsPublic, password, categories: cats, skin: mySkin(), character: myChar() });
 }
 
@@ -583,7 +575,6 @@ function joinPrivateRoom() {
 }
 
 let myReady    = false;
-let myPremium  = false; // set via URL param or localStorage
 let selectedCats = new Set();
 
 const ALL_CATEGORIES = [
@@ -593,21 +584,8 @@ const ALL_CATEGORIES = [
   'Weltgenerierung','Hardcore-Wissen','Dorfbewohner'
 ];
 
-function initPremiumUI() {
-  // Check for premium flag (URL param for testing, or localStorage)
-  const urlPremium = new URLSearchParams(location.search).get('premium') === '1';
-  let storedPremium = false;
-  try { storedPremium = localStorage.getItem('mg_premium') === '1'; } catch (e) {}
-  myPremium = urlPremium || storedPremium;
-  if (urlPremium) { try { localStorage.setItem('mg_premium', '1'); } catch (e) {} }
-
-  if (myPremium) {
-    el('cat-filter-locked').style.display    = 'none';
-    el('cat-filter-unlocked').style.display  = '';
-    el('cat-premium-badge').textContent      = 'Premium aktiv';
-    el('cat-premium-badge').className        = 'tag tag-green';
-    buildCatChips();
-  }
+function initUI() {
+  buildCatChips();
   if (window.MGSkin && el('skin-box')) MGSkin.mountUploader(el('skin-box'));
   if (window.MGSkin) {
     MGSkin.mountChip(el('hdr-chip'), { className: 'compact' });
@@ -638,9 +616,6 @@ function buildCatChips() {
   });
 }
 
-function showPremiumTeaser() {
-  showToast('Eigene Kategorien sind Teil von Premium. Premium ist bald verfügbar.', 4000);
-}
 
 function setReadyButton(on) {
   const btn = el('btn-ready');
@@ -1321,8 +1296,10 @@ socket.on('answer_submitted', ({ playerId, delta }) => {
   if (playerId === myId) { myPhase = 'waiting'; renderTotem(); }
   sceneLive(nameOf(playerId) + ' hat geantwortet');
 });
-socket.on('answers_revealed', ({ mode, winnerId, answers }) => {
+socket.on('answers_revealed', ({ mode, winnerId, winnerIds, answers }) => {
   const list = answers || [];
+  const wins = {}; (winnerIds || (winnerId ? [winnerId] : [])).forEach(id => { wins[id] = 1; });
+  list.forEach(a => { if (wins[a.playerId]) a.winner = true; });
   el('answer-area').classList.remove('show');
   el('buzz-status').className = 'buzz-status';
   list.forEach(a => {
@@ -1334,9 +1311,9 @@ socket.on('answers_revealed', ({ mode, winnerId, answers }) => {
       if (a.winner) scene.react(a.playerId, 'correct');
     }
   });
-  MGAudio.play(mode === 'none' || !winnerId ? 'wrong' : 'correct');
-  const w = list.find(a => a.winner);
-  sceneLive(w ? nameOf(w.playerId) + ' gewinnt die Runde' + (typeof w.deviationPct === 'number' && mode === 'closest' ? ' mit ' + Math.round(w.deviationPct) + ' % Abweichung' : '') + '.' : 'Niemand hat gepunktet.');
+  MGAudio.play(mode === 'none' || !Object.keys(wins).length ? 'wrong' : 'correct');
+  const ws = list.filter(a => a.winner), w = ws[0];
+  sceneLive(w ? ws.map(a => nameOf(a.playerId)).join(', ') + (ws.length > 1 ? ' gewinnen' : ' gewinnt') + ' die Runde' + (typeof w.deviationPct === 'number' && mode === 'closest' ? ' mit ' + Math.round(w.deviationPct) + ' % Abweichung' : '') + '.' : 'Niemand hat gepunktet.');
   myPhase = 'idle'; renderTotem();
 });
 socket.on('totem_used', ({ playerId, playerName }) => {
@@ -1364,7 +1341,7 @@ socket.on('room_state', () => renderTotem());
 socket.on('question', () => { answeredIds = {}; firstBuzzerId = null; renderTotem(); });
 
 // ── Connection ────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => { if (typeof initPremiumUI === 'function') initPremiumUI(); });
+document.addEventListener('DOMContentLoaded', () => { initUI(); });
 document.addEventListener('DOMContentLoaded', () => { renderMute(); if (window.MGSkin) MGSkin.ensureCharacter(); });
 socket.on('connect', () => {
   const s = loadSession();

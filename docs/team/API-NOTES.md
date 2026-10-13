@@ -158,3 +158,27 @@ Laden (game.html `loadLeaderboard`): ein Query `ranked orderBy mmr desc limit 10
 - **Blitz**: Gesamtzeit 60 s bleibt maßgeblich; die 15-s-Versuchszeit gilt zusätzlich, es gibt keine Kollision, daher gleiche Regel.
 - **Ranked**: für die MMR zählt nur das Endergebnis der Frage (richtig im 1./2./3. Versuch mit Ergebnisfaktor 1.0/0.85/0.70, Tipps -0.1 je Joker, sonst falsch = 0).
 - Neue Helfer in `answer-check.js`: `MGAnswer.tolerance(q)` und im Rückgabeobjekt `check()` zusätzlich `diff` und `value` (nächster Kandidatenwert).
+
+
+---
+# Runde 8: Wertung "alle antworten, am Ende vergleichen" (ersetzt Regeln 2 und 5 aus Runde 7 wo widersprüchlich)
+
+- **Antwortphase 10 s** (`ANSWER_TIME = 10`, vorher 15) startet für **alle**, sobald die Glocke entschieden ist (`buzzed`, `answer_phase {firstBuzzerId, endsIn:10, answered}`). Jeder verbundene Spieler darf einmal `submit_answer` senden; Antworten bleiben verdeckt (`answer_submitted {playerId, playerName}`, ohne Text, ohne Punkte).
+- **Kein Sofortabbruch mehr.** Aufgelöst wird nach Ablauf der 10 s oder sobald alle verbundenen Spieler abgegeben haben (`answers_revealed`, 2,5 s später `result`).
+- **Punkte** (erst bei der Auflösung):
+  - Alle **exakt** richtigen Antworten (nach Toleranz) bekommen volle Punkte: `150 + Speedbonus` (Speedbonus 0-50 nach Restzeit bei Abgabe, Basis 10 s). Der **Läutende** mit exakter Antwort bekommt zusätzlich **+50** (`200 + Speedbonus`).
+  - Keine exakte Antwort (nur Zahlen): der am nächsten Liegende bekommt Teilpunkte nach relativer Abweichung `max(0,|x-L|-Toleranz)/max(|L|,5)`: ≤5 % 100, ≤10 % 80, ≤20 % 60, ≤35 % 40; Gleichstand: frühere Abgabe. Nur dieser eine Spieler.
+  - Entity: nur exakt zählt, mehrere Treffer = alle volle Punkte.
+- **Minuspunkte -50 (Score >= 0) für jeden, der komplett daneben liegt**: Zahl > 35 % Abweichung oder falsche Entity-Antwort. Annäherungsbereich (<= 35 %) ohne Sieg: weder Punkte noch Abzug. **Nicht geantwortet**: der Läutende -50 (`answer_timeout`), alle anderen 0. Wer eine exakte Antwort hat, bekommt nie Abzug.
+- `answers_revealed {mode:'exact'|'closest'|'none', winnerId (höchste Punkte), winnerIds[], firstBuzzerId, answers:[{playerId, playerName, text, correct, deviationPct, points, delta, winner, firstBuzzer}], correctAnswer}`; `delta` = Punkte + Abzug dieser Frage. `result.answers/mode` unverändert. Alte Events `answer_broadcast`/`answer_given` kommen nur für den Spieler mit den meisten Punkten (Kompatibilität).
+- `answer_submitted` trägt **kein** `delta` mehr; Abzüge erscheinen erst in `answers_revealed.answers[].delta` bzw. `answer_timeout`. Verbindungsabbruch des Läutenden ohne Antwort zählt wie "nicht geantwortet".
+- Totem unverändert (ein Totem pro Spieler und Raum-Session; jetzt innerhalb der 10 s nutzbar).
+
+
+---
+# Premium abgeschafft (Runde 9)
+- Es gibt kein Premium mehr, alle bisherigen Premium-Funktionen sind für alle offen: Kategorie-Filter im Endlosmodus (Solo) und beim Raum erstellen (Multiplayer; der Server hat nie Premium geprüft und nimmt `categories` von jedem Host an).
+- **Punkte-Boost 1,5x entfällt** (Blitz/Daily/Wettkampf/Endlos rechnen für alle gleich). Ranked/MMR war nie betroffen.
+- Entfernt: `isPremium`, `?premium=1`, `localStorage.mg_premium`, Firestore-Feld `users/{uid}.premium` (wird nicht mehr gelesen oder geschrieben), Zahlungs-/Stripe-Logik (`buy.stripe.com/placeholder`).
+- Server: `GET /premium.html` antwortet mit 301 auf `/`. `premium.html` wird nicht mehr in `sw.js` gecacht.
+- Noch vom Frontend zu entfernen (Markup/Texte): `#premium-star`/`.premium-tag` und Link `premium.html` im Nutzermenü von game.html, Premium-Titel auf dem Kategorie-Screen, Premium-Block/Link in index.html, Kategorie-Filter-Sperre und `initPremiumUI`/`myPremium` in multiplayer.html, Datenschutz-Abschnitt "Zahlung (Premium)".

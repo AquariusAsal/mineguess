@@ -83,3 +83,6 @@ Bekannte Grenzen (nicht lösbar ohne Server-Konto/Cloud Function):
 
 ## Runde 6: neue Felder in ranked/{uid}
 Zusätzlich: `tier` (String-Rang-Id), `division` (1-3), `lastPlayedDay` (YYYY-MM-DD), `mmrToday` (int). Die Regel oben verbietet sie nicht; optional härten: `request.resource.data.division in [1,2,3]`, `request.resource.data.lastPlayedDay is string`, `request.resource.data.mmrToday is int`. Das Leaderboard-Query `orderBy(mmr)` braucht keinen Composite-Index; "Heute" wird clientseitig gefiltert.
+
+## Premium abgeschafft
+Das Feld `premium` im Nutzerdokument wird nicht mehr verwendet. Die Regel `!(premium in ...)` kann bleiben (schadet nicht) oder entfallen; `users/{uid}` braucht nur noch streak/best/played/displayName/photoURL/updatedAt (und optional `character`). Das Thema "Premium clientseitig umgehbar" ist damit erledigt.

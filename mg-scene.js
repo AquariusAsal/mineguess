@@ -290,7 +290,6 @@
 
   // ───────────────────────── Pose / Animation ─────────────────────────
   function ease(t) { return t <= 0 ? 0 : t >= 1 ? 1 : t * t * (3 - 2 * t); }
-  function damp(cur, target, dt, k) { return cur + (target - cur) * (1 - Math.exp(-k * dt)); }
 
   function newPose() { return { lift: 0, bend: 0, headX: 0, headY: 0, headZ: 0, armRx: 0, armRz: 0, armLx: 0, armLz: 0, lean: 0, hop: 0, tilt: 0 }; }
 
@@ -375,8 +374,6 @@
     this.figs = {};
     this.bubbles = {};
     this.locked = {};
-    this.buzzPress = 0;          // 0..1 Eindruck
-    this.buzzLight = 0;
     this.destroyed = false;
     this.activeId = null;
     this.t0 = performance.now();
@@ -412,18 +409,13 @@
     this.geo = {
       table: R.buffer(plainBox(20, 2, 20, { top: [0, 0, 1, 1], side: [0, 0, 1, 1] })),
       leg: R.buffer(plainBox(2, 12, 2, { all: [0, 0, 0.125, 0.75] })),
-      cylPlate: R.buffer(cylinder(6.4, 1.2, 36), true),
-      cylRim: R.buffer(cylinder(5.4, 2.0, 36), true),
-      cylBtn: R.buffer(cylinder(4.7, 3.2, 36), true),
-      cylCap: R.buffer(cylinder(3.2, 0.35, 36), true),
       floor: R.buffer(cylinder(1, 0.01, 40), true),
       post: R.buffer(plainBox(2, 13, 4, { all: [0, 0, 1, 1] })),
       beam: R.buffer(plainBox(12, 2, 2, { all: [0, 0, 1, 1] })),
       bellBody: R.buffer(boxVerts(6, 7, 6, 0, 0, 0, 32, 32)),
       bellLip: R.buffer(boxVerts(8, 2, 8, 0, 13, 0, 32, 32)),
       card: R.buffer(plainBox(11, 13, 0.6, { all: [0, 0, 1, 1] })),
-      cardInner: R.buffer(plainBox(8.5, 10.5, 0.2, { all: [0, 0, 1, 1] })),
-      paper: R.buffer(plainBox(9, 0.3, 11, { all: [0, 0, 1, 1] }))
+      cardInner: R.buffer(plainBox(8.5, 10.5, 0.2, { all: [0, 0, 1, 1] }))
     };
     this.tex = { top: null, side: null };
     function img(src, key) {
@@ -434,7 +426,6 @@
     img(BASE + 'block/stone.png', 'stone');
     img(BASE + 'block/oak_log.png', 'log');
     img(BASE + 'entity/bell/bell_body.png', 'bell');
-    img(BASE + 'item/paper.png', 'paper');
   };
 
   Scene.prototype.resize = function () {
@@ -547,14 +538,11 @@
   Scene.prototype.buzz = function (id) {
     this.activeId = id;
     this.setState(id, 'buzz');
-    this.buzzTimer = performance.now();
     this.bellT0 = performance.now();
     var self = this;
     clearTimeout(this._holdT);
     this._holdT = setTimeout(function () { var f = self.figs[id]; if (f && f.state === 'buzz') self.setState(id, 'hold'); }, 420);
-    this.press();
   };
-  Scene.prototype.press = function () { this.pressAt = performance.now(); this.needsRender = true; };
   Scene.prototype.think = function (id, on) {
     var f = this.figs[id]; if (!f) return;
     if (on) { if (f.state !== 'think') this.setState(id, 'think'); this.say(id, '…', 'think'); }
@@ -614,10 +602,8 @@
       self.frame(now);
       var animating = !REDUCED || self.needsRender || self.anyTransient();
       if (animating) self.loop();
-      else self._idleWake();
     });
   };
-  Scene.prototype._idleWake = function () { /* wird durch setState/needsRender erneut gestartet */ };
   Scene.prototype.anyTransient = function () {
     var now = performance.now() / 1000, self = this;
     return Object.keys(this.figs).some(function (id) { var f = self.figs[id]; return now - f.stateT < 2.5; });
@@ -626,12 +612,6 @@
   Scene.prototype.frame = function (nowMs) {
     var now = nowMs / 1000, dt = Math.min(0.05, (nowMs - this.last) / 1000); this.last = nowMs;
     var self = this;
-    // Buzzer-Eindruck: schnell eindrücken, dann leicht eingedrückt halten solange jemand dran ist
-    var pa = (performance.now() - (this.pressAt || -1e9)) / 1000;
-    if (pa < 0.1) this.buzzPress = ease(pa / 0.1);
-    else if (pa < 0.6) this.buzzPress = 1 - 0.65 * ease((pa - 0.1) / 0.5);
-    else this.buzzPress = this.activeId ? 0.35 : 0;
-    this.buzzLight = this.activeId ? 1 : 0;
 
     // Glockenrahmen dreht sich weich zum aktiven Spieler (offene Seite zeigt zur Figur)
     var af = this.activeId && this.figs[this.activeId];
@@ -764,17 +744,19 @@
       var lean = p.lean, fx = f.x - Math.sin(f.yaw) * -lean, fz = f.z + Math.cos(f.yaw) * lean * 0; // Label bleibt am Standort
       var feet = self.screenPoint(f.x, 0, f.z), headP = self.screenPoint(f.x, 36 * (id === self.activeId ? 1.12 : 1), f.z);
       var lab = f.label, many = self.players.length > 5, full = !many || id === self.activeId || id === self.myId;
-      var want = full ? f.name + (id === self.myId ? ' (du)' : '') : ((f.idx + 1) + ' ' + String(f.name || '?').slice(0, 3).toUpperCase());
-      if (f.labelText !== want) { f.labelText = want; lab.textContent = want; lab.title = f.name; }
-      var far = f.z < -3, ly = far ? headP[1] - 24 : feet[1] + 4;
-      f.labelTop = far;
-      lab.style.transform = 'translate(' + feet[0].toFixed(1) + 'px,' + ly.toFixed(1) + 'px) translate(-50%,0)';
+      var want = String(f.name || '') + (id === self.myId ? ' (du)' : '');
+      if (f.labelText !== want) { f.labelText = want; lab.textContent = want; lab.title = f.name; lab.setAttribute('aria-label', f.name); }
+      lab.classList.toggle('short', !full);
+      // Minecraft-Nametag: schwebt ueber dem Kopf, folgt der Figur, skaliert mit ihr (Billboard im DOM)
+      var sz = Math.max(30, feet[1] - headP[1]), sc = Math.max(0.7, Math.min(1.25, sz / 95));
+      f.labelTop = true; f.labelH = 24 * sc;
+      lab.style.transform = 'translate(' + headP[0].toFixed(1) + 'px,' + (headP[1] - 4).toFixed(1) + 'px) translate(-50%,-100%) scale(' + sc.toFixed(2) + ')';
       var b = self.bubbles[id];
       if (b) {
         var bw = b.offsetWidth || 120, half = bw / 2 + 6;
         var bx = Math.max(half, Math.min(self.w - half, headP[0]));
         var tail = Math.max(-(bw / 2 - 16), Math.min(bw / 2 - 16, headP[0] - bx));
-        var by = Math.max((b.offsetHeight || 40) + 14, headP[1] - 2 - (f.labelTop ? 26 : 0));
+        var by = Math.max((b.offsetHeight || 40) + 14, headP[1] - 2 - (f.labelH || 0) - 6);
         b.style.setProperty('--tx', tail.toFixed(1) + 'px');
         b.style.transform = 'translate(' + bx.toFixed(1) + 'px,' + by.toFixed(1) + 'px) translate(-50%,-100%)';
       }
@@ -793,7 +775,7 @@
 
   // needsRender sorgt dafür, dass im Reduced-Motion-Modus nach Änderungen genau gezeichnet wird
   Scene.prototype.wake = function () { if (!this._raf && !this.destroyed) this.loop(); };
-  ['setState', 'say', 'setLocked', 'resetRound', 'setPlayers', 'press', 'resize'].forEach(function (n) {
+  ['setState', 'say', 'setLocked', 'resetRound', 'setPlayers', 'resize'].forEach(function (n) {
     var o = Scene.prototype[n];
     Scene.prototype[n] = function () { var r = o.apply(this, arguments); this.needsRender = true; this.wake(); return r; };
   });
