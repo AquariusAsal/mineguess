@@ -2444,6 +2444,7 @@ function finishAuth() {
   if (_authDone) return; // prevent double-call from onAuthStateChanged + signInGoogle
   _authDone = true;
   setTimeout(function () { if (window.renderMenuStatus) window.renderMenuStatus(); }, 300);
+  setTimeout(rankedSyncOnce, 600);   // vorhandenes Ranked-Profil einmal an Server/Cloud melden (auch als Gast)
   document.getElementById('auth-modal').classList.add('hidden');
   // Show mode screen
   const modeScreen = document.getElementById('mode-screen');
@@ -2994,6 +2995,18 @@ function rankedPostApi(force) {
     .then(r => r.ok ? r.json() : null)
     .then(j => { if (j && j.key) { try { localStorage.setItem('mg_ranked_key', j.key); } catch (e) {} } })
     .catch(() => {});
+}
+
+// Beim Laden des Menues: vorhandenes lokales Profil einmal melden (Server-Fallback und, falls angemeldet, Cloud)
+let _rankedSynced = false;
+function rankedSyncOnce() {
+  if (_rankedSynced) return;
+  try {
+    const p = rankedEnsure();
+    if (!p || p.answered < 1) return;
+    _rankedSynced = true;
+    rankedSaveCloud(true);
+  } catch (e) { console.warn('rankedSyncOnce:', e); }
 }
 
 async function rankedSaveCloud(force) {

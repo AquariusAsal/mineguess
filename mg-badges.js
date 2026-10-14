@@ -57,6 +57,7 @@
     s.rankedGames = Number(rk.games) || 0;
     s.peakMmr = Number(rk.peak) || Number(rk.mmr) || 0;
     return s;
+
   }
 
   var ALL_CATEGORY_COUNT = 18;

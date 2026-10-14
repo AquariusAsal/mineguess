@@ -24,6 +24,28 @@
     span.className = 'rk-ingots'; span.setAttribute('role', 'img'); span.setAttribute('aria-label', (NAME[tier] || 'Copper') + ' ' + n); span.innerHTML = h;
     return span;
   }
+  // Eigenes lokales Profil (mg_ranked) als Zeile; Rang wie ranked.js (Schwellen 0/1000/2000/3000/4000, je 334 MMR eine Stufe)
+  var TIERS = [['copper', 0], ['iron', 1000], ['gold', 2000], ['diamond', 3000], ['netherite', 4000]];
+  function localEntry() {
+    try {
+      var p = JSON.parse(localStorage.getItem('mg_ranked') || 'null');
+      if (!p || typeof p.mmr !== 'number') return null;
+      var mmr = Math.max(0, Math.round(p.mmr)), i = 0;
+      for (var k = 0; k < TIERS.length; k++) if (mmr >= TIERS[k][1]) i = k;
+      var div = Math.min(3, 1 + Math.floor((mmr - TIERS[i][1]) / 334));
+      var key = ''; try { key = localStorage.getItem('mg_ranked_key') || ''; } catch (e) {}
+      var nm = (global.MGSkin && MGSkin.getName && MGSkin.getName()) || 'Du';
+      return { name: nm, tier: TIERS[i][0], division: div, mmr: mmr, lastPlayedDay: p.lastDate || '', mmrToday: 0, key: key, local: true };
+    } catch (e) { return null; }
+  }
+  function merge(list) {
+    var mine = localEntry();
+    if (!mine) return list.slice();
+    var out = list.slice(), me = String(mine.name).toLowerCase();
+    var found = out.some(function (e) { return (mine.key && e.key === mine.key) || String(e.name || '').toLowerCase() === me; });
+    if (!found) out.push(mine);
+    return out;
+  }
   function pane(list, today) {
     var wrap = document.createElement('div');
     wrap.className = 'rl-pane';
@@ -31,12 +53,13 @@
     var me = (global.MGSkin && MGSkin.getName ? MGSkin.getName() : '').toLowerCase();
     list.slice(0, 5).forEach(function (e, i) {
       var row = document.createElement('div');
-      row.className = 'mini-rank-row' + (me && String(e.name || '').toLowerCase() === me ? ' me' : '');
+      row.className = 'mini-rank-row' + ((e.local || (me && String(e.name || '').toLowerCase() === me)) ? ' me' : '');
       var pos = document.createElement('span'); pos.className = 'mr-pos'; pos.textContent = '#' + (i + 1);
       var nm = document.createElement('span'); nm.className = 'mr-name'; nm.textContent = e.name || 'Spieler';
       var mm = document.createElement('span'); mm.className = 'mr-mmr';
       mm.textContent = (e.mmr || 0) + ' MMR' + (today && typeof e.mmrToday === 'number' && e.mmrToday ? ' (' + (e.mmrToday > 0 ? '+' : '') + e.mmrToday + ')' : '');
       row.appendChild(pos); row.appendChild(ingots(e.tier, e.division)); row.appendChild(nm); row.appendChild(mm);
+      if (e.local) { var tag = document.createElement('span'); tag.className = 'mr-local'; tag.textContent = 'nur auf diesem Gerät'; row.appendChild(tag); }
       wrap.appendChild(row);
     });
     return wrap;
@@ -88,17 +111,24 @@
       if (Math.abs(dx) > 40) { manual = true; clearInterval(timer); show(cur + (dx < 0 ? 1 : -1), true); }
     });
 
-    fetch('/api/ranked', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function () { return []; }).then(function (list) {
-      if (!Array.isArray(list)) list = [];
-      var day = todayKey();
-      var sorted = list.slice().sort(function (a, b) { return (b.mmr || 0) - (a.mmr || 0); });
-      var heute = sorted.filter(function (e) { return e.lastPlayedDay === day; });
-      view.innerHTML = '';
-      panes = [pane(heute, true), pane(sorted, false)];
-      panes.forEach(function (p) { view.appendChild(p); });
-      show(0, false);
-      auto();
-    });
+    function load() {
+      fetch('/api/ranked', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function () { return []; }).then(function (list) {
+        if (!Array.isArray(list)) list = [];
+        var day = todayKey();
+        var sorted = merge(list).sort(function (a, b) { return (b.mmr || 0) - (a.mmr || 0); });
+        var heute = sorted.filter(function (e) { return e.lastPlayedDay === day; });
+        view.innerHTML = '';
+        panes = [pane(heute, true), pane(sorted, false)];
+        panes.forEach(function (p) { view.appendChild(p); });
+        show(cur, false);
+        if (!timer) auto();
+      });
+    }
+    load();
+    document.addEventListener('mg:ranked', function () { setTimeout(load, 400); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+    global.addEventListener('focus', load);
+    setInterval(function () { if (!document.hidden) load(); }, 30000);
   }
   global.MGRanklist = { mount: mount };
 })(window);

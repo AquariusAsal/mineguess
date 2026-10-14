@@ -370,3 +370,6 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 .rl-view > .rl-pane:first-child:not(.act) { transform:translateX(-28px); }
 @media (prefers-reduced-motion: reduce) { .rl-pane { transition:none; } }
 [data-motion="reduce"] .rl-pane { transition:none; }
+
+.mr-local { font-size:.68rem; color:var(--muted); white-space:nowrap; }
+@media (max-width:420px) { .mr-local { display:none; } }
