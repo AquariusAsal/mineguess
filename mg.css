@@ -341,3 +341,32 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 .mgv::after { content:""; position:absolute; inset:0; background:rgba(21,23,26,var(--mgv-dim,.4)); pointer-events:none; }
 .mgv-video, .mgv-poster { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
 .mgv-video { transition:opacity .9s ease; }
+
+/* Gemeinsamer Schliessen-Button (Minecraft-GUI-Stil): 40x40 sichtbar, 44x44 Touch-Ziel */
+.mg-close { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; padding:0; border:0; background:transparent; cursor:pointer; position:relative; flex:none; text-decoration:none; }
+.mg-close::before { content:""; width:40px; height:40px; background:url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2014%2014%22%20shape-rendering%3D%22crispEdges%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2214%22%20height%3D%2214%22%20fill%3D%22%23c6c6c6%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%2214%22%20height%3D%221%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%221%22%20height%3D%2214%22%20fill%3D%22%23ffffff%22%2F%3E%3Crect%20x%3D%2213%22%20y%3D%221%22%20width%3D%221%22%20height%3D%2213%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%221%22%20y%3D%2213%22%20width%3D%2213%22%20height%3D%221%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%223%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%229%22%20y%3D%223%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%224%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%225%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%227%22%20y%3D%227%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%227%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%228%22%20y%3D%228%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%228%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%229%22%20y%3D%229%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3Crect%20x%3D%223%22%20y%3D%229%22%20width%3D%222%22%20height%3D%222%22%20fill%3D%22%23555555%22%2F%3E%3C%2Fsvg%3E") center/100% 100% no-repeat; image-rendering:pixelated; }
+.mg-close:hover::before { filter:brightness(1.12); }
+.mg-close:active::before { transform:translate(1px,1px); }
+.mg-close:focus-visible { outline:3px solid var(--blue); outline-offset:1px; }
+.mg-close-abs { position:absolute; top:8px; right:8px; z-index:6; }
+.modal-card, .badge-card, .stats-card, .report-card, .comp-end-card, .blitz-card, .daily-card, .lb-card, .mg-profile-card, .totem-card, .island-card { position:relative; }
+.mg-island .mg-close { margin:-6px -8px -6px 0; }
+.mg-set-head .mg-close { margin-right:-6px; }
+#rankup .mg-close-abs { position:fixed; top:calc(12px + var(--safe-t)); right:12px; }
+
+/* Rankliste-Karussell (Heute / Allzeit): nur transform/opacity */
+.rl { outline-offset:3px; }
+.rl-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.rl-tabs { display:flex; gap:6px; }
+.rl-tab { min-height:40px; padding:0 14px; background:rgba(0,0,0,.55); color:#fff; border:2px solid rgba(255,255,255,.35); border-radius:var(--r); font:700 .85rem var(--font-px); cursor:pointer; }
+.rl-tab.on { border-color:var(--green); box-shadow:inset 0 -3px 0 var(--green); }
+.rl-dots { display:flex; gap:6px; }
+.rl-dots i { width:10px; height:10px; background:var(--border2); display:block; }
+.rl-dots i.on { background:var(--green); }
+.rl-view { display:grid; overflow:hidden; }
+.rl-pane { grid-area:1 / 1; display:grid; gap:6px; align-content:start; opacity:0; transform:translateX(28px); pointer-events:none; transition:transform .5s var(--ease), opacity .4s ease; }
+.rl-pane.act { opacity:1; transform:none; pointer-events:auto; }
+.rl-pane:not(.act) ~ .rl-pane.act { }
+.rl-view > .rl-pane:first-child:not(.act) { transform:translateX(-28px); }
+@media (prefers-reduced-motion: reduce) { .rl-pane { transition:none; } }
+[data-motion="reduce"] .rl-pane { transition:none; }

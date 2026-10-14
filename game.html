@@ -1244,6 +1244,12 @@ main {
 #mode-screen { position:relative; z-index:1; }
 #mode-screen .mode-title, #mode-screen .mode-welcome { background:rgba(21,23,26,.85); padding:4px 12px; border-radius:4px; }
 body.menu-hidden #menu-pano { display:none; }
+/* Schnellleiste (Rankliste, Abzeichen, Kategorien, Profil) ueber Video/Panorama: hoher Kontrast */
+.mode-actions .btn-lb-header { background:rgba(0,0,0,.62); color:#fff; border:2px solid rgba(255,255,255,.55); font-size:.92rem; font-weight:700; text-shadow:0 1px 2px rgba(0,0,0,.9); min-height:44px; padding:6px 14px; }
+.mode-actions .btn-lb-header:hover { background:rgba(0,0,0,.8); border-color:#fff; }
+#mode-screen .mode-welcome, #mode-screen .mode-title { color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.8); }
+.cat-screen-note, #mode-screen .menu-status, #mode-screen .menu-status * { text-shadow:none; }
+#cat-screen { position:relative; }
 /* Ergebnis: ruhiger Auftritt, grosse Punktezahl */
 .result-panel.show { animation:resultIn .22s var(--ease); }
 @keyframes resultIn { from { opacity:0; transform:translateY(10px); } }
@@ -1346,6 +1352,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Auth Modal ─────────────────────────────────────────────────────────── -->
 <div class="overlay hidden" id="auth-modal">
   <div class="modal-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('btn-guest-play').click()" title="Schließen (als Gast spielen)"></button>
     <div class="modal-logo">Mine<span>Guess</span></div>
     <div class="modal-title">Melde dich an, um Statistiken zu speichern,<br>Punkte zu sammeln und im Rankliste aufzutauchen.</div>
     <button class="btn-social" id="btn-google-signin">
@@ -1374,7 +1381,7 @@ header h1 { flex-shrink:0; }
     </button>
     <button type="button" class="mode-card" onclick="selectMode('competition')" id="comp-mode-card">
       <span class="mode-name"><img class="mc-icon" src="assets/mc/item/golden_sword.png" width="24" height="24" alt="">Ranked</span>
-      <span class="mode-desc">Ranked: 10 Fragen, 3 Versuche à 15 Sekunden. Jede Frage hat eine Schwierigkeit: schwere Fragen richtig geben mehr MMR, leichte falsch kosten mehr. Steige auf von Copper über Iron, Gold und Diamond bis Netherite.</span>
+      <span class="mode-desc">Ranked: 10 Fragen, 3 Versuche in 15 Sekunden. Jede Frage hat eine Schwierigkeit: schwere Fragen richtig geben mehr MMR, leichte falsch kosten mehr. Steige auf von Copper über Iron, Gold und Diamond bis Netherite.</span>
       <span class="mode-tag" id="comp-mode-tag">Nur Accounts</span>
     </button>
     <button type="button" class="mode-card" onclick="window.location.href='multiplayer.html'">
@@ -1404,6 +1411,7 @@ header h1 { flex-shrink:0; }
 
 <!-- ── Category Screen (Solo) ─────────────────────────────────────── -->
 <div id="cat-screen" class="hidden">
+  <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="closeCatScreen()"></button>
   <div class="mode-welcome">Kategorien wählen</div>
   <div class="mode-title" style="margin-bottom:4px">Welche Themen willst du spielen?</div>
   <div class="cat-chips-grid" id="cat-chips-solo"></div>
@@ -1425,7 +1433,7 @@ header h1 { flex-shrink:0; }
 <div id="lb-modal" class="hidden" role="dialog" aria-modal="true" aria-label="Rankliste">
   <div class="lb-card">
     <button class="lb-refresh" onclick="loadLeaderboard(currentLbFilter)" title="Aktualisieren" aria-label="Aktualisieren">Neu laden</button>
-    <button class="lb-close-btn" onclick="document.getElementById('lb-modal').classList.add('hidden')">Schließen</button>
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('lb-modal').classList.add('hidden')"></button>
     <div class="lb-title px">Rankliste</div>
     <div class="lb-tabs">
       <button class="lb-tab active" id="lb-tab-today" onclick="loadLeaderboard('today')">Heute</button>
@@ -1438,6 +1446,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Competition End Screen ─────────────────────────────────────────────── -->
 <div id="comp-end" class="hidden">
   <div class="comp-end-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="location.reload()"></button>
     <div class="ce-title px">Ranked-Runde abgeschlossen</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
       <div class="ce-grade" id="ce-grade">–</div>
@@ -1465,6 +1474,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Blitz End Screen ─────────────────────────────────────────────────── -->
 <div id="blitz-end">
   <div class="blitz-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="location.reload()"></button>
         <div class="blitz-title">Zeit abgelaufen</div>
     <div class="blitz-big" id="blitz-score">0</div>
     <div class="blitz-sub">PUNKTE</div>
@@ -1484,6 +1494,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Daily End Screen ─────────────────────────────────────────────────── -->
 <div id="daily-end">
   <div class="daily-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="location.reload()"></button>
     <div class="daily-title">Tagesaufgabe erledigt</div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
       <div class="daily-streak-display" id="daily-streak-num">1</div>
@@ -1503,6 +1514,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Report Modal ─────────────────────────────────────────────────────── -->
 <div id="report-modal" role="dialog" aria-modal="true" aria-label="Frage melden">
   <div class="report-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('report-modal').classList.remove('show')"></button>
     <h3>Frage melden</h3>
     <button type="button" class="report-opt" onclick="submitReport('wrong_answer')">Falsche Antwort</button>
     <button type="button" class="report-opt" onclick="submitReport('outdated')">Veraltete Information</button>
@@ -1515,6 +1527,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Achievement Badge Modal ──────────────────────────────────────────── -->
 <div id="badge-modal" role="dialog" aria-modal="true" aria-label="Abzeichen">
   <div class="badge-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('badge-modal').classList.remove('show')"></button>
     <h2>Deine Abzeichen</h2>
     <div class="badge-grid" id="badge-grid"></div>
     <button class="report-cancel" onclick="document.getElementById('badge-modal').classList.remove('show')">Schließen</button>
@@ -1524,6 +1537,7 @@ header h1 { flex-shrink:0; }
 <!-- ── Category Stats Modal ─────────────────────────────────────────────── -->
 <div id="stats-modal" role="dialog" aria-modal="true" aria-label="Statistiken">
   <div class="stats-card">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('stats-modal').classList.remove('show')"></button>
     <h2>Statistiken nach Kategorie</h2>
     <div id="cat-stat-list"></div>
     <button class="report-cancel" onclick="document.getElementById('stats-modal').classList.remove('show')">Schließen</button>
@@ -3056,7 +3070,7 @@ function showRankUp(info, promoted) {
   const o = document.createElement('div');
   o.id = 'rankup'; o.setAttribute('role', 'dialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Rang ' + info.label);
   const roman = ['', 'I', 'II', 'III'][info.tier] || '';
-  o.innerHTML = '<div class="ru-flash"></div><div class="ru-ring"></div>' +
+  o.innerHTML = '<button type="button" class="mg-close mg-close-abs" aria-label="Schließen"></button><div class="ru-flash"></div><div class="ru-ring"></div>' +
     '<div class="ru-badge">' + rankBadge(info, 128) + '</div>' +
     '<div class="ru-title">' + (promoted ? 'RANG AUFGESTIEGEN' : 'NEUER RANG') + '</div>' +
     '<div class="ru-name">' + escHtml(info.name) + ' <span>' + roman + '</span></div>' +

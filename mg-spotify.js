@@ -28,11 +28,11 @@
     island.setAttribute('aria-label', 'Musik');
     island.innerHTML =
       '<div class="mg-island-head"><span>Musik</span>' +
-      '<button type="button" class="mg-island-close" aria-label="Musik-Insel schließen">Schließen</button></div>' +
+      '<button type="button" class="mg-close" aria-label="Schließen"></button></div>' +
       '<div class="mg-island-body"></div>' +
       '<p class="mg-island-note">Lädt Inhalte von Spotify. Dabei werden Daten (z. B. IP-Adresse) an Spotify übertragen.</p>';
     document.body.appendChild(island);
-    island.querySelector('.mg-island-close').addEventListener('click', close);
+    island.querySelector('.mg-close').addEventListener('click', close);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) close(); });
     document.addEventListener('pointerdown', function (e) {
       if (isOpen() && !island.contains(e.target) && !(btn && btn.contains(e.target))) close();

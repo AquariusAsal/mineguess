@@ -23,7 +23,7 @@
     panel.setAttribute('role', 'dialog'); panel.setAttribute('aria-modal', 'true'); panel.setAttribute('aria-labelledby', 'mg-set-title');
     panel.innerHTML =
       '<div class="mg-set-card">' +
-        '<div class="mg-set-head"><h2 id="mg-set-title">Einstellungen</h2><button type="button" class="mg-set-close" aria-label="Einstellungen schließen">Schließen</button></div>' +
+        '<div class="mg-set-head"><h2 id="mg-set-title">Einstellungen</h2><button type="button" class="mg-close" aria-label="Schließen"></button></div>' +
         '<div class="mg-set-row"><label for="mg-set-sound">Ton</label><input type="checkbox" id="mg-set-sound" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-vol">Lautstärke Effekte</label><input type="range" id="mg-set-vol" min="0" max="100" step="5"></div>' +
         '<div class="mg-set-row"><span>Musik</span><button type="button" class="btn" id="mg-set-music">Spotify öffnen</button></div>' +
@@ -45,7 +45,7 @@
       close();
       if (typeof global.showLeaderboard === 'function') global.showLeaderboard(); else location.href = 'game.html#rankliste';
     });
-    panel.querySelector('.mg-set-close').addEventListener('click', close);
+    panel.querySelector('.mg-close').addEventListener('click', close);
     panel.addEventListener('click', function (e) { if (e.target === panel) close(); });
     document.addEventListener('keydown', function (e) {
       if (!panel.classList.contains('open')) return;

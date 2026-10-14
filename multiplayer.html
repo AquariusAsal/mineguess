@@ -271,7 +271,8 @@
 
 <!-- Beitreten -->
 <div id="join-screen">
-  <div class="card">
+  <div class="card" style="position:relative">
+    <a class="mg-close mg-close-abs" href="game.html" aria-label="Schließen"></a>
     <div class="form-group">
       <label class="form-label" for="input-name">Dein Name</label>
       <input class="form-input" type="text" id="input-name" placeholder="SteveXL" maxlength="20" autocomplete="nickname"/>
@@ -1373,13 +1374,14 @@ socket.on('totem_offer', ({ penalty, seconds }) => {
   let left = Math.max(1, Math.round(seconds || 5));
   const o = document.createElement('div');
   o.id = 'totem-offer'; o.setAttribute('role', 'alertdialog'); o.setAttribute('aria-modal', 'true'); o.setAttribute('aria-label', 'Totem einlösen');
-  o.innerHTML = '<div class="totem-card"><img class="mc-icon" src="assets/mc/item/totem_of_undying.png" width="48" height="48" alt="">' +
+  o.innerHTML = '<div class="totem-card"><button type="button" class="mg-close mg-close-abs" id="totem-x" aria-label="Schließen"></button><img class="mc-icon" src="assets/mc/item/totem_of_undying.png" width="48" height="48" alt="">' +
     '<h2>Keine Antwort abgegeben</h2><p>\u2212' + esc(penalty) + ' Punkte oder Totem einlösen?</p>' +
     '<div class="totem-btns"><button type="button" class="btn" id="totem-decline">\u2212' + esc(penalty) + ' Pkt. akzeptieren (<span id="totem-left">' + left + '</span>)</button>' +
     '<button type="button" class="btn btn-gold" id="totem-redeem">Totem einlösen</button></div></div>';
   document.body.appendChild(o);
   el('totem-decline').focus();
   el('totem-decline').addEventListener('click', () => { socket.emit('totem_decline'); closeOffer(); });
+  el('totem-x').addEventListener('click', () => { socket.emit('totem_decline'); closeOffer(); });
   el('totem-redeem').addEventListener('click', () => { socket.emit('use_totem'); closeOffer(); });
   offerTimer = setInterval(() => {
     left--; const t = el('totem-left'); if (t) t.textContent = Math.max(0, left);

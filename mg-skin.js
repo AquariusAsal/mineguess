@@ -170,6 +170,7 @@
       dlg.setAttribute('role', 'dialog'); dlg.setAttribute('aria-modal', 'true'); dlg.setAttribute('aria-labelledby', 'mg-profile-title');
       dlg.innerHTML =
         '<div class="mg-profile-card">' +
+          '<button type="button" class="mg-close mg-close-abs" id="mg-profile-x" aria-label="Schließen"></button>' +
           '<h2 id="mg-profile-title">Mein Spielerkopf</h2>' +
           '<p class="mg-profile-intro" id="mg-profile-intro"></p>' +
           '<div class="mg-profile-row">' +
@@ -193,6 +194,7 @@
         var b = e.target.closest('.mg-char'); if (!b) return;
         setCharacter(b.getAttribute('data-char'));
       });
+      dlg.querySelector('#mg-profile-x').addEventListener('click', function () { closeProfile(); dlg.__after = null; });
       dlg.querySelector('#mg-profile-close').addEventListener('click', function () {
         closeProfile(); if (dlg.__after) { var cb = dlg.__after; dlg.__after = null; cb(); }
       });
