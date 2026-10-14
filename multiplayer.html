@@ -963,7 +963,14 @@ function buildAnswerInput(q) {
     opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'entity-opt';
-      btn.textContent = opt;
+      const im = document.createElement('img');
+      im.width = 28; im.height = 28; im.alt = ''; im.loading = 'lazy'; im.className = 'mc-icon';
+      im.src = (window.MGIcon ? MGIcon.base + MGIcon.forLabel(opt, '') : 'assets/mc/item/barrier') + '.png';
+      im.onerror = function () { this.onerror = null; this.src = 'assets/mc/item/barrier.png'; };
+      btn.appendChild(im);
+      btn.appendChild(document.createTextNode(opt));
+      btn.style.display = 'inline-flex'; btn.style.alignItems = 'center'; btn.style.gap = '8px';
+      btn.dataset.opt = opt;
       btn.onclick = () => submitAnswer(opt);
       el('entity-grid').appendChild(btn);
     });
@@ -1366,7 +1373,7 @@ socket.on('totem_result', (t) => {
     status.textContent = 'Totem-Hinweis: Die Antwort liegt zwischen ' + t.from + ' und ' + t.to + (t.unit ? ' ' + t.unit : '') + '.';
   } else if (t.kind === 'options') {
     const rm = {}; (t.remove || []).forEach(o => { rm[String(o)] = 1; });
-    document.querySelectorAll('#entity-grid .entity-opt').forEach(b => { if (rm[b.textContent]) b.remove(); });
+    document.querySelectorAll('#entity-grid .entity-opt').forEach(b => { if (rm[b.dataset.opt || b.textContent]) b.remove(); });
     status.className = 'buzz-status show you-buzzed';
     status.textContent = 'Totem: ' + (t.remove || []).length + ' falsche Optionen entfernt.';
   }

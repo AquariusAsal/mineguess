@@ -18,10 +18,14 @@ function walk(dir, out) {
   return out;
 }
 
+let onDemandList = [];
+try { onDemandList = JSON.parse(fs.readFileSync(path.join(root, 'assets', 'mc', 'ondemand.json'), 'utf8')); } catch (e) {}
+const onDemand = new Set(onDemandList);
 const KEEP_SKINS = new Set(['/assets/mc/entity/player/wide/steve.png', '/assets/mc/entity/player/slim/alex.png']);
 const mc = walk(path.join(root, 'assets', 'mc'), [])
   .filter(f => !f.startsWith('/assets/mc/entity/player/') || KEEP_SKINS.has(f))
   .filter(f => /\.(png|svg|webp|jpg)$/i.test(f))
+  .filter(f => !onDemand.has(f.replace('/assets/mc/', '')))   // per tools/fetch-icons.js geladene Icons nur on demand
   .sort();
 
 const rootCandidates = [

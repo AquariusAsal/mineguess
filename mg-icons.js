@@ -82,5 +82,14 @@
   /** Textur anhand von cat-Name (Fallback: leer) */
   function category(name, size) { return html('cat.' + name, size || 16); }
 
-  global.MGIcon = { tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
+  // assets/mc/icons.json ({ "Anzeigename": "item/ender_pearl.png" }) einmal laden und im Speicher halten
+  var NAMES = null;
+  var ready = fetch(BASE + 'icons.json').then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { NAMES = j || {}; }).catch(function () { NAMES = {}; });
+  /** Textur-Pfad (ohne .png) zu einem Anzeigenamen: icons.json, sonst lokale Namenssuche, sonst item/barrier */
+  function forLabel(name, enName) {
+    var p = NAMES && NAMES[name];
+    if (p) return String(p).replace(/.png$/, '');
+    return forName(name, enName) || 'item/barrier';
+  }
+  global.MGIcon = { ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
 })(window);

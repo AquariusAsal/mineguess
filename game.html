@@ -353,9 +353,12 @@ main {
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 .ac-item:last-child { border-bottom: none; }
+.ac-item { min-height:44px; }
+.ac-item mark { background:transparent; color:var(--green); font-weight:800; }
+.ac-item .name { flex:1; }
 .ac-item:hover, .ac-item.selected { background: rgba(255,255,255,0.06); }
 .ac-item img {
-  width: 24px; height: 24px;
+  width: 28px; height: 28px;
   object-fit: contain;
   image-rendering: pixelated;
   border-radius: 3px;
@@ -1724,16 +1727,15 @@ const ENTITIES = [
 
 function getMinecraftIcon(name) {
   const en = (typeof getEnglishName === 'function') ? getEnglishName(name.trim()) : '';
-  const p = MGIcon.forName(name.trim(), en);
-  return p ? MGIcon.base + p + '.png' : '';
+  const p = MGIcon.forLabel(name.trim(), en);
+  return MGIcon.base + p + '.png';
 }
 
 // Lokale Texturen (assets/mc), keine externen Requests. Ohne passende Textur bleibt das Bild ausgeblendet.
 function setIconWithFallback(imgEl, name) {
-  const src = getMinecraftIcon(name);
-  if (!src) { imgEl.style.display = 'none'; return; }
-  imgEl.src = src;
-  imgEl.onerror = function () { this.style.display = 'none'; };
+  imgEl.loading = 'lazy';
+  imgEl.src = getMinecraftIcon(name);
+  imgEl.onerror = function () { this.onerror = null; this.src = MGIcon.base + 'item/barrier.png'; };
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
@@ -2083,6 +2085,7 @@ function buildInput() {
 
     const droplist = document.createElement('div');
     droplist.className = 'autocomplete-list';
+    droplist.setAttribute('role', 'listbox'); droplist.setAttribute('aria-label', 'Antwortvorschlaege');
 
     let activeIdx = -1;
     let currentMatches = [];
@@ -2099,24 +2102,28 @@ function buildInput() {
       const pool = isCrafting
         ? [...(window.CRAFTING_ENTITIES || []), ...ENTITIES]
         : ENTITIES;
-      currentMatches = pool.filter(e => e.toLowerCase().includes(val)).slice(0, 10);
+      // Treffer: kanonische deutsche Namen; englische Aliase finden denselben Eintrag (keine Doppelungen)
+      const matches = pool.filter(e => e.toLowerCase().includes(val));
+      const al = window.ANSWER_ALIASES || {};
+      Object.keys(al).forEach(k => { if (k.includes(val) && pool.includes(al[k]) && !matches.includes(al[k])) matches.push(al[k]); });
+      matches.sort((a, b) => ((a.toLowerCase().startsWith(val) ? 0 : 1) - (b.toLowerCase().startsWith(val) ? 0 : 1)) || a.localeCompare(b, 'de'));
+      currentMatches = matches.slice(0, 10);
       currentMatches.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'ac-item';
         const img = document.createElement('img');
         img.alt = '';
         img.style.imageRendering = 'pixelated';
-        img.width = 24; img.height = 24;
-        // Only show icon for non-recipe entries
-        if (!m.includes('+') && !m.match(/^\d/)) {
-          setIconWithFallback(img, m);
-        } else {
-          img.style.display = 'none';
-        }
+        img.width = 28; img.height = 28;
+        item.setAttribute('role', 'option'); item.setAttribute('aria-label', m);
+        setIconWithFallback(img, m);   // icons.json, lokale Suche, sonst Barrier
         const label = document.createElement('span');
-        // Add English name in brackets for known DE terms
-        const enName = getEnglishName(m);
-        label.textContent = m + (enName ? ' (' + enName + ')' : '');
+        const full = m, at = full.toLowerCase().indexOf(val);   // nur der deutsche Anzeigename
+        if (at >= 0) {
+          label.appendChild(document.createTextNode(full.slice(0, at)));
+          const mk = document.createElement('mark'); mk.textContent = full.slice(at, at + val.length); label.appendChild(mk);
+          label.appendChild(document.createTextNode(full.slice(at + val.length)));
+        } else label.textContent = full;
         label.dataset.value = m; // keep raw value for submission
         item.appendChild(img);
         item.appendChild(label);
@@ -2312,6 +2319,21 @@ async function init() {
 
   // Build CRAFTING_ENTITIES (separate from main entities)
   window.CRAFTING_ENTITIES = [...craftingSet].sort();
+
+  // Bereinigte Antwortliste (ein deutscher Name je Objekt, Aliase nur zum Suchen); Fallback = obige Mischliste
+  try {
+    const ar = await fetch('assets/mc/answers.json');
+    if (ar.ok) {
+      const aj = await ar.json();
+      if (aj && Array.isArray(aj.names) && aj.names.length) {
+        const isRecipe = n => /\+|^\d/.test(n);
+        ENTITIES.length = 0;
+        aj.names.filter(n => !isRecipe(n)).forEach(n => ENTITIES.push(n));
+        window.CRAFTING_ENTITIES = aj.names.filter(isRecipe);
+        window.ANSWER_ALIASES = aj.aliases || {};
+      }
+    }
+  } catch (e) { console.warn('answers.json:', e); }
 
   // Game starts when user selects a mode via selectMode()
 }
