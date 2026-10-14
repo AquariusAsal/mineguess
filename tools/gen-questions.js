@@ -123,7 +123,7 @@ async function main() {
     out.push({ id: 0, type: q.type, question: q.question, answer: q.answer, ...(q.type === 'number'
       ? { unit: q.unit || '', tolerance: q.tolerance || 0, ...(q.tolerancePct ? { tolerancePct: q.tolerancePct, toleranceMin: q.toleranceMin || 0 } : {}) }
       : { acceptedAnswers: q.acceptedAnswers }),
-      category: cat, funFact: q.funFact, gen: tpl });
+      category: cat, funFact: q.funFact, ...(q.source ? { source: q.source } : {}), gen: tpl });
     stats[tpl] = (stats[tpl] || 0) + 1;
     return true;
   }
@@ -490,11 +490,11 @@ async function main() {
   // ═════════ Wiki-Fakten (vom forscher am Seitentext geprueft) ═════════
   const SKIP_WIKI = new Set(['W07', 'W21', 'W26', 'W210', 'W303']);   // W07/W210/W303 doppelt zu vorhandenen Fragen, W21 mehrdeutig, W26 Ja/Nein
   loadWikiFacts().filter(w => !SKIP_WIKI.has(w.id)).forEach(w => {
-    const fun = `Quelle: de.minecraft.wiki, Seite ${w.source.replace(/^.*\/w\//, '').replace(/^\//, '')} (CC BY-NC-SA).`;
+    const src = w.source.split('/').pop();   // nur Feld source, keine Anzeige im funFact
     if (w.isNum) {
-      add('wiki', w.cat, { type: 'number', question: w.question, answer: w.answer, unit: w.unit, tolerance: w.tol, funFact: `${fmt(w.answer)} ${w.unit}`.trim() + '. ' + fun });
+      add('wiki', w.cat, { type: 'number', question: w.question, answer: w.answer, unit: w.unit, tolerance: w.tol, funFact: `Richtig sind ${fmt(w.answer)}${w.unit ? ' ' + w.unit : ''}.`, source: src });
     } else {
-      add('wiki', w.cat, { type: 'entity', question: w.question, answer: w.answer, acceptedAnswers: [...new Set([w.answer, ...w.accepted])], funFact: `${w.answer}. ` + fun });
+      add('wiki', w.cat, { type: 'entity', question: w.question, answer: w.answer, acceptedAnswers: [...new Set([w.answer, ...w.accepted])], funFact: `Richtig ist: ${w.answer}.`, source: src });
     }
   });
 

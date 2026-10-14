@@ -30,6 +30,13 @@ h2.sec { font-family:var(--font-px); font-size:clamp(1.3rem,4vw,1.9rem); line-he
 .hero-cta { display:flex; flex-wrap:wrap; gap:12px; }
 .btn-xl { min-height:56px; padding:14px 30px; font-size:1.1rem; }
 .hero-scene { aspect-ratio:4/3; max-height:460px; min-height:240px; }
+/* Hero-Szene: transparente Flaeche mit Blur, Video/Panorama scheint durch (Blur nur hier) */
+.hero-scene.mg-scene { background:rgba(15,17,20,.28); border:1px solid rgba(255,255,255,.14); -webkit-backdrop-filter:blur(10px) saturate(1.1); backdrop-filter:blur(10px) saturate(1.1); }
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))) { .hero-scene.mg-scene { background:rgba(15,17,20,.55); } }
+.hero-scene .mg-fig-label, .hero-scene .mg-bubble { text-shadow:0 1px 2px rgba(0,0,0,.85); }
+@media (max-width:700px) { .hero-scene.mg-scene { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(15,17,20,.45); } }
+@media (prefers-reduced-motion: reduce) { .hero-scene.mg-scene { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(15,17,20,.45); } }
+[data-motion="reduce"] .hero-scene.mg-scene, .no-blur .hero-scene.mg-scene { -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(15,17,20,.45); }
 .hero-note { margin-top:18px; font-size:.82rem; color:var(--muted2); }
 
 /* Modi als Bildkarten (gedimmte Block-Textur als Kopfbereich) */
@@ -247,7 +254,11 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
 </main>
 
 <footer class="mg-footer">
+  <div class="mg-foot-text">
   <p>Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden. Minecraft-Texturen und -Namen © Mojang Studios / Microsoft.</p>
+  <p class="mg-foot-en">NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.</p>
+  <p class="mg-foot-src">Fragen und Fakten basieren auf Inhalten des Minecraft Wikis (<a href="https://de.minecraft.wiki" target="_blank" rel="noopener">de.minecraft.wiki</a>), Lizenz <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/deed.de" target="_blank" rel="noopener">CC BY-NC-SA 3.0</a>, paraphrasiert.</p>
+  </div>
   <nav aria-label="Rechtliches und Seiten">
     <a href="game.html">Spielen</a>
     <a href="multiplayer.html">Multiplayer</a>
@@ -268,6 +279,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
 <script src="spotify-config.js"></script>
 <script src="mg-settings.js"></script>
 <script>
+  try { var cn = navigator.connection; if (cn && cn.saveData) document.documentElement.classList.add('no-blur'); } catch (e) {}
   MGSkin.mountChip(document.getElementById('nav-chip'), { className: 'compact' });
   (function () {
     var el = document.getElementById('pano');

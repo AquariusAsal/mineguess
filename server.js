@@ -410,6 +410,7 @@ function nextQuestion(room) {
   room.answerSeq     = 0;
   room.resolving     = false;
   room.lastReveal    = null;
+  room.skippedRound  = false;
   room.deciding      = false;
   room.decisionDone  = false;
   room.offers        = null;
@@ -443,7 +444,8 @@ function startBuzzerCountdown(room) {
     io.to(room.id).emit('timer', { left: room.timerLeft, max: BUZZER_TIME, phase: 'buzzer' });
     if (room.timerLeft <= 0) {
       clearInterval(room.timerIv);
-      revealResult(room, null);   // niemand hat gebuzzert
+      room.skippedRound = true;   // niemand hat gebuzzert: Runde uebersprungen, kein Abzug, Serie/Totem unveraendert
+      revealResult(room, null);
     }
   }, 1000);
 }
@@ -620,7 +622,8 @@ function revealResult(room, winnerId) {
   const q      = room.question;
   const answer = q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer;
   room.lastResult = { answer, funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
-    mode: room.lastReveal ? room.lastReveal.mode : 'none', answers: room.lastReveal ? room.lastReveal.answers : [] };
+    mode: room.skippedRound ? 'skipped' : (room.lastReveal ? room.lastReveal.mode : 'none'), skipped: !!room.skippedRound,
+    answers: room.lastReveal ? room.lastReveal.answers : [] };
   io.to(room.id).emit('result', room.lastResult);
   broadcastLobby(room);
 

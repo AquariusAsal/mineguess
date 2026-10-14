@@ -373,3 +373,12 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 
 .mr-local { font-size:.68rem; color:var(--muted); white-space:nowrap; }
 @media (max-width:420px) { .mr-local { display:none; } }
+
+/* Footer: kein fester Hoehenwert, Text vollstaendig sichtbar (Safe-Area), saubere Umbrueche */
+.mg-footer { height:auto; min-height:0; align-items:flex-start; line-height:1.55; padding-top:18px; padding-bottom:calc(28px + var(--safe-b)); overflow:visible; }
+.mg-foot-text { flex:1 1 320px; min-width:0; }
+.mg-foot-text p { margin:0 0 8px; max-width:70ch; color:var(--text); opacity:.92; font-size:.84rem; }
+.mg-foot-text .mg-foot-en { font-size:.74rem; letter-spacing:.02em; }
+.mg-foot-text a { color:var(--text); text-decoration:underline; text-underline-offset:3px; min-height:0; padding:0; display:inline; }
+.mg-footer nav { flex:0 1 auto; justify-content:flex-end; }
+@media (max-width:700px) { .mg-footer nav { justify-content:flex-start; } }

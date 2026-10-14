@@ -17065,7 +17065,8 @@
     "unit": "Ringe",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "8 Ringe. Quelle: de.minecraft.wiki, Seite Festung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Ringe.",
+    "source": "Festung",
     "gen": "wiki",
     "rating": 2800,
     "tier": 3
@@ -17081,7 +17082,8 @@
       "Endfestung"
     ],
     "category": "Strukturen",
-    "funFact": "Festung. Quelle: de.minecraft.wiki, Seite Festung (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Festung.",
+    "source": "Festung",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -17097,7 +17099,8 @@
       "Silberfisch"
     ],
     "category": "Strukturen",
-    "funFact": "Silberfischchen-Spawner. Quelle: de.minecraft.wiki, Seite Ende (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Silberfischchen-Spawner.",
+    "source": "Ende",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -17110,7 +17113,8 @@
     "unit": "Blöcke",
     "tolerance": 100,
     "category": "Strukturen",
-    "funFact": "1408 Blöcke. Quelle: de.minecraft.wiki, Seite Festung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1408 Blöcke.",
+    "source": "Festung",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -17127,7 +17131,8 @@
       "existiert nicht"
     ],
     "category": "Strukturen",
-    "funFact": "Es gibt kein Endportal. Quelle: de.minecraft.wiki, Seite Festung (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Es gibt kein Endportal.",
+    "source": "Festung",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17143,7 +17148,8 @@
       "Basalt-Delta"
     ],
     "category": "Strukturen",
-    "funFact": "Basaltdelta. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Basaltdelta.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -17159,7 +17165,8 @@
       "Bastionsruinen"
     ],
     "category": "Strukturen",
-    "funFact": "Bastionsruine. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Bastionsruine.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -17172,7 +17179,8 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Strukturen",
-    "funFact": "60 %. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig sind 60 %.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -17189,7 +17197,8 @@
       "Magmawürfelspawner"
     ],
     "category": "Strukturen",
-    "funFact": "Magmawürfel-Spawner. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Magmawürfel-Spawner.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -17202,7 +17211,8 @@
     "unit": "Typen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "4 Typen. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Typen.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -17219,7 +17229,8 @@
       "Piglin Brute"
     ],
     "category": "Strukturen",
-    "funFact": "Piglin-Barbaren. Quelle: de.minecraft.wiki, Seite Bastionsruine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Piglin-Barbaren.",
+    "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -17236,7 +17247,8 @@
       "Netherziegel-Block"
     ],
     "category": "Strukturen",
-    "funFact": "Netherziegel. Quelle: de.minecraft.wiki, Seite Netherfestung (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Netherziegel.",
+    "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -17252,7 +17264,8 @@
       "Nether Festung"
     ],
     "category": "Strukturen",
-    "funFact": "Netherfestung. Quelle: de.minecraft.wiki, Seite Netherfestung (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Netherfestung.",
+    "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -17265,7 +17278,8 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Strukturen",
-    "funFact": "35,7 %. Quelle: de.minecraft.wiki, Seite Netherfestung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 35,7 %.",
+    "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -17280,7 +17294,8 @@
       "Ghasts"
     ],
     "category": "Strukturen",
-    "funFact": "Ghast. Quelle: de.minecraft.wiki, Seite Netherfestung (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Ghast.",
+    "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -17295,7 +17310,8 @@
       "Crying Obsidian"
     ],
     "category": "Strukturen",
-    "funFact": "Weinender Obsidian. Quelle: de.minecraft.wiki, Seite Portalruine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Weinender Obsidian.",
+    "source": "Portalruine",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -17308,7 +17324,8 @@
     "unit": "Hebel",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "3 Hebel. Quelle: de.minecraft.wiki, Seite Dschungeltempel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Hebel.",
+    "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -17321,7 +17338,8 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "2 Truhen. Quelle: de.minecraft.wiki, Seite Dschungeltempel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Truhen.",
+    "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -17337,7 +17355,8 @@
       "Kolben"
     ],
     "category": "Strukturen",
-    "funFact": "Klebrige Kolben. Quelle: de.minecraft.wiki, Seite Dschungeltempel (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Klebrige Kolben.",
+    "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -17352,7 +17371,8 @@
       "Dispenser"
     ],
     "category": "Strukturen",
-    "funFact": "Werfer. Quelle: de.minecraft.wiki, Seite Dschungeltempel (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Werfer.",
+    "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -17365,7 +17385,8 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Strukturen",
-    "funFact": "58 Blöcke. Quelle: de.minecraft.wiki, Seite Ozeanmonument (CC BY-NC-SA).",
+    "funFact": "Richtig sind 58 Blöcke.",
+    "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -17381,7 +17402,8 @@
       "Prismarin-Ziegel"
     ],
     "category": "Strukturen",
-    "funFact": "Prismarinziegel. Quelle: de.minecraft.wiki, Seite Ozeanmonument (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Prismarinziegel.",
+    "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -17397,7 +17419,8 @@
       "8"
     ],
     "category": "Strukturen",
-    "funFact": "1.8. Quelle: de.minecraft.wiki, Seite Ozeanmonument (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.8.",
+    "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -17414,7 +17437,8 @@
       "Tiefer Ozean"
     ],
     "category": "Strukturen",
-    "funFact": "Tiefsee. Quelle: de.minecraft.wiki, Seite Ozeanmonument (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Tiefsee.",
+    "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -17430,7 +17454,8 @@
       "dark forest"
     ],
     "category": "Strukturen",
-    "funFact": "Dunkler Wald. Quelle: de.minecraft.wiki, Seite Waldanwesen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Dunkler Wald.",
+    "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -17448,7 +17473,8 @@
       "Dunkeleiche"
     ],
     "category": "Strukturen",
-    "funFact": "Schwarzeichenholz. Quelle: de.minecraft.wiki, Seite Waldanwesen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Schwarzeichenholz.",
+    "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17461,7 +17487,8 @@
     "unit": "Stockwerke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "3 Stockwerke. Quelle: de.minecraft.wiki, Seite Waldanwesen (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Stockwerke.",
+    "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 1150,
     "tier": 1
@@ -17478,7 +17505,8 @@
       "Hilfsgeist-Gefangene"
     ],
     "category": "Strukturen",
-    "funFact": "Hilfsgeist. Quelle: de.minecraft.wiki, Seite Waldanwesen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Hilfsgeist.",
+    "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -17494,7 +17522,8 @@
       "Waldanwesen-Karte"
     ],
     "category": "Strukturen",
-    "funFact": "Entdeckerkarte. Quelle: de.minecraft.wiki, Seite Waldanwesen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Entdeckerkarte.",
+    "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -17507,7 +17536,8 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "3 Truhen. Quelle: de.minecraft.wiki, Seite Schiffswrack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Truhen.",
+    "source": "Schiffswrack",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -17525,7 +17555,8 @@
       "rohes Kabeljau"
     ],
     "category": "Strukturen",
-    "funFact": "Rohen Kabeljau. Quelle: de.minecraft.wiki, Seite Schiffswrack (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Rohen Kabeljau.",
+    "source": "Schiffswrack",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -17538,7 +17569,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "4 Blöcke. Quelle: de.minecraft.wiki, Seite Verlies (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Blöcke.",
+    "source": "Verlies",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -17551,7 +17583,8 @@
     "unit": "Versuche",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "8 Versuche. Quelle: de.minecraft.wiki, Seite Verlies (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Versuche.",
+    "source": "Verlies",
     "gen": "wiki",
     "rating": 2550,
     "tier": 3
@@ -17564,7 +17597,8 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "2 Truhen. Quelle: de.minecraft.wiki, Seite Verlies (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Truhen.",
+    "source": "Verlies",
     "gen": "wiki",
     "rating": 1150,
     "tier": 1
@@ -17582,7 +17616,8 @@
       "Minenschacht"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Minen. Quelle: de.minecraft.wiki, Seite Mine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Minen.",
+    "source": "Mine",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -17599,7 +17634,8 @@
       "Mesa"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Tafelberge. Quelle: de.minecraft.wiki, Seite Mine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Tafelberge.",
+    "source": "Mine",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -17615,7 +17651,8 @@
       "Note Block"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Notenblöcke. Quelle: de.minecraft.wiki, Seite Notenblock (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Notenblöcke.",
+    "source": "Notenblock",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -17628,7 +17665,8 @@
     "unit": "Blöcke",
     "tolerance": 100,
     "category": "Weltgenerierung",
-    "funFact": "1000 Blöcke. Quelle: de.minecraft.wiki, Seite Ende (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1000 Blöcke.",
+    "source": "Ende",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -17645,7 +17683,8 @@
       "Enderman oder Shulker"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Enderman. Quelle: de.minecraft.wiki, Seite Ende (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Enderman.",
+    "source": "Ende",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -17662,7 +17701,8 @@
       "4 mal fünf"
     ],
     "category": "Strukturen",
-    "funFact": "4 mal 5. Quelle: de.minecraft.wiki, Seite Netherportal (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 4 mal 5.",
+    "source": "Netherportal",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -17675,7 +17715,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "23 Blöcke. Quelle: de.minecraft.wiki, Seite Netherportal (CC BY-NC-SA).",
+    "funFact": "Richtig sind 23 Blöcke.",
+    "source": "Netherportal",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17688,7 +17729,8 @@
     "unit": "Sekunden",
     "tolerance": 1,
     "category": "Strukturen",
-    "funFact": "15 Sekunden. Quelle: de.minecraft.wiki, Seite Netherportal (CC BY-NC-SA).",
+    "funFact": "Richtig sind 15 Sekunden.",
+    "source": "Netherportal",
     "gen": "wiki",
     "rating": 2300,
     "tier": 3
@@ -17701,7 +17743,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "8 Blöcke. Quelle: de.minecraft.wiki, Seite Nether (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Blöcke.",
+    "source": "Nether",
     "gen": "wiki",
     "rating": 2800,
     "tier": 3
@@ -17714,7 +17757,8 @@
     "unit": "Y-Ebene",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "128 Y-Ebene. Quelle: de.minecraft.wiki, Seite Nether (CC BY-NC-SA).",
+    "funFact": "Richtig sind 128 Y-Ebene.",
+    "source": "Nether",
     "gen": "wiki",
     "rating": 3800,
     "tier": 4
@@ -17727,7 +17771,8 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "5 Stärke. Quelle: de.minecraft.wiki, Seite Bett (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Stärke.",
+    "source": "Bett",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -17740,7 +17785,8 @@
     "unit": "Chunks",
     "tolerance": 2,
     "category": "Weltgenerierung",
-    "funFact": "16 Chunks. Quelle: de.minecraft.wiki, Seite Nether (CC BY-NC-SA).",
+    "funFact": "Richtig sind 16 Chunks.",
+    "source": "Nether",
     "gen": "wiki",
     "rating": 800,
     "tier": 1
@@ -17753,7 +17799,8 @@
     "unit": "Obsidian",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "14 Obsidian. Quelle: de.minecraft.wiki, Seite Netherportal (CC BY-NC-SA).",
+    "funFact": "Richtig sind 14 Obsidian.",
+    "source": "Netherportal",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -17766,7 +17813,8 @@
     "unit": "Y-Ebene",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "32 Y-Ebene. Quelle: de.minecraft.wiki, Seite Netherportal (CC BY-NC-SA).",
+    "funFact": "Richtig sind 32 Y-Ebene.",
+    "source": "Netherportal",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17779,7 +17827,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "384 Blöcke. Quelle: de.minecraft.wiki, Seite Chunk (CC BY-NC-SA).",
+    "funFact": "Richtig sind 384 Blöcke.",
+    "source": "Chunk",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -17792,7 +17841,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "16 Blöcke. Quelle: de.minecraft.wiki, Seite Chunk (CC BY-NC-SA).",
+    "funFact": "Richtig sind 16 Blöcke.",
+    "source": "Chunk",
     "gen": "wiki",
     "rating": 2800,
     "tier": 3
@@ -17805,7 +17855,8 @@
     "unit": "Chunks",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "1024 Chunks. Quelle: de.minecraft.wiki, Seite Chunk (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1024 Chunks.",
+    "source": "Chunk",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -17818,7 +17869,8 @@
     "unit": "Chunks",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "8 Chunks. Quelle: de.minecraft.wiki, Seite Chunk (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Chunks.",
+    "source": "Chunk",
     "gen": "wiki",
     "rating": 2950,
     "tier": 3
@@ -17834,7 +17886,8 @@
       "F3 und G"
     ],
     "category": "Weltgenerierung",
-    "funFact": "F3+G. Quelle: de.minecraft.wiki, Seite Chunk (CC BY-NC-SA).",
+    "funFact": "Richtig ist: F3+G.",
+    "source": "Chunk",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -17850,7 +17903,8 @@
       "F3 und C"
     ],
     "category": "Weltgenerierung",
-    "funFact": "F3+C. Quelle: de.minecraft.wiki, Seite Koordinaten (CC BY-NC-SA).",
+    "funFact": "Richtig ist: F3+C.",
+    "source": "Koordinaten",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17863,7 +17917,8 @@
     "unit": "",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "4. Quelle: de.minecraft.wiki, Seite Biom (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4.",
+    "source": "Biom",
     "gen": "wiki",
     "rating": 1150,
     "tier": 1
@@ -17876,7 +17931,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "2 %. Quelle: de.minecraft.wiki, Seite Dorf (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 %.",
+    "source": "Dorf",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -17889,7 +17945,8 @@
     "unit": "Biome",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "6 Biome. Quelle: de.minecraft.wiki, Seite Dorf (CC BY-NC-SA).",
+    "funFact": "Richtig sind 6 Biome.",
+    "source": "Dorf",
     "gen": "wiki",
     "rating": 2800,
     "tier": 3
@@ -17902,7 +17959,8 @@
     "unit": "Minuten",
     "tolerance": 1,
     "category": "Dorfbewohner",
-    "funFact": "20 Minuten. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 20 Minuten.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2400,
     "tier": 3
@@ -17915,7 +17973,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "5 Minuten. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Minuten.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -17928,7 +17987,8 @@
     "unit": "Stufen",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "5 Stufen. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Stufen.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -17941,7 +18001,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "50 %. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 50 %.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17954,7 +18015,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "40 Minuten. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 40 Minuten.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -17967,7 +18029,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "8 Blöcke. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Blöcke.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2750,
     "tier": 3
@@ -17980,7 +18043,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "4 Blöcke. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Blöcke.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -17993,7 +18057,8 @@
     "unit": "Brote",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "3 Brote. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Brote.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -18008,7 +18073,8 @@
       "Composter"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Komposter. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Komposter.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -18024,7 +18090,8 @@
       "Hut"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Strohhut. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Strohhut.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -18037,7 +18104,8 @@
     "unit": "Mal",
     "tolerance": 2,
     "category": "Dorfbewohner",
-    "funFact": "16 Mal. Quelle: de.minecraft.wiki, Seite Handel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 16 Mal.",
+    "source": "Handel",
     "gen": "wiki",
     "rating": 700,
     "tier": 1
@@ -18053,7 +18121,8 @@
       "Plünderer-Überfall"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Überfall. Quelle: de.minecraft.wiki, Seite Überfall (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Überfall.",
+    "source": "Überfall",
     "gen": "wiki",
     "rating": 1150,
     "tier": 1
@@ -18066,7 +18135,8 @@
     "unit": "Stufe",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "6 Stufe. Quelle: de.minecraft.wiki, Seite Überfall (CC BY-NC-SA).",
+    "funFact": "Richtig sind 6 Stufe.",
+    "source": "Überfall",
     "gen": "wiki",
     "rating": 2750,
     "tier": 3
@@ -18083,7 +18153,8 @@
       "Plünderer mit Banner"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Räuberhauptmann. Quelle: de.minecraft.wiki, Seite Überfall (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Räuberhauptmann.",
+    "source": "Überfall",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -18096,7 +18167,8 @@
     "unit": "Angebote",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "6 Angebote. Quelle: de.minecraft.wiki, Seite Fahrender_Händler (CC BY-NC-SA).",
+    "funFact": "Richtig sind 6 Angebote.",
+    "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 2900,
     "tier": 3
@@ -18109,7 +18181,8 @@
     "unit": "%",
     "tolerance": 0.5,
     "category": "Dorfbewohner",
-    "funFact": "2,5 %. Quelle: de.minecraft.wiki, Seite Fahrender_Händler (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2,5 %.",
+    "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 2450,
     "tier": 3
@@ -18125,7 +18198,8 @@
       "Unsichtbarkeit"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Unsichtbarkeitstrank. Quelle: de.minecraft.wiki, Seite Fahrender_Händler (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Unsichtbarkeitstrank.",
+    "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 3000,
     "tier": 3
@@ -18138,7 +18212,8 @@
     "unit": "Blöcke",
     "tolerance": 4,
     "category": "Dorfbewohner",
-    "funFact": "48 Blöcke. Quelle: de.minecraft.wiki, Seite Fahrender_Händler (CC BY-NC-SA).",
+    "funFact": "Richtig sind 48 Blöcke.",
+    "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -18153,7 +18228,8 @@
       "Dorfglocke"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Glocke. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Glocke.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1150,
     "tier": 1
@@ -18166,7 +18242,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "1 Ticks. Quelle: de.minecraft.wiki, Seite Redstone-Verstärker (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1 Ticks.",
+    "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 2750,
     "tier": 3
@@ -18179,7 +18256,8 @@
     "unit": "Sekunden",
     "tolerance": 0.05,
     "category": "Redstone",
-    "funFact": "0,1 Sekunden. Quelle: de.minecraft.wiki, Seite Redstone-Verstärker (CC BY-NC-SA).",
+    "funFact": "Richtig sind 0,1 Sekunden.",
+    "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -18192,7 +18270,8 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "15 Stärke. Quelle: de.minecraft.wiki, Seite Redstone-Verstärker (CC BY-NC-SA).",
+    "funFact": "Richtig sind 15 Stärke.",
+    "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -18205,7 +18284,8 @@
     "unit": "Staub",
     "tolerance": 1,
     "category": "Redstone",
-    "funFact": "4 Staub. Quelle: de.minecraft.wiki, Seite Redstone-Staub (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Staub.",
+    "source": "Redstone-Staub",
     "gen": "wiki",
     "rating": 800,
     "tier": 1
@@ -18223,7 +18303,8 @@
       "2 2/3"
     ],
     "category": "Redstone",
-    "funFact": "8/3. Quelle: de.minecraft.wiki, Seite Redstone-Staub (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 8/3.",
+    "source": "Redstone-Staub",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -18236,7 +18317,8 @@
     "unit": "Staub",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "9 Staub. Quelle: de.minecraft.wiki, Seite Redstone-Block (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 Staub.",
+    "source": "Redstone-Block",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -18249,7 +18331,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "2 Ticks. Quelle: de.minecraft.wiki, Seite Kolben (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Ticks.",
+    "source": "Kolben",
     "gen": "wiki",
     "rating": 2650,
     "tier": 3
@@ -18262,7 +18345,8 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "7 Lichtlevel. Quelle: de.minecraft.wiki, Seite Redstone-Fackel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 7 Lichtlevel.",
+    "source": "Redstone-Fackel",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -18275,7 +18359,8 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "15 Stärke. Quelle: de.minecraft.wiki, Seite Redstone-Fackel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 15 Stärke.",
+    "source": "Redstone-Fackel",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -18288,7 +18373,8 @@
     "unit": "Blöcke",
     "tolerance": 4,
     "category": "Redstone",
-    "funFact": "48 Blöcke. Quelle: de.minecraft.wiki, Seite Notenblock (CC BY-NC-SA).",
+    "funFact": "Richtig sind 48 Blöcke.",
+    "source": "Notenblock",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -18304,7 +18390,8 @@
       "Spitzaxt"
     ],
     "category": "Redstone",
-    "funFact": "Axt. Quelle: de.minecraft.wiki, Seite Notenblock (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Axt.",
+    "source": "Notenblock",
     "gen": "wiki",
     "rating": 2950,
     "tier": 3
@@ -18322,7 +18409,8 @@
       "Mob-Sound"
     ],
     "category": "Redstone",
-    "funFact": "Er spielt das Geräusch der Kreatur. Quelle: de.minecraft.wiki, Seite Notenblock (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Er spielt das Geräusch der Kreatur.",
+    "source": "Notenblock",
     "gen": "wiki",
     "rating": 3350,
     "tier": 4
@@ -18335,7 +18423,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "4 Blöcke. Quelle: de.minecraft.wiki, Seite Werfer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Blöcke.",
+    "source": "Werfer",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -18348,7 +18437,8 @@
     "unit": "Plätze",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "9 Plätze. Quelle: de.minecraft.wiki, Seite Spender (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 Plätze.",
+    "source": "Spender",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -18363,7 +18453,8 @@
       "klebriger Kolben"
     ],
     "category": "Redstone",
-    "funFact": "Klebrige Kolben. Quelle: de.minecraft.wiki, Seite Kolben (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Klebrige Kolben.",
+    "source": "Kolben",
     "gen": "wiki",
     "rating": 2750,
     "tier": 3
@@ -18376,7 +18467,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "200 HP. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig sind 200 HP.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -18389,7 +18481,8 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "10 HP. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 HP.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 750,
     "tier": 1
@@ -18402,7 +18495,8 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "500 XP. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig sind 500 XP.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -18415,7 +18509,8 @@
     "unit": "Portale",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "20 Portale. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig sind 20 Portale.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3000,
     "tier": 3
@@ -18428,7 +18523,8 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "7 Stärke. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig sind 7 Stärke.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -18441,7 +18537,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "1 HP. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1 HP.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -18454,7 +18551,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "50 %. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig sind 50 %.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 3450,
     "tier": 4
@@ -18467,7 +18565,8 @@
     "unit": "Blöcke",
     "tolerance": 0.1,
     "category": "Mobs",
-    "funFact": "0,9 Blöcke. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig sind 0,9 Blöcke.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 2350,
     "tier": 3
@@ -18480,7 +18579,8 @@
     "unit": "Sekunden",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "10 Sekunden. Quelle: de.minecraft.wiki, Seite Axolotl (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 Sekunden.",
+    "source": "Axolotl",
     "gen": "wiki",
     "rating": 750,
     "tier": 1
@@ -18493,7 +18593,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "5 Minuten. Quelle: de.minecraft.wiki, Seite Axolotl (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Minuten.",
+    "source": "Axolotl",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -18506,7 +18607,8 @@
     "unit": "(1 zu ...)",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "1200 (1 zu ...). Quelle: de.minecraft.wiki, Seite Axolotl (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1200 (1 zu ...).",
+    "source": "Axolotl",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -18519,7 +18621,8 @@
     "unit": "Minuten",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "20 Minuten. Quelle: de.minecraft.wiki, Seite Huhn (CC BY-NC-SA).",
+    "funFact": "Richtig sind 20 Minuten.",
+    "source": "Huhn",
     "gen": "wiki",
     "rating": 2200,
     "tier": 3
@@ -18532,7 +18635,8 @@
     "unit": "(1 zu ...)",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "8 (1 zu ...). Quelle: de.minecraft.wiki, Seite Huhn (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 (1 zu ...).",
+    "source": "Huhn",
     "gen": "wiki",
     "rating": 2700,
     "tier": 3
@@ -18545,7 +18649,8 @@
     "unit": "Küken",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "4 Küken. Quelle: de.minecraft.wiki, Seite Huhn (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Küken.",
+    "source": "Huhn",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -18558,7 +18663,8 @@
     "unit": "Federn",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "2 Federn. Quelle: de.minecraft.wiki, Seite Huhn (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Federn.",
+    "source": "Huhn",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -18571,7 +18677,8 @@
     "unit": "Varianten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "3 Varianten. Quelle: de.minecraft.wiki, Seite Huhn (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Varianten.",
+    "source": "Huhn",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -18584,7 +18691,8 @@
     "unit": "Sechzehntel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "9 Sechzehntel. Quelle: de.minecraft.wiki, Seite Bett (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 Sechzehntel.",
+    "source": "Bett",
     "gen": "wiki",
     "rating": 2950,
     "tier": 3
@@ -18597,7 +18705,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "4 Blöcke. Quelle: de.minecraft.wiki, Seite Bett (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Blöcke.",
+    "source": "Bett",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -18610,7 +18719,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "8 Blöcke. Quelle: de.minecraft.wiki, Seite Bett (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Blöcke.",
+    "source": "Bett",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -18625,7 +18735,8 @@
       "Jens Bergensten"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Jeb. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Jeb.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 2250,
     "tier": 3
@@ -18641,7 +18752,8 @@
       "5"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "1.5. Quelle: de.minecraft.wiki, Seite Spender (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.5.",
+    "source": "Spender",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -18657,7 +18769,8 @@
       "11"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "1.11. Quelle: de.minecraft.wiki, Seite Beobachter (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.11.",
+    "source": "Beobachter",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -18670,7 +18783,8 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Mobs",
-    "funFact": "32 Blöcke. Quelle: de.minecraft.wiki, Seite Enderman (CC BY-NC-SA).",
+    "funFact": "Richtig sind 32 Blöcke.",
+    "source": "Enderman",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -18683,7 +18797,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "3 Blöcke. Quelle: de.minecraft.wiki, Seite Enderman (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Blöcke.",
+    "source": "Enderman",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -18696,7 +18811,8 @@
     "unit": "Blöcke",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "255 Blöcke. Quelle: de.minecraft.wiki, Seite Leuchtfeuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 255 Blöcke.",
+    "source": "Leuchtfeuer",
     "gen": "wiki",
     "rating": 3800,
     "tier": 4
@@ -18709,7 +18825,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "9 Blöcke. Quelle: de.minecraft.wiki, Seite Leuchtfeuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 Blöcke.",
+    "source": "Leuchtfeuer",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -18722,7 +18839,8 @@
     "unit": "Sekunden",
     "tolerance": 1,
     "category": "Blöcke",
-    "funFact": "16 Sekunden. Quelle: de.minecraft.wiki, Seite Leuchtfeuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 16 Sekunden.",
+    "source": "Leuchtfeuer",
     "gen": "wiki",
     "rating": 2250,
     "tier": 3
@@ -18735,7 +18853,8 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "9 XP. Quelle: de.minecraft.wiki, Seite Erfahrung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 XP.",
+    "source": "Erfahrung",
     "gen": "wiki",
     "rating": 3450,
     "tier": 4
@@ -18748,7 +18867,8 @@
     "unit": "XP",
     "tolerance": 5,
     "category": "Spielmechanik",
-    "funFact": "1628 XP. Quelle: de.minecraft.wiki, Seite Erfahrung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1628 XP.",
+    "source": "Erfahrung",
     "gen": "wiki",
     "rating": 3900,
     "tier": 4
@@ -18761,7 +18881,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "5 Minuten. Quelle: de.minecraft.wiki, Seite Erfahrung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Minuten.",
+    "source": "Erfahrung",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -18774,7 +18895,8 @@
     "unit": "Pilze",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "5 Pilze. Quelle: de.minecraft.wiki, Seite Kuh (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Pilze.",
+    "source": "Kuh",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -18787,7 +18909,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "25 %. Quelle: de.minecraft.wiki, Seite Eisengolem (CC BY-NC-SA).",
+    "funFact": "Richtig sind 25 %.",
+    "source": "Eisengolem",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -18800,7 +18923,8 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Mobs",
-    "funFact": "32 Blöcke. Quelle: de.minecraft.wiki, Seite Eisengolem (CC BY-NC-SA).",
+    "funFact": "Richtig sind 32 Blöcke.",
+    "source": "Eisengolem",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -18817,7 +18941,8 @@
       "Swamp Hut"
     ],
     "category": "Mobs",
-    "funFact": "Sumpfhütte. Quelle: de.minecraft.wiki, Seite Hexe (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Sumpfhütte.",
+    "source": "Hexe",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -18830,7 +18955,8 @@
     "unit": "%",
     "tolerance": 0.5,
     "category": "Mobs",
-    "funFact": "8,71 %. Quelle: de.minecraft.wiki, Seite Druckplatte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8,71 %.",
+    "source": "Druckplatte",
     "gen": "wiki",
     "rating": 3450,
     "tier": 4
@@ -18843,7 +18969,8 @@
     "unit": "Schienen",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "6 Schienen. Quelle: de.minecraft.wiki, Seite Antriebsschiene (CC BY-NC-SA).",
+    "funFact": "Richtig sind 6 Schienen.",
+    "source": "Antriebsschiene",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -18856,7 +18983,8 @@
     "unit": "m/s",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "8 m/s. Quelle: de.minecraft.wiki, Seite Antriebsschiene (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 m/s.",
+    "source": "Antriebsschiene",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -18869,7 +18997,8 @@
     "unit": "Tag",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "17 Tag. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig sind 17 Tag.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -18882,7 +19011,8 @@
     "unit": "Tag",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "18 Tag. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig sind 18 Tag.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -18895,7 +19025,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "2010 Jahr. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2010 Jahr.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -18908,7 +19039,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "2020 Jahr. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2020 Jahr.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -18922,7 +19054,8 @@
       "Stockholm"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Stockholm. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Stockholm.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 2300,
     "tier": 3
@@ -18937,7 +19070,8 @@
       "Mojang Specification"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Mojang Specifications. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Mojang Specifications.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3150,
     "tier": 3
@@ -18953,7 +19087,8 @@
       "Commodore"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Commodore 128. Quelle: de.minecraft.wiki, Seite Markus_Persson (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Commodore 128.",
+    "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -18966,7 +19101,8 @@
     "unit": "Spiele",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "30 Spiele. Quelle: de.minecraft.wiki, Seite Markus_Persson (CC BY-NC-SA).",
+    "funFact": "Richtig sind 30 Spiele.",
+    "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -18979,7 +19115,8 @@
     "unit": "KB",
     "tolerance": 0.5,
     "category": "Geschichte & Updates",
-    "funFact": "2,5 KB. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2,5 KB.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -18992,7 +19129,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "100 Minuten. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig sind 100 Minuten.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -19008,7 +19146,8 @@
       "Alpha 1.0.0"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "1.0.0. Quelle: de.minecraft.wiki, Seite Markus_Persson (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.0.0.",
+    "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -19022,7 +19161,8 @@
       "Infiniminer"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Infiniminer. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Infiniminer.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 2300,
     "tier": 3
@@ -19037,7 +19177,8 @@
       "1.12"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "1.12.2. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.12.2.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -19052,7 +19193,8 @@
       "12/2010"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Dezember 2010. Quelle: de.minecraft.wiki, Seite Versionen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Dezember 2010.",
+    "source": "Versionen",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -19065,7 +19207,8 @@
     "unit": "Jahre",
     "tolerance": 0.5,
     "category": "Geschichte & Updates",
-    "funFact": "2,5 Jahre. Quelle: de.minecraft.wiki, Seite Versionen (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2,5 Jahre.",
+    "source": "Versionen",
     "gen": "wiki",
     "rating": 2950,
     "tier": 3
@@ -19079,7 +19222,8 @@
       "1.7.10"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "1.7.10. Quelle: de.minecraft.wiki, Seite Versionen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 1.7.10.",
+    "source": "Versionen",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -19092,7 +19236,8 @@
     "unit": "Dollar",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "99 Dollar. Quelle: de.minecraft.wiki, Seite Minecon (CC BY-NC-SA).",
+    "funFact": "Richtig sind 99 Dollar.",
+    "source": "Minecon",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -19105,7 +19250,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "2017 Jahr. Quelle: de.minecraft.wiki, Seite Minecon (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2017 Jahr.",
+    "source": "Minecon",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -19118,7 +19264,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "2019 Jahr. Quelle: de.minecraft.wiki, Seite Minecon (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2019 Jahr.",
+    "source": "Minecon",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -19131,7 +19278,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "1979 Jahr. Quelle: de.minecraft.wiki, Seite Markus_Persson (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1979 Jahr.",
+    "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -19146,7 +19294,8 @@
       "0x10C"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "0x10c. Quelle: de.minecraft.wiki, Seite Markus_Persson (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 0x10c.",
+    "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -19159,7 +19308,8 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Geschichte & Updates",
-    "funFact": "71 %. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig sind 71 %.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3650,
     "tier": 4
@@ -19172,7 +19322,8 @@
     "unit": "Mitarbeiter",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "12 Mitarbeiter. Quelle: de.minecraft.wiki, Seite Mojang_Studios (CC BY-NC-SA).",
+    "funFact": "Richtig sind 12 Mitarbeiter.",
+    "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -19185,7 +19336,8 @@
     "unit": "Jahr",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "2012 Jahr. Quelle: de.minecraft.wiki, Seite Minecraft (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2012 Jahr.",
+    "source": "Minecraft",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -19198,7 +19350,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "24000 Ticks. Quelle: de.minecraft.wiki, Seite Tick (CC BY-NC-SA).",
+    "funFact": "Richtig sind 24000 Ticks.",
+    "source": "Tick",
     "gen": "wiki",
     "rating": 3850,
     "tier": 4
@@ -19211,7 +19364,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "2 Ticks. Quelle: de.minecraft.wiki, Seite Tick (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Ticks.",
+    "source": "Tick",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19224,7 +19378,8 @@
     "unit": "Positionen",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "3 Positionen. Quelle: de.minecraft.wiki, Seite Tick (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Positionen.",
+    "source": "Tick",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -19237,7 +19392,8 @@
     "unit": "ms",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "50 ms. Quelle: de.minecraft.wiki, Seite Tick (CC BY-NC-SA).",
+    "funFact": "Richtig sind 50 ms.",
+    "source": "Tick",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -19250,7 +19406,8 @@
     "unit": "Tränke",
     "tolerance": 0,
     "category": "Tränke",
-    "funFact": "2 Tränke. Quelle: de.minecraft.wiki, Seite Trank (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Tränke.",
+    "source": "Trank",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -19263,7 +19420,8 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Tränke",
-    "funFact": "66,7 %. Quelle: de.minecraft.wiki, Seite Trank (CC BY-NC-SA).",
+    "funFact": "Richtig sind 66,7 %.",
+    "source": "Trank",
     "gen": "wiki",
     "rating": 3800,
     "tier": 4
@@ -19276,7 +19434,8 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "3 Punkte. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Punkte.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -19289,7 +19448,8 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "5 Punkte. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Punkte.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -19302,7 +19462,8 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Items",
-    "funFact": "32 Blöcke. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 32 Blöcke.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -19315,7 +19476,8 @@
     "unit": "Sekunden",
     "tolerance": 5,
     "category": "Items",
-    "funFact": "60 Sekunden. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 60 Sekunden.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -19328,7 +19490,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "2 Blöcke. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 Blöcke.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -19344,7 +19507,8 @@
       "Stufe 3"
     ],
     "category": "Items",
-    "funFact": "Geselle. Quelle: de.minecraft.wiki, Seite Angel (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Geselle.",
+    "source": "Angel",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -19357,7 +19521,8 @@
     "unit": "%",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "80 %. Quelle: de.minecraft.wiki, Seite Honigblock (CC BY-NC-SA).",
+    "funFact": "Richtig sind 80 %.",
+    "source": "Honigblock",
     "gen": "wiki",
     "rating": 3350,
     "tier": 4
@@ -19375,7 +19540,8 @@
       "875"
     ],
     "category": "Blöcke",
-    "funFact": "7/8. Quelle: de.minecraft.wiki, Seite Wasser (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 7/8.",
+    "source": "Wasser",
     "gen": "wiki",
     "rating": 3400,
     "tier": 4
@@ -19388,7 +19554,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "7 Blöcke. Quelle: de.minecraft.wiki, Seite Wasser (CC BY-NC-SA).",
+    "funFact": "Richtig sind 7 Blöcke.",
+    "source": "Wasser",
     "gen": "wiki",
     "rating": 2700,
     "tier": 3
@@ -19401,7 +19568,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "3 Blöcke. Quelle: de.minecraft.wiki, Seite Lava (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Blöcke.",
+    "source": "Lava",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19417,7 +19585,8 @@
       "2×2"
     ],
     "category": "Blöcke",
-    "funFact": "2x2. Quelle: de.minecraft.wiki, Seite Wasser (CC BY-NC-SA).",
+    "funFact": "Richtig ist: 2x2.",
+    "source": "Wasser",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -19430,7 +19599,8 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "15 Lichtlevel. Quelle: de.minecraft.wiki, Seite Feuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 15 Lichtlevel.",
+    "source": "Feuer",
     "gen": "wiki",
     "rating": 2900,
     "tier": 3
@@ -19443,7 +19613,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "1 HP. Quelle: de.minecraft.wiki, Seite Feuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1 HP.",
+    "source": "Feuer",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -19456,7 +19627,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "2 HP. Quelle: de.minecraft.wiki, Seite Feuer (CC BY-NC-SA).",
+    "funFact": "Richtig sind 2 HP.",
+    "source": "Feuer",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -19469,7 +19641,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "16 Ticks. Quelle: de.minecraft.wiki, Seite Kaktus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 16 Ticks.",
+    "source": "Kaktus",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -19482,7 +19655,8 @@
     "unit": "Blöcke",
     "tolerance": 1,
     "category": "Blöcke",
-    "funFact": "23 Blöcke. Quelle: de.minecraft.wiki, Seite Kaktus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 23 Blöcke.",
+    "source": "Kaktus",
     "gen": "wiki",
     "rating": 3250,
     "tier": 4
@@ -19495,7 +19669,8 @@
     "unit": "Sechzehntel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "1 Sechzehntel. Quelle: de.minecraft.wiki, Seite Kaktus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1 Sechzehntel.",
+    "source": "Kaktus",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19508,7 +19683,8 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "12 Lichtlevel. Quelle: de.minecraft.wiki, Seite Eis (CC BY-NC-SA).",
+    "funFact": "Richtig sind 12 Lichtlevel.",
+    "source": "Eis",
     "gen": "wiki",
     "rating": 2850,
     "tier": 3
@@ -19521,7 +19697,8 @@
     "unit": "Stück",
     "tolerance": 2,
     "category": "Blöcke",
-    "funFact": "25 Stück. Quelle: de.minecraft.wiki, Seite Kürbis (CC BY-NC-SA).",
+    "funFact": "Richtig sind 25 Stück.",
+    "source": "Kürbis",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -19534,7 +19711,8 @@
     "unit": "Kerne",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "4 Kerne. Quelle: de.minecraft.wiki, Seite Kürbis (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Kerne.",
+    "source": "Kürbis",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -19547,7 +19725,8 @@
     "unit": "Blöcke",
     "tolerance": 1,
     "category": "Blöcke",
-    "funFact": "12 Blöcke. Quelle: de.minecraft.wiki, Seite Bambus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 12 Blöcke.",
+    "source": "Bambus",
     "gen": "wiki",
     "rating": 2550,
     "tier": 3
@@ -19560,7 +19739,8 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "9 Lichtlevel. Quelle: de.minecraft.wiki, Seite Bambus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 Lichtlevel.",
+    "source": "Bambus",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -19573,7 +19753,8 @@
     "unit": "Bienen",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "3 Bienen. Quelle: de.minecraft.wiki, Seite Bienenstock (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Bienen.",
+    "source": "Bienenstock",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -19586,7 +19767,8 @@
     "unit": "Honiglevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "5 Honiglevel. Quelle: de.minecraft.wiki, Seite Bienenstock (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Honiglevel.",
+    "source": "Bienenstock",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19599,7 +19781,8 @@
     "unit": "%",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "85 %. Quelle: de.minecraft.wiki, Seite Spinnennetz (CC BY-NC-SA).",
+    "funFact": "Richtig sind 85 %.",
+    "source": "Spinnennetz",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -19612,7 +19795,8 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Blöcke",
-    "funFact": "65 %. Quelle: de.minecraft.wiki, Seite Kürbis (CC BY-NC-SA).",
+    "funFact": "Richtig sind 65 %.",
+    "source": "Kürbis",
     "gen": "wiki",
     "rating": 3300,
     "tier": 4
@@ -19625,7 +19809,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "50 %. Quelle: de.minecraft.wiki, Seite Kaktus (CC BY-NC-SA).",
+    "funFact": "Richtig sind 50 %.",
+    "source": "Kaktus",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -19638,7 +19823,8 @@
     "unit": "Sterne",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "7 Sterne. Quelle: de.minecraft.wiki, Seite Feuerwerksrakete (CC BY-NC-SA).",
+    "funFact": "Richtig sind 7 Sterne.",
+    "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -19651,7 +19837,8 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "7 HP. Quelle: de.minecraft.wiki, Seite Feuerwerksrakete (CC BY-NC-SA).",
+    "funFact": "Richtig sind 7 HP.",
+    "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -19664,7 +19851,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "64 Blöcke. Quelle: de.minecraft.wiki, Seite Feuerwerksrakete (CC BY-NC-SA).",
+    "funFact": "Richtig sind 64 Blöcke.",
+    "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -19677,7 +19865,8 @@
     "unit": "Pulver",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "3 Pulver. Quelle: de.minecraft.wiki, Seite Feuerwerksrakete (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Pulver.",
+    "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19693,7 +19882,8 @@
       "MineCon"
     ],
     "category": "Items",
-    "funFact": "MineCon 2012. Quelle: de.minecraft.wiki, Seite Feuerwerksrakete (CC BY-NC-SA).",
+    "funFact": "Richtig ist: MineCon 2012.",
+    "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -19706,7 +19896,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "9 HP. Quelle: de.minecraft.wiki, Seite Dreizack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 9 HP.",
+    "source": "Dreizack",
     "gen": "wiki",
     "rating": 2900,
     "tier": 3
@@ -19719,7 +19910,8 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "6,25 %. Quelle: de.minecraft.wiki, Seite Dreizack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 6,25 %.",
+    "source": "Dreizack",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -19732,7 +19924,8 @@
     "unit": "Sekunden",
     "tolerance": 0.1,
     "category": "Items",
-    "funFact": "1,1 Sekunden. Quelle: de.minecraft.wiki, Seite Dreizack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 1,1 Sekunden.",
+    "source": "Dreizack",
     "gen": "wiki",
     "rating": 3200,
     "tier": 4
@@ -19745,7 +19938,8 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "8 HP. Quelle: de.minecraft.wiki, Seite Dreizack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 HP.",
+    "source": "Dreizack",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -19758,7 +19952,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "80 %. Quelle: de.minecraft.wiki, Seite Dreizack (CC BY-NC-SA).",
+    "funFact": "Richtig sind 80 %.",
+    "source": "Dreizack",
     "gen": "wiki",
     "rating": 3450,
     "tier": 4
@@ -19771,7 +19966,8 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "3 Punkte. Quelle: de.minecraft.wiki, Seite Armbrust (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Punkte.",
+    "source": "Armbrust",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -19784,7 +19980,8 @@
     "unit": "ms",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "250 ms. Quelle: de.minecraft.wiki, Seite Armbrust (CC BY-NC-SA).",
+    "funFact": "Richtig sind 250 ms.",
+    "source": "Armbrust",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -19797,7 +19994,8 @@
     "unit": "Meter",
     "tolerance": 10,
     "category": "Items",
-    "funFact": "120 Meter. Quelle: de.minecraft.wiki, Seite Bogen (CC BY-NC-SA).",
+    "funFact": "Richtig sind 120 Meter.",
+    "source": "Bogen",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -19810,7 +20008,8 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "10 HP. Quelle: de.minecraft.wiki, Seite Bogen (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 HP.",
+    "source": "Bogen",
     "gen": "wiki",
     "rating": 800,
     "tier": 1
@@ -19823,7 +20022,8 @@
     "unit": "Meter",
     "tolerance": 5,
     "category": "Items",
-    "funFact": "50 Meter. Quelle: de.minecraft.wiki, Seite Bogen (CC BY-NC-SA).",
+    "funFact": "Richtig sind 50 Meter.",
+    "source": "Bogen",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -19836,7 +20036,8 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "20 Punkte. Quelle: de.minecraft.wiki, Seite Rüstung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 20 Punkte.",
+    "source": "Rüstung",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -19849,7 +20050,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "4 %. Quelle: de.minecraft.wiki, Seite Rüstung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 %.",
+    "source": "Rüstung",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -19862,7 +20064,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "80 %. Quelle: de.minecraft.wiki, Seite Rüstung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 80 %.",
+    "source": "Rüstung",
     "gen": "wiki",
     "rating": 3450,
     "tier": 4
@@ -19875,7 +20078,8 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "3 Punkte. Quelle: de.minecraft.wiki, Seite Rüstung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Punkte.",
+    "source": "Rüstung",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -19888,7 +20092,8 @@
     "unit": "Einheiten",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "24 Einheiten. Quelle: de.minecraft.wiki, Seite Rüstung (CC BY-NC-SA).",
+    "funFact": "Richtig sind 24 Einheiten.",
+    "source": "Rüstung",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -19901,7 +20106,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "128 Blöcke. Quelle: de.minecraft.wiki, Seite Karte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 128 Blöcke.",
+    "source": "Karte",
     "gen": "wiki",
     "rating": 3800,
     "tier": 4
@@ -19914,7 +20120,8 @@
     "unit": "Vielfache",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "8 Vielfache. Quelle: de.minecraft.wiki, Seite Karte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8 Vielfache.",
+    "source": "Karte",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -19927,7 +20134,8 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Items",
-    "funFact": "46,2 %. Quelle: de.minecraft.wiki, Seite Karte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 46,2 %.",
+    "source": "Karte",
     "gen": "wiki",
     "rating": 3700,
     "tier": 4
@@ -19940,7 +20148,8 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "320 Blöcke. Quelle: de.minecraft.wiki, Seite Karte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 320 Blöcke.",
+    "source": "Karte",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -19953,7 +20162,8 @@
     "unit": "Schreiter",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "4 Schreiter. Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig sind 4 Schreiter.",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -19966,7 +20176,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "400 Ticks. Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig sind 400 Ticks.",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -19979,7 +20190,8 @@
     "unit": "(1 zu ...)",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "10 (1 zu ...). Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 (1 zu ...).",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 2900,
     "tier": 3
@@ -19992,7 +20204,8 @@
     "unit": "(1 zu ...)",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "30 (1 zu ...). Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig sind 30 (1 zu ...).",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 3550,
     "tier": 4
@@ -20005,7 +20218,8 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "20 Minuten. Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig sind 20 Minuten.",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 3050,
     "tier": 3
@@ -20021,7 +20235,8 @@
       "Warped Fungus"
     ],
     "category": "Mobs",
-    "funFact": "Wirrpilz. Quelle: de.minecraft.wiki, Seite Schreiter (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Wirrpilz.",
+    "source": "Schreiter",
     "gen": "wiki",
     "rating": 1000,
     "tier": 1
@@ -20034,7 +20249,8 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "8,5 %. Quelle: de.minecraft.wiki, Seite Piglin (CC BY-NC-SA).",
+    "funFact": "Richtig sind 8,5 %.",
+    "source": "Piglin",
     "gen": "wiki",
     "rating": 3100,
     "tier": 3
@@ -20047,7 +20263,8 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "300 Ticks. Quelle: de.minecraft.wiki, Seite Piglin (CC BY-NC-SA).",
+    "funFact": "Richtig sind 300 Ticks.",
+    "source": "Piglin",
     "gen": "wiki",
     "rating": 3750,
     "tier": 4
@@ -20063,7 +20280,8 @@
       "Halloween"
     ],
     "category": "Mobs",
-    "funFact": "Halloween Update. Quelle: de.minecraft.wiki, Seite Piglin (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Halloween Update.",
+    "source": "Piglin",
     "gen": "wiki",
     "rating": 2850,
     "tier": 3
@@ -20076,7 +20294,8 @@
     "unit": "Delfine",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "3 Delfine. Quelle: de.minecraft.wiki, Seite Delfin (CC BY-NC-SA).",
+    "funFact": "Richtig sind 3 Delfine.",
+    "source": "Delfin",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -20089,7 +20308,8 @@
     "unit": "Blöcke",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "10 Blöcke. Quelle: de.minecraft.wiki, Seite Delfin (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 Blöcke.",
+    "source": "Delfin",
     "gen": "wiki",
     "rating": 800,
     "tier": 1
@@ -20102,7 +20322,8 @@
     "unit": "Sekunden",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "5 Sekunden. Quelle: de.minecraft.wiki, Seite Delfin (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5 Sekunden.",
+    "source": "Delfin",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -20119,7 +20340,8 @@
       "rohen Kabeljau"
     ],
     "category": "Mobs",
-    "funFact": "Roher Kabeljau. Quelle: de.minecraft.wiki, Seite Delfin (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Roher Kabeljau.",
+    "source": "Delfin",
     "gen": "wiki",
     "rating": 1000,
     "tier": 1
@@ -20132,7 +20354,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "10 %. Quelle: de.minecraft.wiki, Seite Schildkröte (CC BY-NC-SA).",
+    "funFact": "Richtig sind 10 %.",
+    "source": "Schildkröte",
     "gen": "wiki",
     "rating": 2700,
     "tier": 3
@@ -20147,7 +20370,8 @@
       "0.31"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Indev 0.31. Quelle: de.minecraft.wiki, Seite Bogen (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Indev 0.31.",
+    "source": "Bogen",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -20163,7 +20387,8 @@
       "1.2.0"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Alpha v1.2.0. Quelle: de.minecraft.wiki, Seite Piglin (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Alpha v1.2.0.",
+    "source": "Piglin",
     "gen": "wiki",
     "rating": 3600,
     "tier": 4
@@ -20178,7 +20403,8 @@
       "Jens Bergensten"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Jeb. Quelle: de.minecraft.wiki, Seite Schleimblock (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Jeb.",
+    "source": "Schleimblock",
     "gen": "wiki",
     "rating": 2400,
     "tier": 3
@@ -20193,7 +20419,8 @@
       "ZipKrowd-Mod"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "ZipKrowd. Quelle: de.minecraft.wiki, Seite Schleimblock (CC BY-NC-SA).",
+    "funFact": "Richtig ist: ZipKrowd.",
+    "source": "Schleimblock",
     "gen": "wiki",
     "rating": 2450,
     "tier": 3
@@ -20210,7 +20437,8 @@
       "Eichenblätter"
     ],
     "category": "Mobs",
-    "funFact": "Laub. Quelle: de.minecraft.wiki, Seite Creeper (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Laub.",
+    "source": "Creeper",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -20225,7 +20453,8 @@
       "Slender Man"
     ],
     "category": "Mobs",
-    "funFact": "Slenderman. Quelle: de.minecraft.wiki, Seite Enderman (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Slenderman.",
+    "source": "Enderman",
     "gen": "wiki",
     "rating": 1000,
     "tier": 1
@@ -20240,7 +20469,8 @@
       "Zombies"
     ],
     "category": "Mobs",
-    "funFact": "Zombie. Quelle: de.minecraft.wiki, Seite Zombie (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Zombie.",
+    "source": "Zombie",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -20255,7 +20485,8 @@
       "Federn"
     ],
     "category": "Mobs",
-    "funFact": "Feder. Quelle: de.minecraft.wiki, Seite Zombie (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Feder.",
+    "source": "Zombie",
     "gen": "wiki",
     "rating": 1350,
     "tier": 2
@@ -20268,7 +20499,8 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "12 XP. Quelle: de.minecraft.wiki, Seite Zombie (CC BY-NC-SA).",
+    "funFact": "Richtig sind 12 XP.",
+    "source": "Zombie",
     "gen": "wiki",
     "rating": 3500,
     "tier": 4
@@ -20281,7 +20513,8 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "11 %. Quelle: de.minecraft.wiki, Seite Skelett (CC BY-NC-SA).",
+    "funFact": "Richtig sind 11 %.",
+    "source": "Skelett",
     "gen": "wiki",
     "rating": 2900,
     "tier": 3
@@ -20294,7 +20527,8 @@
     "unit": "Quader",
     "tolerance": 5,
     "category": "Mobs",
-    "funFact": "65 Quader. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig sind 65 Quader.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3350,
     "tier": 4
@@ -20308,7 +20542,8 @@
       "Jean"
     ],
     "category": "Mobs",
-    "funFact": "Jean. Quelle: de.minecraft.wiki, Seite Enderdrache (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Jean.",
+    "source": "Enderdrache",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -20322,7 +20557,8 @@
       "Whispers in Akarra"
     ],
     "category": "Mobs",
-    "funFact": "Whispers in Akarra. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Whispers in Akarra.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -20337,7 +20573,8 @@
       "Die Dürre"
     ],
     "category": "Mobs",
-    "funFact": "Dürre. Quelle: de.minecraft.wiki, Seite Wither (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Dürre.",
+    "source": "Wither",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -20351,7 +20588,8 @@
       "Theobromin"
     ],
     "category": "Mobs",
-    "funFact": "Theobromin. Quelle: de.minecraft.wiki, Seite Papagei (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Theobromin.",
+    "source": "Papagei",
     "gen": "wiki",
     "rating": 1400,
     "tier": 2
@@ -20367,7 +20605,8 @@
       "Kleinkind"
     ],
     "category": "Mobs",
-    "funFact": "ein Baby. Quelle: de.minecraft.wiki, Seite Phantom (CC BY-NC-SA).",
+    "funFact": "Richtig ist: ein Baby.",
+    "source": "Phantom",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -20381,7 +20620,8 @@
       "Newton"
     ],
     "category": "Mobs",
-    "funFact": "Newton. Quelle: de.minecraft.wiki, Seite Katze (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Newton.",
+    "source": "Katze",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -20395,7 +20635,8 @@
       "Jellie"
     ],
     "category": "Mobs",
-    "funFact": "Jellie. Quelle: de.minecraft.wiki, Seite Katze (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Jellie.",
+    "source": "Katze",
     "gen": "wiki",
     "rating": 1950,
     "tier": 2
@@ -20408,7 +20649,8 @@
     "unit": "",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "5. Quelle: de.minecraft.wiki, Seite Panda (CC BY-NC-SA).",
+    "funFact": "Richtig sind 5.",
+    "source": "Panda",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -20424,7 +20666,8 @@
       "Laputa"
     ],
     "category": "Mobs",
-    "funFact": "Das Schloss im Himmel. Quelle: de.minecraft.wiki, Seite Eisengolem (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Das Schloss im Himmel.",
+    "source": "Eisengolem",
     "gen": "wiki",
     "rating": 2600,
     "tier": 3
@@ -20441,7 +20684,8 @@
       "Zombie Piglins"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Pigmen. Quelle: de.minecraft.wiki, Seite Dorfbewohner (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Pigmen.",
+    "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1200,
     "tier": 2
@@ -20456,7 +20700,8 @@
       "Schafe"
     ],
     "category": "Mobs",
-    "funFact": "Schaf. Quelle: de.minecraft.wiki, Seite Schaf (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Schaf.",
+    "source": "Schaf",
     "gen": "wiki",
     "rating": 1400,
     "tier": 2
@@ -20471,7 +20716,8 @@
       "Geist"
     ],
     "category": "Mobs",
-    "funFact": "Ghost. Quelle: de.minecraft.wiki, Seite Ghast (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Ghost.",
+    "source": "Ghast",
     "gen": "wiki",
     "rating": 1550,
     "tier": 2
@@ -20485,7 +20731,8 @@
       "Bart"
     ],
     "category": "Mobs",
-    "funFact": "Bart. Quelle: de.minecraft.wiki, Seite Herobrine (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Bart.",
+    "source": "Herobrine",
     "gen": "wiki",
     "rating": 1750,
     "tier": 2
@@ -20502,7 +20749,8 @@
       "Orientierung"
     ],
     "category": "Blöcke",
-    "funFact": "Markierung der Himmelsrichtungen. Quelle: de.minecraft.wiki, Seite Obsidian (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Markierung der Himmelsrichtungen.",
+    "source": "Obsidian",
     "gen": "wiki",
     "rating": 3000,
     "tier": 3
@@ -20517,7 +20765,8 @@
       "Bedrock"
     ],
     "category": "Blöcke",
-    "funFact": "Grundgestein. Quelle: de.minecraft.wiki, Seite Grundgestein (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Grundgestein.",
+    "source": "Grundgestein",
     "gen": "wiki",
     "rating": 2150,
     "tier": 2
@@ -20532,7 +20781,8 @@
       "Füchse"
     ],
     "category": "Mobs",
-    "funFact": "Fuchs. Quelle: de.minecraft.wiki, Seite Fuchs (CC BY-NC-SA).",
+    "funFact": "Richtig ist: Fuchs.",
+    "source": "Fuchs",
     "gen": "wiki",
     "rating": 1000,
     "tier": 1
