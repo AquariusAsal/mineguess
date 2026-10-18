@@ -382,3 +382,15 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 .mg-foot-text a { color:var(--text); text-decoration:underline; text-underline-offset:3px; min-height:0; padding:0; display:inline; }
 .mg-footer nav { flex:0 1 auto; justify-content:flex-end; }
 @media (max-width:700px) { .mg-footer nav { justify-content:flex-start; } }
+
+/* ODER-Fragen: zwei grosse gleichwertige Auswahlbuttons */
+.choice-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.choice-btn { display:flex; align-items:center; gap:12px; min-height:64px; padding:10px 16px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font:700 1.05rem var(--font); cursor:pointer; text-align:left; box-shadow:inset 0 -3px 0 rgba(0,0,0,.28); }
+.choice-btn:hover:not(:disabled) { border-color:var(--green); background:var(--bg2); }
+.choice-btn.picked { border-color:var(--green); box-shadow:inset 0 -3px 0 var(--green); }
+.choice-btn:disabled, .choice-btn.tried { opacity:.5; cursor:not-allowed; }
+.choice-btn .mc-icon { width:32px; height:32px; }
+.choice-name { flex:1; min-width:0; overflow-wrap:anywhere; }
+.choice-btn kbd { font-family:var(--font-px); font-size:.7rem; color:var(--muted); border:2px solid var(--border2); border-radius:3px; padding:0 6px; }
+@media (hover:none) { .choice-btn kbd { display:none; } }
+@media (max-width:560px) { .choice-grid { grid-template-columns:1fr; } .choice-btn { min-height:60px; } }

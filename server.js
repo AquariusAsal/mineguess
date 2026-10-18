@@ -19,19 +19,20 @@ const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 96 * 1024 });
 
-// ── Statische Dateien (Server-/Config-Dateien nicht ausliefern) ──────────────
-const BLOCKED = [
-  /^\/(node_modules|\.git|\.claude|docs|data|tools)(\/|$)/i,
-  /^\/(server|fetch-wiki)\.js$/i,
-  /^\/package(-lock)?\.json$/i,
-  /^\/google-services\.json$/i,
-  /\.(py|md|pdf|log|env)$/i,
-];
+// ── Statische Dateien: nur Whitelist (keine Server-, Config-, Daten- oder Doku-Dateien) ──────────
+// Der Pfad wird zuerst dekodiert und auf kanonische Form geprueft ('./', '//', '..', '%', Backslash, NUL werden abgelehnt),
+// erst danach gegen die Whitelist geprueft. So greifen Umgehungen wie /./server.js oder //server.js nicht.
+const ROOT_FILE = /^\/[A-Za-z0-9_-]+\.(html|js|css|json|png|jpg|jpeg|svg|webp|gif|ico|mp3|ogg|wav|woff2?|webmanifest)$/i;
+const ROOT_DENY = /^\/(server|package|package-lock|google-services|fetch-wiki)\.(js|json)$/i;
+const ALLOWED_DIRS = /^\/(assets|fonts|sounds)\/[A-Za-z0-9_./-]+$/;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
-  if (BLOCKED.some(r => r.test(p))) return res.status(404).end();
-  next();
+  if (/[\\\0%]|\/\/|(^|\/)\.{1,2}(\/|$)/.test(p) || path.posix.normalize(p) !== p) return res.status(404).end();   // nicht kanonisch
+  if (p === '/' || p === '/premium.html' || p.startsWith('/api/') || p.startsWith('/socket.io/')) return next();
+  if (ROOT_FILE.test(p) && !ROOT_DENY.test(p)) return next();
+  if (ALLOWED_DIRS.test(p) && !/(^|\/)\./.test(p)) return next();
+  return res.status(404).end();
 });
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
 // Speicher: RAM + data/ranked.json. Auf Hosts mit fluechtigem Dateisystem (z. B. Render) geht die Datei beim Neustart verloren.
@@ -368,6 +369,8 @@ function broadcastLobby(room) {
 
 // ── Antwort-Optionen (Entity-Fragen): richtige Antwort + Ablenker ────────────
 function buildOptions(q) {
+  // Zwei-Optionen-Fragen: genau diese zwei Antworten, pro Runde zufaellig gemischt, nie Zusatzoptionen
+  if (Array.isArray(q.choices) && q.choices.length === 2) return shuffle([...q.choices]);
   const own = new Set(q.acceptedAnswers.map(MGAnswer.normText));
   own.add(MGAnswer.normText(q.answer));
   const sameCat = [], other = [];
@@ -392,6 +395,7 @@ function questionPayload(room) {
   return {
     id: q.id, type: q.type, question: q.question, category: q.category,
     unit: q.unit || null, options: room.options || null,
+    choiceOnly: !!(Array.isArray(q.choices) && q.choices.length === 2),   // nur diese zwei Optionen, kein freies Tippen
     roundNum: room.roundNum,
     maxRounds: room.rounds,
   };
@@ -955,6 +959,10 @@ io.on('connection', (socket) => {
     if (!player || !player.connected || room.answers.has(socket.id)) return;
     const raw = d && (typeof d.answer === 'string' || typeof d.answer === 'number') ? String(d.answer).slice(0, MAX_ANSWER_LEN) : '';
     const q = room.question;
+    if (Array.isArray(q.choices) && q.choices.length === 2 && !q.choices.some(c => MGAnswer.normText(c) === MGAnswer.normText(raw))) {
+      socket.emit('answer_invalid', { message: 'Bitte eine der beiden Optionen wählen.' });   // nur die zwei Optionen gelten
+      return;
+    }
     const result = MGAnswer.check(q, raw);
     if (!result.valid) {                         // leer / keine Zahl → keine Strafe, Timer unveraendert
       socket.emit('answer_invalid', { message: q.type === 'number' ? 'Bitte eine Zahl eingeben.' : 'Bitte eine Antwort eingeben.' });

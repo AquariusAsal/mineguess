@@ -73,7 +73,7 @@ function loadWikiFacts() {
       const unit = isNum ? (typeCell.split(',')[1] || '').trim() : '';
       let answer = answerCell.replace(/\(.*?\)/g, '').trim();
       if (isNum) answer = parseFloat(answerCell.replace(',', '.'));
-      out.push({ id, cat: mapCat(cat, question), question, answer, isNum, unit: unit === 'Wert' ? '' : unit, accepted, tol: tolM ? parseFloat(tolM[1]) : 0, source, file: f });
+      out.push({ id, cat: mapCat(cat, question), question, answer, isNum, unit: (unit === 'Wert' || unit.includes('Jahr') || unit.includes('(')) ? '' : unit, chance: unit.startsWith('(1 zu'), accepted, tol: tolM ? parseFloat(tolM[1]) : 0, source, file: f });
     });
   });
   return out;
@@ -123,7 +123,7 @@ async function main() {
     out.push({ id: 0, type: q.type, question: q.question, answer: q.answer, ...(q.type === 'number'
       ? { unit: q.unit || '', tolerance: q.tolerance || 0, ...(q.tolerancePct ? { tolerancePct: q.tolerancePct, toleranceMin: q.toleranceMin || 0 } : {}) }
       : { acceptedAnswers: q.acceptedAnswers }),
-      category: cat, funFact: q.funFact, ...(q.source ? { source: q.source } : {}), gen: tpl });
+      category: cat, funFact: q.funFact, ...(q.choices ? { choices: q.choices } : {}), ...(q.source ? { source: q.source } : {}), gen: tpl });
     stats[tpl] = (stats[tpl] || 0) + 1;
     return true;
   }
@@ -299,7 +299,7 @@ async function main() {
   // ═════════ Vergleiche (Antwort steht bewusst unter den zwei genannten Optionen) ═════════
   const KNOWN_BLOCKS = ['stone', 'cobblestone', 'dirt', 'sand', 'gravel', 'obsidian', 'glass', 'oak_planks', 'oak_log', 'iron_block', 'gold_block', 'diamond_block',
     'netherite_block', 'emerald_block', 'coal_block', 'tnt', 'netherrack', 'soul_sand', 'glowstone', 'sponge', 'ice', 'snow_block', 'clay', 'end_stone', 'deepslate',
-    'bookshelf', 'crafting_table', 'furnace', 'chest', 'ender_chest', 'anvil', 'enchanting_table', 'cobweb', 'white_wool', 'bedrock', 'water', 'lava', 'cactus',
+    'bookshelf', 'crafting_table', 'furnace', 'chest', 'ender_chest', 'anvil', 'enchanting_table', 'cobweb', 'white_wool', 'bedrock', 'cactus',
     'pumpkin', 'melon', 'iron_ore', 'diamond_ore', 'coal_ore', 'gold_ore', 'redstone_block', 'lapis_block', 'ancient_debris', 'respawn_anchor', 'beacon', 'brick', 'bricks'];
   const kb = KNOWN_BLOCKS.map(n => blockByName.get(n)).filter(b => b && blockDe(b.name));
   const pairs = (list, key, minRatio, cap, tpl, cat, qText, factText) => {
@@ -314,7 +314,7 @@ async function main() {
       const nw = w.nameDe, nl = l.nameDe;
       const order = R() < 0.5 ? [nw, nl] : [nl, nw];
       add(tpl, cat, {
-        type: 'entity', choice: true, question: qText(order[0], order[1]), answer: nw, acceptedAnswers: [nw],
+        type: 'entity', choice: true, choices: order, question: qText(order[0], order[1]), answer: nw, acceptedAnswers: [nw],
         funFact: factText(w, l),
       });
     });
@@ -489,17 +489,33 @@ async function main() {
 
   // ═════════ Wiki-Fakten (vom forscher am Seitentext geprueft) ═════════
   const SKIP_WIKI = new Set(['W07', 'W21', 'W26', 'W210', 'W303']);   // W07/W210/W303 doppelt zu vorhandenen Fragen, W21 mehrdeutig, W26 Ja/Nein
-  loadWikiFacts().filter(w => !SKIP_WIKI.has(w.id)).forEach(w => {
+  const SKIP_TEXT = ['Wert', 'Bereich 2 bis', 'Radius hat die Markierung', '10 von 28', 'alle 4 Sekunden', '(Radius)', 'Gunst des Delfins', 'Vollversion'];   // unklar formuliert oder versionsabhaengig
+  const wikiFun = (w, src) => w.chance ? 'Die Chance beträgt 1 zu ' + w.answer + '.' : 'Thema: ' + src.replace(/_/g, ' ') + '.';
+  loadWikiFacts().filter(w => !SKIP_WIKI.has(w.id) && !SKIP_TEXT.some(s => w.question.includes(s))).forEach(w => {
     const src = w.source.split('/').pop();   // nur Feld source, keine Anzeige im funFact
     if (w.isNum) {
-      add('wiki', w.cat, { type: 'number', question: w.question, answer: w.answer, unit: w.unit, tolerance: w.tol, funFact: `Richtig sind ${fmt(w.answer)}${w.unit ? ' ' + w.unit : ''}.`, source: src });
+      add('wiki', w.cat, { type: 'number', question: w.question, answer: w.answer, unit: w.unit, tolerance: w.tol, funFact: wikiFun(w, src), source: src });
     } else {
-      add('wiki', w.cat, { type: 'entity', question: w.question, answer: w.answer, acceptedAnswers: [...new Set([w.answer, ...w.accepted])], funFact: `Richtig ist: ${w.answer}.`, source: src });
+      add('wiki', w.cat, { type: 'entity', question: w.question, answer: w.answer, acceptedAnswers: [...new Set([w.answer, ...w.accepted])], funFact: wikiFun(w, src), source: src });
     }
   });
 
   out.forEach(q => { q.id = nextId++; });
   const result = [...base, ...out];
+  // Zwei-Optionen-Fragen ("„A“ oder „B“" bzw. "...: A oder B?"): choices per Muster ergaenzen, Antwort muss eine der beiden sein
+  let choiceAdded = 0, choiceSkipped = [];
+  result.forEach(q => {
+    if (q.type !== 'entity' || q.choices || !/ oder /.test(q.question)) return;
+    let m = q.question.match(/„([^“]+)“\s+oder\s+„([^“]+)“/);
+    if (!m) { const tail = q.question.includes(':') ? q.question.slice(q.question.lastIndexOf(':') + 1) : q.question; m = tail.replace(/\?$/, '').match(/^\s*([^?]+?)\s+oder\s+([^?]+?)\s*$/); }
+    if (!m) { choiceSkipped.push(q.id); return; }
+    const pair = [m[1].trim(), m[2].trim()];
+    const hit = pair.find(p => norm(p) === norm(String(q.answer)) || (q.acceptedAnswers || []).some(a => norm(a) === norm(p)));
+    if (!hit) { choiceSkipped.push(q.id); return; }
+    q.choices = pair.map(p => norm(p) === norm(String(q.answer)) ? String(q.answer) : p);
+    choiceAdded++;
+  });
+  if (choiceAdded || choiceSkipped.length) console.log('choices nachtraeglich:', choiceAdded, 'nicht erkannt:', choiceSkipped.join(','));
   let unsolvable = 0;
   out.forEach(q => { if (!MGAnswer.check(q, String(q.answer)).correct) { unsolvable++; console.warn('nicht loesbar:', q.id, q.question); } });
   const byCat = {};

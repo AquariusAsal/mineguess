@@ -91,5 +91,34 @@
     if (p) return String(p).replace(/.png$/, '');
     return forName(name, enName) || 'item/barrier';
   }
-  global.MGIcon = { ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
+  /** Zwei gleichwertige Auswahlbuttons (ODER-Fragen). onPick(name). Reihenfolge so, wie sie kommt (Server/Client mischt). */
+  function choiceButtons(host, names, onPick) {
+    host.innerHTML = '';
+    host.className = (host.className ? host.className + ' ' : '') + 'choice-grid';
+    host.setAttribute('role', 'group'); host.setAttribute('aria-label', 'Antwort waehlen');
+    var btns = names.map(function (n, i) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'choice-btn'; b.dataset.opt = n;
+      var im = document.createElement('img');
+      im.width = 32; im.height = 32; im.alt = ''; im.className = 'mc-icon'; im.loading = 'lazy';
+      im.src = BASE + forLabel(n, '') + '.png';
+      im.onerror = function () { this.onerror = null; this.src = BASE + 'item/barrier.png'; };
+      var sp = document.createElement('span'); sp.className = 'choice-name'; sp.textContent = n;
+      var k = document.createElement('kbd'); k.textContent = String(i + 1); k.setAttribute('aria-hidden', 'true');
+      b.appendChild(im); b.appendChild(sp); b.appendChild(k);
+      b.addEventListener('click', function () {
+        btns.forEach(function (x) { x.classList.toggle('picked', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        onPick(n, b);
+      });
+      host.appendChild(b);
+      return b;
+    });
+    host.addEventListener('keydown', function (e) {
+      var i = btns.indexOf(document.activeElement);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btns[(i + 1 + btns.length) % btns.length].focus(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btns[(i - 1 + btns.length) % btns.length].focus(); }
+    });
+    return btns;
+  }
+  global.MGIcon = { choiceButtons: choiceButtons, ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
 })(window);

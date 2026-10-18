@@ -2049,7 +2049,22 @@ function buildInput() {
   const area = document.getElementById('input-area');
   area.innerHTML = '';
 
-  if (question.type === 'number') {
+  if (Array.isArray(question.choices) && question.choices.length === 2 && window.MGIcon && MGIcon.choiceButtons) {
+    // ODER-Frage: nur diese zwei Buttons (zufaellige Reihenfolge je Frage), Versuche/Timer/Ranked unveraendert
+    const hid = document.createElement('input');
+    hid.type = 'hidden'; hid.id = 'answer-input';
+    area.appendChild(hid);
+    const host = document.createElement('div');
+    area.appendChild(host);
+    const names = question.choices.slice(0, 2);
+    if (Math.random() < 0.5) names.reverse();
+    const btns = MGIcon.choiceButtons(host, names, (n, b) => {
+      hid.value = n;
+      submitGuess();
+      if (!finished) { b.disabled = true; b.classList.add('tried'); }   // falsche Wahl: nur die andere Option bleibt waehlbar
+    });
+    area.onkeydown = (e) => { if ((e.key === '1' || e.key === '2') && btns[+e.key - 1] && !btns[+e.key - 1].disabled) btns[+e.key - 1].click(); };
+  } else if (question.type === 'number') {
     const inp = document.createElement('input');
     inp.type        = 'number';
     inp.step        = 'any';
@@ -2360,8 +2375,9 @@ function loadNextQuestion() {
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) return; // handled by showResult
     // Ranked: Frage passend zur aktuellen MMR-Zone (adaptiv), keine Wiederholung im Lauf
-    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed, Math.random, { seen: seenLoad() });
+    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed, Math.random, { seen: seenLoad(), picked: compPicked });
     compUsed.add(_ri);
+    compPicked.push(allQuestions[_ri]);
     question = allQuestions[_ri];
     compIndex++;
     updateCompBar();
@@ -2972,7 +2988,19 @@ function freshOrder(indices) {
   indices.forEach(ix => { (age.has(allQuestions[ix].id) ? old : fresh).push(ix); });
   fresh.sort(() => Math.random() - 0.5);
   old.sort((a, b) => age.get(allQuestions[a].id) - age.get(allQuestions[b].id));
-  return fresh.concat(old);
+  return diversify(fresh.concat(old));
+}
+// Reihenfolge so umstellen, dass nie mehr als 2 Fragen derselben Vorlage direkt aufeinander folgen (Verlauf bleibt erhalten)
+function diversify(order) {
+  const tpl = ix => MGRanked.templateKey(allQuestions[ix]);
+  const res = [], rest = order.slice();
+  while (rest.length) {
+    const t1 = res.length ? tpl(res[res.length - 1]) : null, t2 = res.length > 1 ? tpl(res[res.length - 2]) : null;
+    let k = 0;
+    if (t1 && t1 === t2) { k = rest.findIndex(ix => tpl(ix) !== t1); if (k < 0) k = 0; }
+    res.push(rest.splice(k, 1)[0]);
+  }
+  return res;
 }
 
 // ── Ranked: Profil, MMR-Update, Persistenz ───────────────────────────────────
@@ -2980,6 +3008,7 @@ const RANKED_LOCAL_KEY = 'mg_ranked';
 let rankedProfile = null;
 let rankedRun = { start: 0, delta: 0, answered: 0, correct: 0 };
 let compUsed = new Set();
+let compPicked = [];   // bisher gezogene Fragen des Ranked-Laufs (Diversitaetsregeln)
 let _rankedCloudAt = 0;
 
 function rankedEnsure() {
@@ -3316,6 +3345,7 @@ function actualStartMode(mode) {
       dtag.textContent = dd && dd.done ? 'Erledigt' : 'Täglich';
     }
     compUsed = new Set();
+    compPicked = [];
     rankedRun = { start: rankedEnsure().mmr, delta: 0, answered: 0, correct: 0 };
     compIndex   = 0; compScore = 0; compCorrect = 0;
     document.getElementById('comp-bar').classList.add('show');

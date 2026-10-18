@@ -121,15 +121,22 @@
     };
   }
 
-  // Fragenauswahl nach MMR-Zone, ohne Zuruecklegen:
-  //  - nie eine Frage aus 'used' (aktueller Lauf)
-  //  - zuerst nur noch nicht gesehene Fragen (opts.seen = IDs der zuletzt gesehenen, aelteste zuerst);
-  //    die Zone weitet sich automatisch, weil die naechstliegende ungesehene Frage gewaehlt wird
-  //  - erst wenn alles gesehen wurde: die aeltesten 25 % wieder zulassen
+  // Vorlage/Format einer Frage fuer die Diversitaetsregeln (alte Fragen: Kategorie + Typ)
+  function templateKey(q) { return q.gen || ('alt:' + q.category + ':' + q.type); }
+  function formatKey(q) { return (q.choices || /^cmp_/.test(q.gen || '')) ? 'cmp' : q.type; }
+
+  // Fragenauswahl nach MMR-Zone, ohne Zuruecklegen, gewichtet zufaellig und abwechslungsreich:
+  //  - nie eine Frage aus 'used' (aktueller Lauf), zuerst nur ungesehene (opts.seen = IDs, aelteste zuerst),
+  //    erst wenn alles gesehen wurde die aeltesten 25 % wieder zulassen
+  //  - Gewicht je Frage ~ Gauss um die Ziel-MMR (Sigma 350), Vorlage wird ~ sqrt(Gesamtgewicht) gewaehlt,
+  //    damit grosse Vorlagen nicht dominieren
+  //  - Diversitaet (opts.picked = bisher gezogene Fragen des Laufs): nie mehr als 2 gleiche Vorlagen und 3 gleiche
+  //    Formate in Folge, hoechstens 3 je Vorlage und 4 je Kategorie pro Lauf; Regeln werden stufenweise gelockert
   function pickIndex(questions, mmr, used, rnd, opts) {
     rnd = rnd || Math.random;
     used = used || new Set();
     var seen = (opts && opts.seen) || [];
+    var picked = (opts && opts.picked) || [];
     var age = {};
     for (var s = 0; s < seen.length; s++) age[seen[s]] = s;
     var r = rnd(), off;
@@ -151,20 +158,47 @@
       old.sort(function (x, y) { return age[questions[x].id] - age[questions[y].id]; });
       pool = old.slice(0, Math.max(10, Math.ceil(old.length * 0.25)));
     }
-    var best = pool[0], bestD = Infinity;
-    for (var k = 0; k < pool.length; k++) {
-      var q = questions[pool[k]];
-      var rt = q && typeof q.rating === 'number' ? q.rating : DEFAULT_RATING;
-      var d = Math.abs(rt - target) + rnd() * 60;  // Jitter gegen immer gleiche Auswahl
-      if (d < bestD) { bestD = d; best = pool[k]; }
+
+    // Diversitaetsregeln
+    var tplCount = {}, catCount = {};
+    picked.forEach(function (p) { var t = templateKey(p); tplCount[t] = (tplCount[t] || 0) + 1; catCount[p.category] = (catCount[p.category] || 0) + 1; });
+    var l1 = picked[picked.length - 1], l2 = picked[picked.length - 2], l3 = picked[picked.length - 3];
+    var banTpl = l1 && l2 && templateKey(l1) === templateKey(l2) ? templateKey(l1) : null;
+    var banFmt = l1 && l2 && l3 && formatKey(l1) === formatKey(l2) && formatKey(l2) === formatKey(l3) ? formatKey(l1) : null;
+    var levels = [
+      function (q) { return templateKey(q) !== banTpl && formatKey(q) !== banFmt && (tplCount[templateKey(q)] || 0) < 3 && (catCount[q.category] || 0) < 4; },
+      function (q) { return templateKey(q) !== banTpl && formatKey(q) !== banFmt && (tplCount[templateKey(q)] || 0) < 3; },
+      function (q) { return templateKey(q) !== banTpl; },
+      function () { return true; }
+    ];
+    var cand = pool;
+    for (var lv = 0; lv < levels.length; lv++) {
+      var f = pool.filter(function (ix) { return levels[lv](questions[ix]); });
+      if (f.length) { cand = f; break; }
     }
-    return best;
+
+    // gewichtet zufaellig: erst Vorlage (~ sqrt(Gesamtgewicht)), dann Frage (~ Gewicht)
+    var groups = {}, keys = [];
+    cand.forEach(function (ix) {
+      var q = questions[ix];
+      var rt = typeof q.rating === 'number' ? q.rating : DEFAULT_RATING;
+      var w = Math.exp(-0.5 * Math.pow((rt - target) / 350, 2)) + 1e-4;
+      var t = templateKey(q);
+      if (!groups[t]) { groups[t] = { items: [], sum: 0 }; keys.push(t); }
+      groups[t].items.push({ ix: ix, w: w }); groups[t].sum += w;
+    });
+    var tot = 0; keys.forEach(function (k) { tot += Math.sqrt(groups[k].sum); });
+    var x = rnd() * tot, chosen = keys[keys.length - 1];
+    for (var k = 0; k < keys.length; k++) { x -= Math.sqrt(groups[keys[k]].sum); if (x <= 0) { chosen = keys[k]; break; } }
+    var g = groups[chosen], y = rnd() * g.sum;
+    for (var m = 0; m < g.items.length; m++) { y -= g.items[m].w; if (y <= 0) return g.items[m].ix; }
+    return g.items[g.items.length - 1].ix;
   }
 
   var api = {
     START_MMR: START_MMR, K: K, DEFAULT_RATING: DEFAULT_RATING, RANKS: RANKS,
     expected: expected, rankInfo: rankInfo, rankData: rankData, dayKey: dayKey, newProfile: newProfile, normalizeProfile: normalizeProfile,
-    applyAnswer: applyAnswer, pickIndex: pickIndex
+    applyAnswer: applyAnswer, pickIndex: pickIndex, templateKey: templateKey, formatKey: formatKey
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MGRanked = api;

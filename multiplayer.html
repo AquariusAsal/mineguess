@@ -941,9 +941,11 @@ socket.on('buzzer_reset', ({ lockedOut }) => {
 });
 
 // ── Build answer input ────────────────────────────────────────────────────────
+let choiceKeys = null;
 function buildAnswerInput(q) {
   const inner = el('answer-input-inner');
   inner.innerHTML = '';
+  if (choiceKeys) { document.removeEventListener('keydown', choiceKeys); choiceKeys = null; }
 
   if (q.type === 'number') {
     inner.innerHTML = `
@@ -953,6 +955,19 @@ function buildAnswerInput(q) {
       </div>`;
     el('num-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(el('num-input').value); });
     el('num-input').addEventListener('input', sendTyping);
+  } else if (Array.isArray(q.choices || q.options) && (q.choices || q.options).length === 2 && window.MGIcon && MGIcon.choiceButtons) {
+    // ODER-Frage: genau zwei gleichwertige Buttons, kein Hinweis auf die richtige Seite
+    const names = (q.choices || q.options).slice(0, 2);
+    const host = document.createElement('div'); host.id = 'choice-host';
+    inner.appendChild(host);
+    const btns = MGIcon.choiceButtons(host, names, (n) => submitAnswer(n));
+    choiceKeys = (e) => {
+      if (myPhase !== 'answering') return;
+      const t = e.target && e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA') return;
+      if (e.key === '1' || e.key === '2') { e.preventDefault(); const b = btns[+e.key - 1]; if (b) b.click(); }
+    };
+    document.addEventListener('keydown', choiceKeys);
+    btns[0].focus();
   } else {
     const opts = q.options || [];
     inner.innerHTML = `<div class="entity-grid" id="entity-grid"></div>
