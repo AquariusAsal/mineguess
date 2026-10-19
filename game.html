@@ -1635,7 +1635,7 @@ header h1 { flex-shrink:0; }
     <!-- dynamically filled -->
   </div>
   <div class="hint-area" style="position:relative">
-    <button class="report-btn" id="report-btn" onclick="openReport()" title="Frage melden" aria-label="Frage melden">Melden</button>
+    <button class="report-btn" id="report-btn" onclick="openReport()" title="Frage melden" aria-label="Frage melden"><img class="mc-icon" src="assets/mc/item/writable_book.png" width="20" height="20" alt="" style="vertical-align:-4px;margin-right:4px">Melden</button>
     <div class="joker-row">
       <span class="joker-label">Joker:</span>
       <div class="joker-tokens" id="joker-tokens"></div>
@@ -1931,7 +1931,8 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   const raEl = document.getElementById('result-answer');
   raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
-  document.getElementById('funfact-text').textContent = question.funFact;
+  document.getElementById('funfact-text').textContent = question.funFact || '';
+  { const fb = document.getElementById('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (question.funFact && String(question.funFact).trim()) ? '' : 'none'; }
   document.getElementById('input-area').style.visibility = 'hidden'; // Höhe behalten, kein Layout-Sprung
   document.getElementById('hint-btn').disabled = true;
 

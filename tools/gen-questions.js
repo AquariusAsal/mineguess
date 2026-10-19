@@ -490,7 +490,7 @@ async function main() {
   // ═════════ Wiki-Fakten (vom forscher am Seitentext geprueft) ═════════
   const SKIP_WIKI = new Set(['W07', 'W21', 'W26', 'W210', 'W303']);   // W07/W210/W303 doppelt zu vorhandenen Fragen, W21 mehrdeutig, W26 Ja/Nein
   const SKIP_TEXT = ['Wert', 'Bereich 2 bis', 'Radius hat die Markierung', '10 von 28', 'alle 4 Sekunden', '(Radius)', 'Gunst des Delfins', 'Vollversion'];   // unklar formuliert oder versionsabhaengig
-  const wikiFun = (w, src) => w.chance ? 'Die Chance beträgt 1 zu ' + w.answer + '.' : 'Thema: ' + src.replace(/_/g, ' ') + '.';
+  const wikiFun = (w, src) => w.chance ? 'Die Chance beträgt 1 zu ' + w.answer + '.' : '';   // kein Platzhalter-funFact: leer lassen (Frontend blendet den Kasten aus), Quelle steht im Feld source
   loadWikiFacts().filter(w => !SKIP_WIKI.has(w.id) && !SKIP_TEXT.some(s => w.question.includes(s))).forEach(w => {
     const src = w.source.split('/').pop();   // nur Feld source, keine Anzeige im funFact
     if (w.isNum) {

@@ -86,37 +86,65 @@ async function main() {
   const deById = {};
   for (const [pre, kind] of kinds) for (const [k, v] of Object.entries(de)) if (k.startsWith(pre) && !k.slice(pre.length).includes('.')) deById[kind + ':' + k.slice(pre.length)] = v;
 
-  // Namen und Aliase aus den Fragen sammeln
+  // Namen und Aliase aus den Fragen sammeln. canonOf: Antwort -> kanonischer deutscher Anzeigename
   const names = new Map();      // canonical -> { cat }
   const aliases = {};           // lower -> canonical
+  const canonOf = new Map();    // Antwortname -> canonical
+  // Offizielle deutsche Namen statt alter/falscher Bezeichnungen
+  const OFFICIAL = { antikesgestein: 'Antiker Schrott', lectern: 'Lesepult' };
+  const bad = a => / oder |\/|^\s*$/.test(a) || a.length > 40;
   q.filter(x => x.type === 'entity').forEach(x => {
     const canon = String(x.answer);
     if (!names.has(canon)) names.set(canon, { cat: x.category });
-    (x.acceptedAnswers || []).forEach(a => {
-      if (!a || norm(a) === norm(canon)) return;
-      const k = String(a).toLowerCase();
-      if (!aliases[k] && !names.has(a)) aliases[k] = canon;
-    });
   });
-  // Canonical-Namen normalisieren: gleiche Normalform nur einmal ("Ghastträne"/"Ghasttraene")
+  // 1) gleiche Normalform nur einmal ("Ghastträne"/"Ghasttraene")
   const seen = new Map();
   for (const n of [...names.keys()]) {
     const k = norm(n);
-    if (seen.has(k)) { aliases[n.toLowerCase()] = seen.get(k); names.delete(n); } else seen.set(k, n);
+    if (seen.has(k)) { canonOf.set(n, seen.get(k)); names.delete(n); } else { seen.set(k, n); canonOf.set(n, n); }
   }
-  // Englische Antwortnamen (nur in en_us vorhanden) auf den deutschen Registry-Namen umstellen, Original bleibt Alias
+  // 2) offizielle deutsche Namen (Override) und englische Namen auf den deutschen Registry-Namen abbilden (auch wenn er schon existiert: zusammenfuehren)
   const deValues = new Set(Object.values(de).map(norm));
+  const rename = (from, to) => {
+    if (norm(from) === norm(to)) return;
+    const meta = names.get(from);
+    names.delete(from);
+    if (!names.has(to)) names.set(to, meta);
+    for (const [k, v] of canonOf) if (v === from) canonOf.set(k, to);
+    aliases[from.toLowerCase()] = to;
+  };
   for (const n of [...names.keys()]) {
+    const ov = OFFICIAL[norm(n)];
+    if (ov) { rename(n, ov); continue; }
     if (deValues.has(norm(n))) continue;
     const hit0 = idx.get(norm(n));
     if (!hit0) continue;
     const deName = deById[hit0.kind + ':' + hit0.id];
-    if (!deName || norm(deName) === norm(n) || names.has(deName)) continue;
-    names.set(deName, names.get(n)); names.delete(n);
-    aliases[n.toLowerCase()] = deName;
+    if (deName && norm(deName) !== norm(n)) rename(n, deName);
   }
+  // 3) Aliase aus den acceptedAnswers: jeder Alias zeigt auf den kanonischen Namen SEINER Frage
+  const canonical = a => canonOf.get(String(a)) || canonOf.get([...canonOf.keys()].find(k => norm(k) === norm(a)) || '') || String(a);
+  q.filter(x => x.type === 'entity').forEach(x => {
+    const c = canonical(x.answer);
+    (x.acceptedAnswers || []).forEach(a => {
+      if (!a || bad(a) || norm(a) === norm(c)) return;
+      const k = String(a).toLowerCase();
+      if (!aliases[k] && !names.has(a)) aliases[k] = c;
+    });
+  });
   // Aliase, die selbst kanonische Namen sind oder auf nicht existierende zeigen, bereinigen
-  Object.keys(aliases).forEach(a => { if (!names.has(aliases[a]) || norm(a) === norm(aliases[a])) delete aliases[a]; });
+  Object.keys(aliases).forEach(a => { if (!names.has(aliases[a]) || norm(a) === norm(aliases[a]) || bad(a)) delete aliases[a]; });
+  // 4) Einheitliche Annahme: jede Frage akzeptiert ihren kanonischen Namen und alle Aliase desselben Objekts (Solo = Multiplayer)
+  let accepted = 0;
+  if (!DRY) {
+    q.filter(x => x.type === 'entity').forEach(x => {
+      const c = canonical(x.answer);
+      const have = new Set((x.acceptedAnswers || []).map(norm));
+      const add = [c, ...Object.keys(aliases).filter(a => aliases[a] === c)].filter(a => !have.has(norm(a)));
+      if (add.length) { x.acceptedAnswers = [...(x.acceptedAnswers || [x.answer]), ...add]; accepted += add.length; }
+    });
+    fs.writeFileSync(path.join(ROOT, 'questions.json'), JSON.stringify(q, null, 2));
+  }
 
   // Stellvertreter fuer Namen ohne Registry-Eintrag
   const PROXY = {
@@ -128,7 +156,7 @@ async function main() {
     verbrennung: 'item/blaze_powder.png', haltbarkeit: 'item/anvil.png', blitz: 'item/lightning_rod.png', laub: 'block/oak_leaves.png', feuersteinundstahl: 'item/flint_and_steel.png', amethystgeode: 'block/amethyst_block.png', antikesgestein: 'block/ancient_debris_side.png',
     armbrust: 'item/crossbow_standby.png', fermentiertesspinneauge: 'item/fermented_spider_eye.png', froschlicht: 'block/ochre_froglight_side.png',
     geselle: 'item/emerald.png', magmablock: 'block/magma.png', markierungderhimmelsrichtungen: 'item/compass_00.png', minecon2012: 'item/firework_rocket.png',
-    redstone: 'item/redstone.png', roheskupfer: 'item/raw_copper.png', schiesspulver: 'item/gunpowder.png', verzauberterGoldenerapfel: 'item/golden_apple.png',
+    schild: 'item/iron_helmet.png', redstone: 'item/redstone.png', roheskupfer: 'item/raw_copper.png', schiesspulver: 'item/gunpowder.png', verzauberterGoldenerapfel: 'item/golden_apple.png',
     verzaubertergoldenerapfel: 'item/golden_apple.png', nuetzlich: 'item/emerald.png', schaedlich: 'item/spider_eye.png', positiv: 'item/emerald.png', negativ: 'item/spider_eye.png',
   };
   const CAT_PROXY = { Biome: 'block/grass_block_side.png', Strukturen: 'block/stone_bricks.png', Weltgenerierung: 'block/grass_block_top.png',

@@ -12,6 +12,7 @@ const { Server } = require('socket.io');
 const path       = require('path');
 const fs         = require('fs');
 const crypto     = require('crypto');
+const zlib       = require('zlib');
 const MGAnswer   = require('./answer-check.js');
 const MGRanked   = require('./ranked.js');
 
@@ -86,9 +87,12 @@ app.post('/api/ranked', express.json({ limit: '2kb' }), (req, res) => {
   try {
     if (!ipAllowed(req.ip)) return res.status(429).json({ ok: false });
     const b = req.body || {};
-    const mmr = Number(b.mmr);
+    const mmr = b.mmr;                      // nur echte Zahlen (kein null, String, Objekt)
+    if (typeof mmr !== 'number') return res.status(400).json({ ok: false });
     if (!Number.isInteger(mmr) || mmr < 0 || mmr > 20000) return res.status(400).json({ ok: false });
-    const name = cleanText(b.name, 20) || 'Spieler';
+    if (typeof b.name !== 'string' && typeof b.name !== 'number') return res.status(400).json({ ok: false });   // kein Objekt/Array/fehlend
+    const name = cleanText(b.name, 20);
+    if (!name) return res.status(400).json({ ok: false });
     let key;
     if (typeof b.uid === 'string' && ID_RE.test(b.uid)) key = 'u:' + b.uid;
     else if (typeof b.gid === 'string' && ID_RE.test(b.gid)) key = 'g:' + b.gid;
@@ -122,6 +126,33 @@ app.post('/api/ranked', express.json({ limit: '2kb' }), (req, res) => {
 
 // Premium wurde abgeschafft: alte Links auf die Startseite
 app.get('/premium.html', (req, res) => res.redirect(301, '/'));
+// Text-Dateien gzip-komprimiert ausliefern (im Speicher gecacht, nach Aenderungszeit); Pfad ist durch die Whitelist oben schon kanonisch
+const GZ_EXT = new Set(['.html', '.js', '.css', '.json']);
+const gzCache = new Map();
+app.use((req, res, next) => {
+  const ext = path.extname(req.path).toLowerCase();
+  if (req.method !== 'GET' || !GZ_EXT.has(ext) || !String(req.headers['accept-encoding'] || '').includes('gzip')) return next();
+  const file = path.join(__dirname, decodeURIComponent(req.path));
+  fs.stat(file, (err, st) => {
+    if (err || !st.isFile()) return next();
+    const send = (c) => {
+      res.set({ 'Content-Type': ext === '.json' ? 'application/json; charset=utf-8' : ext === '.html' ? 'text/html; charset=utf-8' : ext === '.css' ? 'text/css; charset=utf-8' : 'application/javascript; charset=utf-8',
+                'Content-Encoding': 'gzip', 'Vary': 'Accept-Encoding', 'Cache-Control': 'no-cache' });
+      res.end(c.buf);
+    };
+    const c = gzCache.get(file);
+    if (c && c.mtime === st.mtimeMs) return send(c);
+    fs.readFile(file, (e, data) => {
+      if (e) return next();
+      zlib.gzip(data, { level: 6 }, (e2, buf) => {
+        if (e2) return next();
+        const entry = { mtime: st.mtimeMs, buf };
+        gzCache.set(file, entry);
+        send(entry);
+      });
+    });
+  });
+});
 app.use(express.static(path.join(__dirname), {
   dotfiles: 'ignore',
   setHeaders(res, file) {
@@ -839,7 +870,7 @@ io.on('connection', (socket) => {
       ? d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30)
       : [];
     const pw   = typeof d.password === 'string' ? d.password.slice(0, 40) : '';
-    const rounds = ROUND_CHOICES.includes(Number(d.rounds)) ? Number(d.rounds) : DEFAULT_ROUNDS;
+    const rounds = ROUND_CHOICES.includes(d.rounds) ? d.rounds : DEFAULT_ROUNDS;   // nur die Zahlen 10/25/50/100, Strings gelten nicht
     const room = makeRoom({
       rounds,
       id: rid,

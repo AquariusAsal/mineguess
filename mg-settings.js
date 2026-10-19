@@ -90,6 +90,16 @@
     container.appendChild(btn);
     return btn;
   }
+  // Service Worker auf jeder Seite registrieren (Offline-Start auch ab der Startseite)
+  if ('serviceWorker' in navigator) {
+    global.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+  }
+  // Esc schließt alle bekannten Overlays (Abzeichen, Statistik, Report, Rankliste)
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    ['badge-modal', 'stats-modal', 'report-modal'].forEach(function (id) { var m = document.getElementById(id); if (m) m.classList.remove('show'); });
+    var lb = document.getElementById('lb-modal'); if (lb) lb.classList.add('hidden');
+  });
   // Sanfte Seitenübergänge (nur opacity/transform, nicht bei reduzierter Bewegung)
   (function () {
     var reduce = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;

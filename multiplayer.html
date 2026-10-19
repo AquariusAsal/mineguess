@@ -226,6 +226,7 @@
 
     .skin-box { margin-bottom:16px; }
 
+    @media (max-width:520px) { .room-status, #mute-btn { display:none; } header .beta { display:none; } header .header-right { gap:6px; min-width:0; } header .btn { padding:6px 10px !important; } header.mg-nav { padding-left:10px; padding-right:10px; gap:6px; } }
     @media (max-width:360px) {
       header .beta, header .mg-logo span { display:none; }
       header.mg-nav { padding-left:10px; padding-right:10px; gap:6px; }
@@ -1045,6 +1046,7 @@ socket.on('result', ({ answer, funFact, scores, nextIn, winnerId }) => {
 
   el('result-answer').innerHTML  = `Richtige Antwort: <strong style="color:var(--green)">${esc(answer)}</strong>`;
   el('funfact-text').textContent = funFact || '';
+  { const fb = el('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (funFact && String(funFact).trim()) ? '' : 'none'; }
 
   const sb = el('result-scoreboard');
   sb.innerHTML = '';
@@ -1358,8 +1360,9 @@ socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId,
     if (typeof a.delta === 'number' && a.delta !== 0) deltas[a.playerId] = a.delta;
     else if (typeof a.points === 'number' && a.points) deltas[a.playerId] = a.points;
     const dev = (typeof a.deviationPct === 'number' && mode !== 'exact') ? ' (\u00b1' + Math.round(a.deviationPct) + ' %)' : '';
+    const un = (currentQ && currentQ.unit && /^[-\d.,]+$/.test(String(a.text == null ? '' : a.text).trim())) ? ' ' + currentQ.unit : '';
     if (scene) {
-      scene.say(a.playerId, a.skipped ? 'Totem eingesetzt' : a.noAnswer ? 'Keine Antwort' : 'Die Antwort ist ' + String(a.text == null ? '' : a.text).slice(0, 30) + '!' + dev + (a.firstBuzzer && a.points > 0 ? ' \u00b7 +50 Glocke' : ''), a.winner ? 'correct' : (a.correct ? 'correct' : 'neutral'));
+      scene.say(a.playerId, a.skipped ? 'Totem eingesetzt' : a.noAnswer ? 'Keine Antwort' : 'Die Antwort ist ' + String(a.text == null ? '' : a.text).slice(0, 30) + un + '!' + dev + (a.firstBuzzer && a.points > 0 ? ' \u00b7 +50 Glocke' : ''), a.winner ? 'correct' : (a.correct ? 'correct' : 'neutral'));
       if (a.winner) scene.react(a.playerId, 'correct');
     }
   });

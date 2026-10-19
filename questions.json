@@ -704,7 +704,8 @@
     "question": "Welcher weiße, schwebende Mob des Nethers, der Feuerbälle schießt, lässt Tränen fallen?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "Ghasttränen sind die Basis für Regenerations-Tränke. Die Drop-Chance beträgt nur 30 Prozent, mit Plünderung III bis zu 4.",
@@ -1244,7 +1245,9 @@
     "acceptedAnswers": [
       "Warped Fungus on a Stick",
       "Verwelkter Pilz auf Stange",
-      "Pilz auf Stange"
+      "Pilz auf Stange",
+      "Wirrpilz am Stock",
+      "Wirrpilzrute"
     ],
     "category": "Items",
     "funFact": "Man kombiniert einen Fishing Rod mit einem Warped Fungus. Der Strider läuft in Richtung des gehaltenen Pilzes.",
@@ -1444,7 +1447,10 @@
     "question": "Welcher blaue hilfreiche Mob aus 1.19 gewann die Mob-Abstimmung 2021?",
     "answer": "Allay",
     "acceptedAnswers": [
-      "Allay"
+      "Allay",
+      "Hilfsgeist",
+      "hilfsgeister",
+      "hilfsgeist-gefangene"
     ],
     "category": "Mobs",
     "funFact": "Der Allay sammelt Items für den Spieler und tanzt bei Musik-Blocks. Er kann mit einer Amethyst-Scherbe dupliziert werden.",
@@ -1640,7 +1646,8 @@
     "answer": "Huhn",
     "acceptedAnswers": [
       "Huhn",
-      "Chicken"
+      "Chicken",
+      "hühnchen"
     ],
     "category": "Mobs",
     "funFact": "Hühner droppen 0-2 Federn beim Tod. Mit Plünderung III bis zu 5 Federn. Federn werden für Pfeile benötigt.",
@@ -2562,7 +2569,8 @@
       "Phantom-Membran",
       "phantom-membran",
       "Phantom Membrane",
-      "phantom membrane"
+      "phantom membrane",
+      "phantommembranen"
     ],
     "funFact": "Phantom-Membranen werden benötigt um Elytren zu reparieren.",
     "rating": 1400,
@@ -4813,7 +4821,8 @@
       "Antikes Gestein",
       "antikes gestein",
       "Ancient Debris",
-      "ancient debris"
+      "ancient debris",
+      "Antiker Schrott"
     ],
     "funFact": "Antikes Gestein muss in einem Ofen zu Netherit-Scherben geschmolzen werden.",
     "rating": 1200,
@@ -4861,7 +4870,8 @@
       "Eisenbarren",
       "eisenbarren",
       "Iron Ingot",
-      "iron ingot"
+      "iron ingot",
+      "eisen"
     ],
     "funFact": "Erze können direkt oder als Rohform geschmolzen werden.",
     "rating": 1800,
@@ -5720,7 +5730,8 @@
     "answer": "Vex",
     "acceptedAnswers": [
       "Vex",
-      "vex"
+      "vex",
+      "Plagegeist"
     ],
     "funFact": "Vexe können durch feste Blöcke fliegen.",
     "rating": 3300,
@@ -5748,7 +5759,8 @@
     "answer": "Enderman",
     "acceptedAnswers": [
       "Enderman",
-      "enderman"
+      "enderman",
+      "endermen"
     ],
     "funFact": "Endermen können bestimmte Blöcke aufheben und anderswo platzieren.",
     "rating": 3200,
@@ -5776,7 +5788,8 @@
     "answer": "Zombie",
     "acceptedAnswers": [
       "Zombie",
-      "zombie"
+      "zombie",
+      "zombies"
     ],
     "funFact": "Zombies können Dorfbewohner infizieren und zombifizieren.",
     "rating": 3250,
@@ -5934,7 +5947,8 @@
     "question": "Unter welchem Spielernamen ist Entwickler Jens Bergensten bekannt?",
     "answer": "Jeb",
     "acceptedAnswers": [
-      "Jeb"
+      "Jeb",
+      "jens bergensten"
     ],
     "category": "Spielmechanik",
     "funFact": "Er übernahm die Leitung der Entwicklung von Notch und steckt hinter dem Regenbogen-Schaf-Easter-Egg.",
@@ -5947,7 +5961,8 @@
     "question": "Wie muss ein Schaf per Namensschild heißen, damit seine Wolle ständig die Farbe wechselt?",
     "answer": "jeb_",
     "acceptedAnswers": [
-      "jeb_"
+      "jeb_",
+      "jens bergensten"
     ],
     "category": "Mobs",
     "funFact": "Das ist ein Easter Egg für Entwickler Jens Bergensten. Die Wolle blinkt durch alle 16 Farben.",
@@ -9249,7 +9264,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenschwert“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9264,7 +9280,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenschaufel“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9279,7 +9296,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenspitzhacke“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9294,7 +9312,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenaxt“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9309,7 +9328,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenhacke“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9399,7 +9419,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Kettenhaube“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9414,7 +9435,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Kettenhemd“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9429,7 +9451,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Kettenhose“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9444,7 +9467,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Kettenstiefel“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9459,7 +9483,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenhelm“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9474,7 +9499,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenharnisch“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9489,7 +9515,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenbeinschutz“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9504,7 +9531,8 @@
     "answer": "Eisenbarren",
     "acceptedAnswers": [
       "Eisenbarren",
-      "Eisen"
+      "Eisen",
+      "iron ingot"
     ],
     "category": "Crafting",
     "funFact": "„Eisenstiefel“ lässt sich im Amboss mit Eisenbarren reparieren.",
@@ -9653,7 +9681,9 @@
     "answer": "Axt",
     "acceptedAnswers": [
       "Axt",
-      "Axe"
+      "Axe",
+      "holzaxt",
+      "spitzaxt"
     ],
     "category": "Gameplay",
     "funFact": "„Komposter“ wird mit der Axt am schnellsten abgebaut.",
@@ -9668,7 +9698,9 @@
     "answer": "Axt",
     "acceptedAnswers": [
       "Axt",
-      "Axe"
+      "Axe",
+      "holzaxt",
+      "spitzaxt"
     ],
     "category": "Gameplay",
     "funFact": "„Bognertisch“ wird mit der Axt am schnellsten abgebaut.",
@@ -9683,7 +9715,9 @@
     "answer": "Axt",
     "acceptedAnswers": [
       "Axt",
-      "Axe"
+      "Axe",
+      "holzaxt",
+      "spitzaxt"
     ],
     "category": "Gameplay",
     "funFact": "„Plattenspieler“ wird mit der Axt am schnellsten abgebaut.",
@@ -9698,7 +9732,9 @@
     "answer": "Axt",
     "acceptedAnswers": [
       "Axt",
-      "Axe"
+      "Axe",
+      "holzaxt",
+      "spitzaxt"
     ],
     "category": "Gameplay",
     "funFact": "„Bambusblock“ wird mit der Axt am schnellsten abgebaut.",
@@ -9930,7 +9966,8 @@
     "question": "Welches Item erhält man normalerweise, wenn man „Bücherregal“ ohne Verzauberung abbaut?",
     "answer": "Buch",
     "acceptedAnswers": [
-      "Buch"
+      "Buch",
+      "book"
     ],
     "category": "Erze & Ressourcen",
     "funFact": "„Bücherregal“ lässt beim Abbau Buch fallen, mit der richtigen Werkzeugstufe.",
@@ -10496,7 +10533,8 @@
     "question": "Welcher Mob ist 16 Blöcke breit und 8 Blöcke hoch?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ misst 16 x 8 Blöcke.",
@@ -10524,7 +10562,8 @@
     "question": "Welcher Mob ist 4 Blöcke breit und 4 Blöcke hoch?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ misst 4 x 4 Blöcke.",
@@ -10552,7 +10591,8 @@
     "question": "Welcher Mob ist 0,6 Blöcke breit und 2,9 Blöcke hoch?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ misst 0,6 x 2,9 Blöcke.",
@@ -10594,7 +10634,8 @@
     "question": "Welcher Mob ist 1,95 Blöcke breit und 2,2 Blöcke hoch?",
     "answer": "Verwüster",
     "acceptedAnswers": [
-      "Verwüster"
+      "Verwüster",
+      "ravager"
     ],
     "category": "Mobs",
     "funFact": "„Verwüster“ misst 1,95 x 2,2 Blöcke.",
@@ -11104,7 +11145,9 @@
     "question": "Welcher Block ist härter: „Antiker Schrott“ oder „Eisenerz“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ (Härte 30) ist härter als „Eisenerz“ (Härte 3).",
@@ -11176,7 +11219,9 @@
     "question": "Welcher Block ist härter: „Amboss“ oder „Antiker Schrott“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ (Härte 30) ist härter als „Amboss“ (Härte 5).",
@@ -11590,7 +11635,9 @@
     "question": "Welcher Block ist härter: „Antiker Schrott“ oder „Schwamm“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ (Härte 30) ist härter als „Schwamm“ (Härte 0,6).",
@@ -11788,7 +11835,9 @@
     "question": "Welcher Block hält Explosionen besser stand: „Antiker Schrott“ oder „Eis“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ hat den Explosionswiderstand 1200, „Eis“ nur 0,5.",
@@ -11986,7 +12035,9 @@
     "question": "Welcher Block hält Explosionen besser stand: „Goldblock“ oder „Antiker Schrott“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ hat den Explosionswiderstand 1200, „Goldblock“ nur 6.",
@@ -12058,7 +12109,9 @@
     "question": "Welcher Block hält Explosionen besser stand: „Leuchtstein“ oder „Antiker Schrott“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ hat den Explosionswiderstand 1200, „Leuchtstein“ nur 0,3.",
@@ -12310,7 +12363,9 @@
     "question": "Welcher Block hält Explosionen besser stand: „Lapislazuliblock“ oder „Antiker Schrott“?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Blöcke",
     "funFact": "„Antiker Schrott“ hat den Explosionswiderstand 1200, „Lapislazuliblock“ nur 3.",
@@ -12724,7 +12779,9 @@
     "question": "Welcher Mob ist höher: „Ozelot“ oder „Mooshroom“?",
     "answer": "Mooshroom",
     "acceptedAnswers": [
-      "Mooshroom"
+      "Mooshroom",
+      "pilzkuh",
+      "mushroom cow"
     ],
     "category": "Mobs",
     "funFact": "„Mooshroom“ ist 1,4 Blöcke hoch, „Ozelot“ nur 0,7.",
@@ -12742,7 +12799,8 @@
     "question": "Welcher Mob ist höher: „Papagei“ oder „Kaninchen“?",
     "answer": "Papagei",
     "acceptedAnswers": [
-      "Papagei"
+      "Papagei",
+      "parrot"
     ],
     "category": "Mobs",
     "funFact": "„Papagei“ ist 0,9 Blöcke hoch, „Kaninchen“ nur 0,5.",
@@ -12850,7 +12908,8 @@
     "question": "Welcher Mob ist höher: „Schleim“ oder „Enderman“?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ ist 2,9 Blöcke hoch, „Schleim“ nur 0,52.",
@@ -12868,7 +12927,8 @@
     "question": "Welcher Mob ist höher: „Papagei“ oder „Frosch“?",
     "answer": "Papagei",
     "acceptedAnswers": [
-      "Papagei"
+      "Papagei",
+      "parrot"
     ],
     "category": "Mobs",
     "funFact": "„Papagei“ ist 0,9 Blöcke hoch, „Frosch“ nur 0,5.",
@@ -12922,7 +12982,8 @@
     "question": "Welcher Mob ist höher: „Zombie“ oder „Höhlenspinne“?",
     "answer": "Zombie",
     "acceptedAnswers": [
-      "Zombie"
+      "Zombie",
+      "zombies"
     ],
     "category": "Mobs",
     "funFact": "„Zombie“ ist 1,95 Blöcke hoch, „Höhlenspinne“ nur 0,5.",
@@ -12940,7 +13001,8 @@
     "question": "Welcher Mob ist höher: „Schaf“ oder „Schleim“?",
     "answer": "Schaf",
     "acceptedAnswers": [
-      "Schaf"
+      "Schaf",
+      "schafe"
     ],
     "category": "Mobs",
     "funFact": "„Schaf“ ist 1,3 Blöcke hoch, „Schleim“ nur 0,52.",
@@ -12976,7 +13038,8 @@
     "question": "Welcher Mob ist höher: „Enderman“ oder „Fuchs“?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ ist 2,9 Blöcke hoch, „Fuchs“ nur 0,7.",
@@ -13048,7 +13111,8 @@
     "question": "Welcher Mob ist höher: „Schildkröte“ oder „Zombie“?",
     "answer": "Zombie",
     "acceptedAnswers": [
-      "Zombie"
+      "Zombie",
+      "zombies"
     ],
     "category": "Mobs",
     "funFact": "„Zombie“ ist 1,95 Blöcke hoch, „Schildkröte“ nur 0,4.",
@@ -13138,7 +13202,8 @@
     "question": "Welcher Mob ist höher: „Zombie“ oder „Biene“?",
     "answer": "Zombie",
     "acceptedAnswers": [
-      "Zombie"
+      "Zombie",
+      "zombies"
     ],
     "category": "Mobs",
     "funFact": "„Zombie“ ist 1,95 Blöcke hoch, „Biene“ nur 0,6.",
@@ -13174,7 +13239,8 @@
     "question": "Welcher Mob ist höher: „Enderman“ oder „Panda“?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ ist 2,9 Blöcke hoch, „Panda“ nur 1,25.",
@@ -13192,7 +13258,8 @@
     "question": "Welcher Mob ist höher: „Fuchs“ oder „Höhlenspinne“?",
     "answer": "Fuchs",
     "acceptedAnswers": [
-      "Fuchs"
+      "Fuchs",
+      "füchse"
     ],
     "category": "Mobs",
     "funFact": "„Fuchs“ ist 0,7 Blöcke hoch, „Höhlenspinne“ nur 0,5.",
@@ -13210,7 +13277,8 @@
     "question": "Welcher Mob ist höher: „Lama“ oder „Ghast“?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ ist 4 Blöcke hoch, „Lama“ nur 1,87.",
@@ -13228,7 +13296,8 @@
     "question": "Welcher Mob ist höher: „Spinne“ oder „Ghast“?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ ist 4 Blöcke hoch, „Spinne“ nur 0,9.",
@@ -13246,7 +13315,8 @@
     "question": "Welcher Mob ist höher: „Enderman“ oder „Tintenfisch“?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ ist 2,9 Blöcke hoch, „Tintenfisch“ nur 0,8.",
@@ -13264,7 +13334,8 @@
     "question": "Welcher Mob ist höher: „Huhn“ oder „Verwüster“?",
     "answer": "Verwüster",
     "acceptedAnswers": [
-      "Verwüster"
+      "Verwüster",
+      "ravager"
     ],
     "category": "Mobs",
     "funFact": "„Verwüster“ ist 2,2 Blöcke hoch, „Huhn“ nur 0,7.",
@@ -13390,7 +13461,8 @@
     "question": "Welcher Mob ist höher: „Papagei“ oder „Magmawürfel“?",
     "answer": "Papagei",
     "acceptedAnswers": [
-      "Papagei"
+      "Papagei",
+      "parrot"
     ],
     "category": "Mobs",
     "funFact": "„Papagei“ ist 0,9 Blöcke hoch, „Magmawürfel“ nur 0,52.",
@@ -13408,7 +13480,8 @@
     "question": "Welcher Mob ist höher: „Tintenfisch“ oder „Ghast“?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ ist 4 Blöcke hoch, „Tintenfisch“ nur 0,8.",
@@ -13426,7 +13499,8 @@
     "question": "Welcher Mob ist höher: „Enderdrache“ oder „Biene“?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ ist 8 Blöcke hoch, „Biene“ nur 0,6.",
@@ -13624,7 +13698,8 @@
     "question": "Welcher Mob ist höher: „Enderman“ oder „Creeper“?",
     "answer": "Enderman",
     "acceptedAnswers": [
-      "Enderman"
+      "Enderman",
+      "endermen"
     ],
     "category": "Mobs",
     "funFact": "„Enderman“ ist 2,9 Blöcke hoch, „Creeper“ nur 1,7.",
@@ -13660,7 +13735,8 @@
     "question": "Welcher Mob ist höher: „Eisbär“ oder „Enderdrache“?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ ist 8 Blöcke hoch, „Eisbär“ nur 1,4.",
@@ -13714,7 +13790,8 @@
     "question": "Welcher Mob ist breiter: „Esel“ oder „Ghast“?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ ist 4 Blöcke breit, „Esel“ nur 1,4.",
@@ -13804,7 +13881,8 @@
     "question": "Welcher Mob ist breiter: „Schwein“ oder „Enderdrache“?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ ist 16 Blöcke breit, „Schwein“ nur 0,9.",
@@ -13822,7 +13900,8 @@
     "question": "Welcher Mob ist breiter: „Fuchs“ oder „Enderdrache“?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ ist 16 Blöcke breit, „Fuchs“ nur 0,6.",
@@ -13840,7 +13919,8 @@
     "question": "Welcher Mob ist breiter: „Enderdrache“ oder „Wither“?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "„Enderdrache“ ist 16 Blöcke breit, „Wither“ nur 0,9.",
@@ -13894,7 +13974,8 @@
     "question": "Welcher Mob ist breiter: „Skelett“ oder „Ghast“?",
     "answer": "Ghast",
     "acceptedAnswers": [
-      "Ghast"
+      "Ghast",
+      "ghasts"
     ],
     "category": "Mobs",
     "funFact": "„Ghast“ ist 4 Blöcke breit, „Skelett“ nur 0,6.",
@@ -13930,7 +14011,8 @@
     "question": "Welcher Mob ist breiter: „Verwüster“ oder „Shulker“?",
     "answer": "Verwüster",
     "acceptedAnswers": [
-      "Verwüster"
+      "Verwüster",
+      "ravager"
     ],
     "category": "Mobs",
     "funFact": "„Verwüster“ ist 1,95 Blöcke breit, „Shulker“ nur 1.",
@@ -14056,7 +14138,8 @@
     "question": "Welcher Mob ist breiter: „Katze“ oder „Schaf“?",
     "answer": "Schaf",
     "acceptedAnswers": [
-      "Schaf"
+      "Schaf",
+      "schafe"
     ],
     "category": "Mobs",
     "funFact": "„Schaf“ ist 0,9 Blöcke breit, „Katze“ nur 0,6.",
@@ -14074,7 +14157,8 @@
     "question": "Welcher Mob ist breiter: „Schildkröte“ oder „Verwüster“?",
     "answer": "Verwüster",
     "acceptedAnswers": [
-      "Verwüster"
+      "Verwüster",
+      "ravager"
     ],
     "category": "Mobs",
     "funFact": "„Verwüster“ ist 1,95 Blöcke breit, „Schildkröte“ nur 1,2.",
@@ -15064,7 +15148,9 @@
     "question": "Was stellt mehr Nahrungspunkte wieder her: „Kartoffel“ oder „Keks“?",
     "answer": "Keks",
     "acceptedAnswers": [
-      "Keks"
+      "Keks",
+      "cookie",
+      "kekse"
     ],
     "category": "Essen & Nahrung",
     "funFact": "„Keks“ füllt 2 Nahrungspunkte auf, „Kartoffel“ nur 1.",
@@ -15208,7 +15294,8 @@
     "question": "Was stellt mehr Nahrungspunkte wieder her: „Kartoffel“ oder „Roher Kabeljau“?",
     "answer": "Roher Kabeljau",
     "acceptedAnswers": [
-      "Roher Kabeljau"
+      "Roher Kabeljau",
+      "rohen kabeljau"
     ],
     "category": "Essen & Nahrung",
     "funFact": "„Roher Kabeljau“ füllt 2 Nahrungspunkte auf, „Kartoffel“ nur 1.",
@@ -15352,7 +15439,8 @@
     "question": "Was stellt mehr Nahrungspunkte wieder her: „Spinnenauge“ oder „Tropenfisch“?",
     "answer": "Spinnenauge",
     "acceptedAnswers": [
-      "Spinnenauge"
+      "Spinnenauge",
+      "spider eye"
     ],
     "category": "Essen & Nahrung",
     "funFact": "„Spinnenauge“ füllt 2 Nahrungspunkte auf, „Tropenfisch“ nur 1.",
@@ -16324,7 +16412,8 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Ozean“ oder „Bambusdschungel“?",
     "answer": "Bambusdschungel",
     "acceptedAnswers": [
-      "Bambusdschungel"
+      "Bambusdschungel",
+      "bamboo jungle"
     ],
     "category": "Biome",
     "funFact": "„Bambusdschungel“ hat die Basistemperatur 0,95, „Ozean“ nur 0,5.",
@@ -16360,7 +16449,10 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Tafelberge“ oder „Fluss“?",
     "answer": "Tafelberge",
     "acceptedAnswers": [
-      "Tafelberge"
+      "Tafelberge",
+      "tafelberg",
+      "badlands",
+      "mesa"
     ],
     "category": "Biome",
     "funFact": "„Tafelberge“ hat die Basistemperatur 2, „Fluss“ nur 0,5.",
@@ -16378,7 +16470,10 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Birkenwald“ oder „Tafelberge“?",
     "answer": "Tafelberge",
     "acceptedAnswers": [
-      "Tafelberge"
+      "Tafelberge",
+      "tafelberg",
+      "badlands",
+      "mesa"
     ],
     "category": "Biome",
     "funFact": "„Tafelberge“ hat die Basistemperatur 2, „Birkenwald“ nur 0,6.",
@@ -16414,7 +16509,10 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Sonnenblumenebene“ oder „Tafelberge“?",
     "answer": "Tafelberge",
     "acceptedAnswers": [
-      "Tafelberge"
+      "Tafelberge",
+      "tafelberg",
+      "badlands",
+      "mesa"
     ],
     "category": "Biome",
     "funFact": "„Tafelberge“ hat die Basistemperatur 2, „Sonnenblumenebene“ nur 0,8.",
@@ -16450,7 +16548,8 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Fluss“ oder „Bambusdschungel“?",
     "answer": "Bambusdschungel",
     "acceptedAnswers": [
-      "Bambusdschungel"
+      "Bambusdschungel",
+      "bamboo jungle"
     ],
     "category": "Biome",
     "funFact": "„Bambusdschungel“ hat die Basistemperatur 0,95, „Fluss“ nur 0,5.",
@@ -16468,7 +16567,10 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Tafelberge“ oder „Taiga“?",
     "answer": "Tafelberge",
     "acceptedAnswers": [
-      "Tafelberge"
+      "Tafelberge",
+      "tafelberg",
+      "badlands",
+      "mesa"
     ],
     "category": "Biome",
     "funFact": "„Tafelberge“ hat die Basistemperatur 2, „Taiga“ nur 0,25.",
@@ -16486,7 +16588,10 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Wald“ oder „Tafelberge“?",
     "answer": "Tafelberge",
     "acceptedAnswers": [
-      "Tafelberge"
+      "Tafelberge",
+      "tafelberg",
+      "badlands",
+      "mesa"
     ],
     "category": "Biome",
     "funFact": "„Tafelberge“ hat die Basistemperatur 2, „Wald“ nur 0,7.",
@@ -16558,7 +16663,9 @@
     "question": "Welches Biom hat die höhere Basistemperatur: „Taiga“ oder „Dunkler Wald“?",
     "answer": "Dunkler Wald",
     "acceptedAnswers": [
-      "Dunkler Wald"
+      "Dunkler Wald",
+      "dunkelwald",
+      "dark forest"
     ],
     "category": "Biome",
     "funFact": "„Dunkler Wald“ hat die Basistemperatur 0,7, „Taiga“ nur 0,25.",
@@ -16576,7 +16683,9 @@
     "question": "Welcher Block hat die Härte 30?",
     "answer": "Antiker Schrott",
     "acceptedAnswers": [
-      "Antiker Schrott"
+      "Antiker Schrott",
+      "antikes gestein",
+      "ancient debris"
     ],
     "category": "Hardcore-Wissen",
     "funFact": "„Antiker Schrott“ ist der einzige Block mit Härte 30.",
@@ -17680,7 +17789,8 @@
     "question": "Was stellt man im Handwerksraster aus 9 Stück „Prismarinscherbe“ her?",
     "answer": "Prismarinziegel",
     "acceptedAnswers": [
-      "Prismarinziegel"
+      "Prismarinziegel",
+      "prismarin"
     ],
     "category": "Crafting",
     "funFact": "Aus 9 mal Prismarinscherbe entsteht „Prismarinziegel“.",
@@ -17960,7 +18070,9 @@
     "question": "Aus welcher einzigen Zutat stellt man „Eisenharnisch“ im Handwerksraster her?",
     "answer": "Eisenbarren",
     "acceptedAnswers": [
-      "Eisenbarren"
+      "Eisenbarren",
+      "iron ingot",
+      "eisen"
     ],
     "category": "Crafting",
     "funFact": "Für „Eisenharnisch“ braucht man 8 mal Eisenbarren.",
@@ -17988,7 +18100,9 @@
     "question": "Aus welcher einzigen Zutat stellt man „Schere“ im Handwerksraster her?",
     "answer": "Eisenbarren",
     "acceptedAnswers": [
-      "Eisenbarren"
+      "Eisenbarren",
+      "iron ingot",
+      "eisen"
     ],
     "category": "Crafting",
     "funFact": "Für „Schere“ braucht man 2 mal Eisenbarren.",
@@ -18002,7 +18116,9 @@
     "question": "Aus welcher einzigen Zutat stellt man „Eisenblock“ im Handwerksraster her?",
     "answer": "Eisenbarren",
     "acceptedAnswers": [
-      "Eisenbarren"
+      "Eisenbarren",
+      "iron ingot",
+      "eisen"
     ],
     "category": "Crafting",
     "funFact": "Für „Eisenblock“ braucht man 9 mal Eisenbarren.",
@@ -18044,7 +18160,8 @@
     "question": "Aus welcher einzigen Zutat stellt man „Goldbeinschutz“ im Handwerksraster her?",
     "answer": "Goldbarren",
     "acceptedAnswers": [
-      "Goldbarren"
+      "Goldbarren",
+      "gold"
     ],
     "category": "Crafting",
     "funFact": "Für „Goldbeinschutz“ braucht man 7 mal Goldbarren.",
@@ -18114,7 +18231,8 @@
     "question": "Aus welcher einzigen Zutat stellt man „Netheritblock“ im Handwerksraster her?",
     "answer": "Netheritbarren",
     "acceptedAnswers": [
-      "Netheritbarren"
+      "Netheritbarren",
+      "netherit"
     ],
     "category": "Crafting",
     "funFact": "Für „Netheritblock“ braucht man 9 mal Netheritbarren.",
@@ -18128,7 +18246,8 @@
     "question": "Aus welcher einzigen Zutat stellt man „Goldblock“ im Handwerksraster her?",
     "answer": "Goldbarren",
     "acceptedAnswers": [
-      "Goldbarren"
+      "Goldbarren",
+      "gold"
     ],
     "category": "Crafting",
     "funFact": "Für „Goldblock“ braucht man 9 mal Goldbarren.",
@@ -18156,7 +18275,8 @@
     "question": "Aus welcher einzigen Zutat stellt man „Magmablock“ im Handwerksraster her?",
     "answer": "Magmacreme",
     "acceptedAnswers": [
-      "Magmacreme"
+      "Magmacreme",
+      "magma cream"
     ],
     "category": "Crafting",
     "funFact": "Für „Magmablock“ braucht man 4 mal Magmacreme.",
@@ -18198,7 +18318,8 @@
     "question": "Aus welcher einzigen Zutat stellt man „Goldhelm“ im Handwerksraster her?",
     "answer": "Goldbarren",
     "acceptedAnswers": [
-      "Goldbarren"
+      "Goldbarren",
+      "gold"
     ],
     "category": "Crafting",
     "funFact": "Für „Goldhelm“ braucht man 5 mal Goldbarren.",
@@ -18329,7 +18450,8 @@
     "question": "Welcher der bekannten Mobs ist am höchsten?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "Enderdrache: 8 Blöcke hoch (Spieldaten Java Edition 1.21.4).",
@@ -18343,7 +18465,8 @@
     "question": "Welcher der bekannten Mobs ist am breitesten?",
     "answer": "Enderdrache",
     "acceptedAnswers": [
-      "Enderdrache"
+      "Enderdrache",
+      "ender dragon"
     ],
     "category": "Mobs",
     "funFact": "Enderdrache: 16 Blöcke breit (Spieldaten Java Edition 1.21.4).",
@@ -18373,7 +18496,7 @@
     "unit": "Ringe",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Festung.",
+    "funFact": "",
     "source": "Festung",
     "gen": "wiki",
     "rating": 2750,
@@ -18390,7 +18513,7 @@
       "Endfestung"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Festung.",
+    "funFact": "",
     "source": "Festung",
     "gen": "wiki",
     "rating": 3150,
@@ -18407,7 +18530,7 @@
       "Silberfisch"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Ende.",
+    "funFact": "",
     "source": "Ende",
     "gen": "wiki",
     "rating": 3500,
@@ -18421,7 +18544,7 @@
     "unit": "Blöcke",
     "tolerance": 100,
     "category": "Strukturen",
-    "funFact": "Thema: Festung.",
+    "funFact": "",
     "source": "Festung",
     "gen": "wiki",
     "rating": 3850,
@@ -18439,7 +18562,7 @@
       "existiert nicht"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Festung.",
+    "funFact": "",
     "source": "Festung",
     "gen": "wiki",
     "rating": 3550,
@@ -18456,7 +18579,7 @@
       "Basalt-Delta"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3050,
@@ -18473,7 +18596,7 @@
       "Bastionsruinen"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3100,
@@ -18487,7 +18610,7 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3450,
@@ -18505,7 +18628,7 @@
       "Magmawürfelspawner"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3500,
@@ -18519,7 +18642,7 @@
     "unit": "Typen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 1750,
@@ -18537,7 +18660,7 @@
       "Piglin Brute"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Bastionsruine.",
+    "funFact": "",
     "source": "Bastionsruine",
     "gen": "wiki",
     "rating": 3200,
@@ -18555,7 +18678,7 @@
       "Netherziegel-Block"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Netherfestung.",
+    "funFact": "",
     "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3200,
@@ -18572,7 +18695,7 @@
       "Nether Festung"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Netherfestung.",
+    "funFact": "",
     "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3050,
@@ -18588,7 +18711,7 @@
       "Ghasts"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Netherfestung.",
+    "funFact": "",
     "source": "Netherfestung",
     "gen": "wiki",
     "rating": 3100,
@@ -18604,7 +18727,7 @@
       "Crying Obsidian"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Portalruine.",
+    "funFact": "",
     "source": "Portalruine",
     "gen": "wiki",
     "rating": 3450,
@@ -18618,7 +18741,7 @@
     "unit": "Hebel",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Dschungeltempel.",
+    "funFact": "",
     "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 1550,
@@ -18632,7 +18755,7 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Dschungeltempel.",
+    "funFact": "",
     "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 1750,
@@ -18649,7 +18772,7 @@
       "Kolben"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Dschungeltempel.",
+    "funFact": "",
     "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 3200,
@@ -18665,7 +18788,7 @@
       "Dispenser"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Dschungeltempel.",
+    "funFact": "",
     "source": "Dschungeltempel",
     "gen": "wiki",
     "rating": 3200,
@@ -18679,7 +18802,7 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Strukturen",
-    "funFact": "Thema: Ozeanmonument.",
+    "funFact": "",
     "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3250,
@@ -18696,7 +18819,7 @@
       "Prismarin-Ziegel"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Ozeanmonument.",
+    "funFact": "",
     "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3100,
@@ -18713,7 +18836,7 @@
       "8"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Ozeanmonument.",
+    "funFact": "",
     "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3700,
@@ -18731,7 +18854,7 @@
       "Tiefer Ozean"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Ozeanmonument.",
+    "funFact": "",
     "source": "Ozeanmonument",
     "gen": "wiki",
     "rating": 3150,
@@ -18748,7 +18871,7 @@
       "dark forest"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Waldanwesen.",
+    "funFact": "",
     "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3150,
@@ -18767,7 +18890,7 @@
       "Dunkeleiche"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Waldanwesen.",
+    "funFact": "",
     "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3550,
@@ -18781,7 +18904,7 @@
     "unit": "Stockwerke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Waldanwesen.",
+    "funFact": "",
     "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 2150,
@@ -18799,7 +18922,7 @@
       "Hilfsgeist-Gefangene"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Waldanwesen.",
+    "funFact": "",
     "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3050,
@@ -18816,7 +18939,7 @@
       "Waldanwesen-Karte"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Waldanwesen.",
+    "funFact": "",
     "source": "Waldanwesen",
     "gen": "wiki",
     "rating": 3100,
@@ -18830,7 +18953,7 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Schiffswrack.",
+    "funFact": "",
     "source": "Schiffswrack",
     "gen": "wiki",
     "rating": 1350,
@@ -18849,7 +18972,7 @@
       "rohes Kabeljau"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Schiffswrack.",
+    "funFact": "",
     "source": "Schiffswrack",
     "gen": "wiki",
     "rating": 3150,
@@ -18863,7 +18986,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Verlies.",
+    "funFact": "",
     "source": "Verlies",
     "gen": "wiki",
     "rating": 1750,
@@ -18877,7 +19000,7 @@
     "unit": "Versuche",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Verlies.",
+    "funFact": "",
     "source": "Verlies",
     "gen": "wiki",
     "rating": 2950,
@@ -18891,7 +19014,7 @@
     "unit": "Truhen",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Verlies.",
+    "funFact": "",
     "source": "Verlies",
     "gen": "wiki",
     "rating": 2150,
@@ -18910,7 +19033,7 @@
       "Minenschacht"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Mine.",
+    "funFact": "",
     "source": "Mine",
     "gen": "wiki",
     "rating": 1000,
@@ -18928,7 +19051,7 @@
       "Mesa"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Mine.",
+    "funFact": "",
     "source": "Mine",
     "gen": "wiki",
     "rating": 1150,
@@ -18945,7 +19068,7 @@
       "Note Block"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Notenblock.",
+    "funFact": "",
     "source": "Notenblock",
     "gen": "wiki",
     "rating": 1350,
@@ -18959,7 +19082,7 @@
     "unit": "Blöcke",
     "tolerance": 100,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Ende.",
+    "funFact": "",
     "source": "Ende",
     "gen": "wiki",
     "rating": 3600,
@@ -18977,7 +19100,7 @@
       "Enderman oder Shulker"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Ende.",
+    "funFact": "",
     "source": "Ende",
     "gen": "wiki",
     "rating": 1750,
@@ -18995,7 +19118,7 @@
       "4 mal fünf"
     ],
     "category": "Strukturen",
-    "funFact": "Thema: Netherportal.",
+    "funFact": "",
     "source": "Netherportal",
     "gen": "wiki",
     "rating": 3700,
@@ -19009,7 +19132,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Netherportal.",
+    "funFact": "",
     "source": "Netherportal",
     "gen": "wiki",
     "rating": 3550,
@@ -19023,7 +19146,7 @@
     "unit": "Sekunden",
     "tolerance": 1,
     "category": "Strukturen",
-    "funFact": "Thema: Netherportal.",
+    "funFact": "",
     "source": "Netherportal",
     "gen": "wiki",
     "rating": 2200,
@@ -19037,7 +19160,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Nether.",
+    "funFact": "",
     "source": "Nether",
     "gen": "wiki",
     "rating": 2700,
@@ -19051,7 +19174,7 @@
     "unit": "Y-Ebene",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Nether.",
+    "funFact": "",
     "source": "Nether",
     "gen": "wiki",
     "rating": 3750,
@@ -19065,7 +19188,7 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Bett.",
+    "funFact": "",
     "source": "Bett",
     "gen": "wiki",
     "rating": 3150,
@@ -19079,7 +19202,7 @@
     "unit": "Chunks",
     "tolerance": 2,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Nether.",
+    "funFact": "",
     "source": "Nether",
     "gen": "wiki",
     "rating": 750,
@@ -19093,7 +19216,7 @@
     "unit": "Obsidian",
     "tolerance": 0,
     "category": "Strukturen",
-    "funFact": "Thema: Netherportal.",
+    "funFact": "",
     "source": "Netherportal",
     "gen": "wiki",
     "rating": 2950,
@@ -19107,7 +19230,7 @@
     "unit": "Y-Ebene",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Netherportal.",
+    "funFact": "",
     "source": "Netherportal",
     "gen": "wiki",
     "rating": 3600,
@@ -19121,7 +19244,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Chunk.",
+    "funFact": "",
     "source": "Chunk",
     "gen": "wiki",
     "rating": 3700,
@@ -19135,7 +19258,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Chunk.",
+    "funFact": "",
     "source": "Chunk",
     "gen": "wiki",
     "rating": 2700,
@@ -19149,7 +19272,7 @@
     "unit": "Chunks",
     "tolerance": 0,
     "category": "Weltgenerierung",
-    "funFact": "Thema: Chunk.",
+    "funFact": "",
     "source": "Chunk",
     "gen": "wiki",
     "rating": 3850,
@@ -19166,7 +19289,7 @@
       "F3 und G"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Chunk.",
+    "funFact": "",
     "source": "Chunk",
     "gen": "wiki",
     "rating": 3500,
@@ -19183,7 +19306,7 @@
       "F3 und C"
     ],
     "category": "Weltgenerierung",
-    "funFact": "Thema: Koordinaten.",
+    "funFact": "",
     "source": "Koordinaten",
     "gen": "wiki",
     "rating": 3500,
@@ -19197,7 +19320,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorf.",
+    "funFact": "",
     "source": "Dorf",
     "gen": "wiki",
     "rating": 1950,
@@ -19211,7 +19334,7 @@
     "unit": "Biome",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorf.",
+    "funFact": "",
     "source": "Dorf",
     "gen": "wiki",
     "rating": 3050,
@@ -19225,7 +19348,7 @@
     "unit": "Minuten",
     "tolerance": 1,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2250,
@@ -19239,7 +19362,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1150,
@@ -19253,7 +19376,7 @@
     "unit": "Stufen",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1350,
@@ -19267,7 +19390,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 3500,
@@ -19281,7 +19404,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 3500,
@@ -19295,7 +19418,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2950,
@@ -19309,7 +19432,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 2150,
@@ -19323,7 +19446,7 @@
     "unit": "Brote",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1000,
@@ -19339,7 +19462,7 @@
       "Composter"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1150,
@@ -19356,7 +19479,7 @@
       "Hut"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1350,
@@ -19370,7 +19493,7 @@
     "unit": "Mal",
     "tolerance": 2,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Handel.",
+    "funFact": "",
     "source": "Handel",
     "gen": "wiki",
     "rating": 750,
@@ -19387,7 +19510,7 @@
       "Plünderer-Überfall"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Überfall.",
+    "funFact": "",
     "source": "Überfall",
     "gen": "wiki",
     "rating": 1750,
@@ -19401,7 +19524,7 @@
     "unit": "Stufe",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Überfall.",
+    "funFact": "",
     "source": "Überfall",
     "gen": "wiki",
     "rating": 2950,
@@ -19419,7 +19542,7 @@
       "Plünderer mit Banner"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Überfall.",
+    "funFact": "",
     "source": "Überfall",
     "gen": "wiki",
     "rating": 2150,
@@ -19433,7 +19556,7 @@
     "unit": "Angebote",
     "tolerance": 0,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Fahrender Händler.",
+    "funFact": "",
     "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 2600,
@@ -19447,7 +19570,7 @@
     "unit": "%",
     "tolerance": 0.5,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Fahrender Händler.",
+    "funFact": "",
     "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 2250,
@@ -19464,7 +19587,7 @@
       "Unsichtbarkeit"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Fahrender Händler.",
+    "funFact": "",
     "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 2750,
@@ -19478,7 +19601,7 @@
     "unit": "Blöcke",
     "tolerance": 4,
     "category": "Dorfbewohner",
-    "funFact": "Thema: Fahrender Händler.",
+    "funFact": "",
     "source": "Fahrender_Händler",
     "gen": "wiki",
     "rating": 3300,
@@ -19494,7 +19617,7 @@
       "Dorfglocke"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1750,
@@ -19508,7 +19631,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Verstärker.",
+    "funFact": "",
     "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 3000,
@@ -19522,7 +19645,7 @@
     "unit": "Sekunden",
     "tolerance": 0.05,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Verstärker.",
+    "funFact": "",
     "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 3200,
@@ -19536,7 +19659,7 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Verstärker.",
+    "funFact": "",
     "source": "Redstone-Verstärker",
     "gen": "wiki",
     "rating": 3250,
@@ -19555,7 +19678,7 @@
       "2 2/3"
     ],
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Staub.",
+    "funFact": "",
     "source": "Redstone-Staub",
     "gen": "wiki",
     "rating": 3650,
@@ -19569,7 +19692,7 @@
     "unit": "Staub",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Block.",
+    "funFact": "",
     "source": "Redstone-Block",
     "gen": "wiki",
     "rating": 3250,
@@ -19583,7 +19706,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Kolben.",
+    "funFact": "",
     "source": "Kolben",
     "gen": "wiki",
     "rating": 2850,
@@ -19597,7 +19720,7 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Fackel.",
+    "funFact": "",
     "source": "Redstone-Fackel",
     "gen": "wiki",
     "rating": 3300,
@@ -19611,7 +19734,7 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Redstone-Fackel.",
+    "funFact": "",
     "source": "Redstone-Fackel",
     "gen": "wiki",
     "rating": 3350,
@@ -19625,7 +19748,7 @@
     "unit": "Blöcke",
     "tolerance": 4,
     "category": "Redstone",
-    "funFact": "Thema: Notenblock.",
+    "funFact": "",
     "source": "Notenblock",
     "gen": "wiki",
     "rating": 3650,
@@ -19639,10 +19762,11 @@
     "acceptedAnswers": [
       "Axt",
       "Holzaxt",
-      "Spitzaxt"
+      "Spitzaxt",
+      "axe"
     ],
     "category": "Redstone",
-    "funFact": "Thema: Notenblock.",
+    "funFact": "",
     "source": "Notenblock",
     "gen": "wiki",
     "rating": 2600,
@@ -19661,7 +19785,7 @@
       "Mob-Sound"
     ],
     "category": "Redstone",
-    "funFact": "Thema: Notenblock.",
+    "funFact": "",
     "source": "Notenblock",
     "gen": "wiki",
     "rating": 3250,
@@ -19675,7 +19799,7 @@
     "unit": "Plätze",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Spender.",
+    "funFact": "",
     "source": "Spender",
     "gen": "wiki",
     "rating": 3250,
@@ -19688,10 +19812,11 @@
     "answer": "Klebrige Kolben",
     "acceptedAnswers": [
       "Klebrige Kolben",
-      "klebriger Kolben"
+      "klebriger Kolben",
+      "kolben"
     ],
     "category": "Redstone",
-    "funFact": "Thema: Kolben.",
+    "funFact": "",
     "source": "Kolben",
     "gen": "wiki",
     "rating": 2850,
@@ -19705,7 +19830,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3800,
@@ -19719,7 +19844,7 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 800,
@@ -19733,7 +19858,7 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3850,
@@ -19747,7 +19872,7 @@
     "unit": "Portale",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 2600,
@@ -19761,7 +19886,7 @@
     "unit": "Stärke",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 3400,
@@ -19775,7 +19900,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 1350,
@@ -19789,7 +19914,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 3500,
@@ -19803,7 +19928,7 @@
     "unit": "Blöcke",
     "tolerance": 0.1,
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 2400,
@@ -19817,7 +19942,7 @@
     "unit": "Sekunden",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "Thema: Axolotl.",
+    "funFact": "",
     "source": "Axolotl",
     "gen": "wiki",
     "rating": 800,
@@ -19831,7 +19956,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Axolotl.",
+    "funFact": "",
     "source": "Axolotl",
     "gen": "wiki",
     "rating": 2150,
@@ -19859,7 +19984,7 @@
     "unit": "Minuten",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "Thema: Huhn.",
+    "funFact": "",
     "source": "Huhn",
     "gen": "wiki",
     "rating": 2250,
@@ -19887,7 +20012,7 @@
     "unit": "Küken",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Huhn.",
+    "funFact": "",
     "source": "Huhn",
     "gen": "wiki",
     "rating": 1550,
@@ -19901,7 +20026,7 @@
     "unit": "Federn",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Huhn.",
+    "funFact": "",
     "source": "Huhn",
     "gen": "wiki",
     "rating": 1750,
@@ -19915,7 +20040,7 @@
     "unit": "Varianten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Huhn.",
+    "funFact": "",
     "source": "Huhn",
     "gen": "wiki",
     "rating": 1950,
@@ -19929,7 +20054,7 @@
     "unit": "Sechzehntel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Bett.",
+    "funFact": "",
     "source": "Bett",
     "gen": "wiki",
     "rating": 3050,
@@ -19943,7 +20068,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Bett.",
+    "funFact": "",
     "source": "Bett",
     "gen": "wiki",
     "rating": 1000,
@@ -19957,7 +20082,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Bett.",
+    "funFact": "",
     "source": "Bett",
     "gen": "wiki",
     "rating": 2700,
@@ -19973,7 +20098,7 @@
       "Jens Bergensten"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 2300,
@@ -19987,7 +20112,7 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Mobs",
-    "funFact": "Thema: Enderman.",
+    "funFact": "",
     "source": "Enderman",
     "gen": "wiki",
     "rating": 3300,
@@ -20001,7 +20126,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Enderman.",
+    "funFact": "",
     "source": "Enderman",
     "gen": "wiki",
     "rating": 1750,
@@ -20015,7 +20140,7 @@
     "unit": "Blöcke",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "Thema: Leuchtfeuer.",
+    "funFact": "",
     "source": "Leuchtfeuer",
     "gen": "wiki",
     "rating": 3800,
@@ -20029,7 +20154,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Leuchtfeuer.",
+    "funFact": "",
     "source": "Leuchtfeuer",
     "gen": "wiki",
     "rating": 3050,
@@ -20043,7 +20168,7 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Erfahrung.",
+    "funFact": "",
     "source": "Erfahrung",
     "gen": "wiki",
     "rating": 3400,
@@ -20057,7 +20182,7 @@
     "unit": "XP",
     "tolerance": 5,
     "category": "Spielmechanik",
-    "funFact": "Thema: Erfahrung.",
+    "funFact": "",
     "source": "Erfahrung",
     "gen": "wiki",
     "rating": 3900,
@@ -20071,7 +20196,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Erfahrung.",
+    "funFact": "",
     "source": "Erfahrung",
     "gen": "wiki",
     "rating": 1350,
@@ -20085,7 +20210,7 @@
     "unit": "Pilze",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Kuh.",
+    "funFact": "",
     "source": "Kuh",
     "gen": "wiki",
     "rating": 1550,
@@ -20099,7 +20224,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Eisengolem.",
+    "funFact": "",
     "source": "Eisengolem",
     "gen": "wiki",
     "rating": 3550,
@@ -20113,7 +20238,7 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Mobs",
-    "funFact": "Thema: Eisengolem.",
+    "funFact": "",
     "source": "Eisengolem",
     "gen": "wiki",
     "rating": 3350,
@@ -20131,7 +20256,7 @@
       "Swamp Hut"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Hexe.",
+    "funFact": "",
     "source": "Hexe",
     "gen": "wiki",
     "rating": 2150,
@@ -20145,7 +20270,7 @@
     "unit": "%",
     "tolerance": 0.5,
     "category": "Mobs",
-    "funFact": "Thema: Druckplatte.",
+    "funFact": "",
     "source": "Druckplatte",
     "gen": "wiki",
     "rating": 3400,
@@ -20159,7 +20284,7 @@
     "unit": "Schienen",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Antriebsschiene.",
+    "funFact": "",
     "source": "Antriebsschiene",
     "gen": "wiki",
     "rating": 3250,
@@ -20173,7 +20298,7 @@
     "unit": "m/s",
     "tolerance": 0,
     "category": "Redstone",
-    "funFact": "Thema: Antriebsschiene.",
+    "funFact": "",
     "source": "Antriebsschiene",
     "gen": "wiki",
     "rating": 3300,
@@ -20187,7 +20312,7 @@
     "unit": "Tag",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecraft.",
+    "funFact": "",
     "source": "Minecraft",
     "gen": "wiki",
     "rating": 3150,
@@ -20201,7 +20326,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3850,
@@ -20215,7 +20340,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3850,
@@ -20230,7 +20355,7 @@
       "Stockholm"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 2550,
@@ -20246,7 +20371,7 @@
       "Mojang Specification"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3050,
@@ -20263,7 +20388,7 @@
       "Commodore"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Markus Persson.",
+    "funFact": "",
     "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3600,
@@ -20277,7 +20402,7 @@
     "unit": "Spiele",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Markus Persson.",
+    "funFact": "",
     "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3600,
@@ -20291,7 +20416,7 @@
     "unit": "KB",
     "tolerance": 0.5,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecraft.",
+    "funFact": "",
     "source": "Minecraft",
     "gen": "wiki",
     "rating": 2850,
@@ -20305,7 +20430,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecraft.",
+    "funFact": "",
     "source": "Minecraft",
     "gen": "wiki",
     "rating": 3650,
@@ -20322,7 +20447,7 @@
       "Alpha 1.0.0"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Markus Persson.",
+    "funFact": "",
     "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3650,
@@ -20337,7 +20462,7 @@
       "Infiniminer"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecraft.",
+    "funFact": "",
     "source": "Minecraft",
     "gen": "wiki",
     "rating": 2550,
@@ -20353,7 +20478,7 @@
       "12/2010"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Versionen.",
+    "funFact": "",
     "source": "Versionen",
     "gen": "wiki",
     "rating": 3600,
@@ -20368,7 +20493,7 @@
       "1.7.10"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Versionen.",
+    "funFact": "",
     "source": "Versionen",
     "gen": "wiki",
     "rating": 3600,
@@ -20382,7 +20507,7 @@
     "unit": "Dollar",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecon.",
+    "funFact": "",
     "source": "Minecon",
     "gen": "wiki",
     "rating": 3600,
@@ -20396,7 +20521,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecon.",
+    "funFact": "",
     "source": "Minecon",
     "gen": "wiki",
     "rating": 3850,
@@ -20410,7 +20535,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecon.",
+    "funFact": "",
     "source": "Minecon",
     "gen": "wiki",
     "rating": 3850,
@@ -20424,7 +20549,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Markus Persson.",
+    "funFact": "",
     "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3850,
@@ -20440,7 +20565,7 @@
       "0x10C"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Markus Persson.",
+    "funFact": "",
     "source": "Markus_Persson",
     "gen": "wiki",
     "rating": 3650,
@@ -20454,7 +20579,7 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3600,
@@ -20468,7 +20593,7 @@
     "unit": "Mitarbeiter",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Mojang Studios.",
+    "funFact": "",
     "source": "Mojang_Studios",
     "gen": "wiki",
     "rating": 3100,
@@ -20482,7 +20607,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Minecraft.",
+    "funFact": "",
     "source": "Minecraft",
     "gen": "wiki",
     "rating": 3850,
@@ -20496,7 +20621,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Tick.",
+    "funFact": "",
     "source": "Tick",
     "gen": "wiki",
     "rating": 3850,
@@ -20510,7 +20635,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Tick.",
+    "funFact": "",
     "source": "Tick",
     "gen": "wiki",
     "rating": 1750,
@@ -20524,7 +20649,7 @@
     "unit": "Positionen",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Tick.",
+    "funFact": "",
     "source": "Tick",
     "gen": "wiki",
     "rating": 1950,
@@ -20538,7 +20663,7 @@
     "unit": "ms",
     "tolerance": 0,
     "category": "Spielmechanik",
-    "funFact": "Thema: Tick.",
+    "funFact": "",
     "source": "Tick",
     "gen": "wiki",
     "rating": 3600,
@@ -20552,7 +20677,7 @@
     "unit": "Tränke",
     "tolerance": 0,
     "category": "Tränke",
-    "funFact": "Thema: Trank.",
+    "funFact": "",
     "source": "Trank",
     "gen": "wiki",
     "rating": 1000,
@@ -20566,7 +20691,7 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Tränke",
-    "funFact": "Thema: Trank.",
+    "funFact": "",
     "source": "Trank",
     "gen": "wiki",
     "rating": 3750,
@@ -20580,7 +20705,7 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 3100,
@@ -20594,7 +20719,7 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 3150,
@@ -20608,7 +20733,7 @@
     "unit": "Blöcke",
     "tolerance": 2,
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 3300,
@@ -20622,7 +20747,7 @@
     "unit": "Sekunden",
     "tolerance": 5,
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 3350,
@@ -20636,7 +20761,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 2150,
@@ -20653,7 +20778,7 @@
       "Stufe 3"
     ],
     "category": "Items",
-    "funFact": "Thema: Angel.",
+    "funFact": "",
     "source": "Angel",
     "gen": "wiki",
     "rating": 1000,
@@ -20667,7 +20792,7 @@
     "unit": "%",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "Thema: Honigblock.",
+    "funFact": "",
     "source": "Honigblock",
     "gen": "wiki",
     "rating": 3250,
@@ -20686,7 +20811,7 @@
       "875"
     ],
     "category": "Blöcke",
-    "funFact": "Thema: Wasser.",
+    "funFact": "",
     "source": "Wasser",
     "gen": "wiki",
     "rating": 3450,
@@ -20700,7 +20825,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Wasser.",
+    "funFact": "",
     "source": "Wasser",
     "gen": "wiki",
     "rating": 2850,
@@ -20714,7 +20839,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Lava.",
+    "funFact": "",
     "source": "Lava",
     "gen": "wiki",
     "rating": 1750,
@@ -20731,7 +20856,7 @@
       "2×2"
     ],
     "category": "Blöcke",
-    "funFact": "Thema: Wasser.",
+    "funFact": "",
     "source": "Wasser",
     "gen": "wiki",
     "rating": 3550,
@@ -20745,7 +20870,7 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Feuer.",
+    "funFact": "",
     "source": "Feuer",
     "gen": "wiki",
     "rating": 3050,
@@ -20759,7 +20884,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Feuer.",
+    "funFact": "",
     "source": "Feuer",
     "gen": "wiki",
     "rating": 1000,
@@ -20773,7 +20898,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Feuer.",
+    "funFact": "",
     "source": "Feuer",
     "gen": "wiki",
     "rating": 1150,
@@ -20787,7 +20912,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Kaktus.",
+    "funFact": "",
     "source": "Kaktus",
     "gen": "wiki",
     "rating": 2750,
@@ -20801,7 +20926,7 @@
     "unit": "Blöcke",
     "tolerance": 1,
     "category": "Blöcke",
-    "funFact": "Thema: Kaktus.",
+    "funFact": "",
     "source": "Kaktus",
     "gen": "wiki",
     "rating": 3300,
@@ -20815,7 +20940,7 @@
     "unit": "Sechzehntel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Kaktus.",
+    "funFact": "",
     "source": "Kaktus",
     "gen": "wiki",
     "rating": 1750,
@@ -20829,7 +20954,7 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Eis.",
+    "funFact": "",
     "source": "Eis",
     "gen": "wiki",
     "rating": 3000,
@@ -20843,7 +20968,7 @@
     "unit": "Stück",
     "tolerance": 2,
     "category": "Blöcke",
-    "funFact": "Thema: Kürbis.",
+    "funFact": "",
     "source": "Kürbis",
     "gen": "wiki",
     "rating": 3350,
@@ -20857,7 +20982,7 @@
     "unit": "Kerne",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Kürbis.",
+    "funFact": "",
     "source": "Kürbis",
     "gen": "wiki",
     "rating": 1000,
@@ -20871,7 +20996,7 @@
     "unit": "Lichtlevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Bambus.",
+    "funFact": "",
     "source": "Bambus",
     "gen": "wiki",
     "rating": 2700,
@@ -20885,7 +21010,7 @@
     "unit": "Bienen",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Bienenstock.",
+    "funFact": "",
     "source": "Bienenstock",
     "gen": "wiki",
     "rating": 1350,
@@ -20899,7 +21024,7 @@
     "unit": "Honiglevel",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Bienenstock.",
+    "funFact": "",
     "source": "Bienenstock",
     "gen": "wiki",
     "rating": 1550,
@@ -20913,7 +21038,7 @@
     "unit": "%",
     "tolerance": 5,
     "category": "Blöcke",
-    "funFact": "Thema: Spinnennetz.",
+    "funFact": "",
     "source": "Spinnennetz",
     "gen": "wiki",
     "rating": 3300,
@@ -20927,7 +21052,7 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Blöcke",
-    "funFact": "Thema: Kürbis.",
+    "funFact": "",
     "source": "Kürbis",
     "gen": "wiki",
     "rating": 3350,
@@ -20941,7 +21066,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Blöcke",
-    "funFact": "Thema: Kaktus.",
+    "funFact": "",
     "source": "Kaktus",
     "gen": "wiki",
     "rating": 3600,
@@ -20955,7 +21080,7 @@
     "unit": "Sterne",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Feuerwerksrakete.",
+    "funFact": "",
     "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 2600,
@@ -20969,7 +21094,7 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "Thema: Feuerwerksrakete.",
+    "funFact": "",
     "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 2700,
@@ -20983,7 +21108,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Feuerwerksrakete.",
+    "funFact": "",
     "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 3700,
@@ -20997,7 +21122,7 @@
     "unit": "Pulver",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Feuerwerksrakete.",
+    "funFact": "",
     "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 1550,
@@ -21014,7 +21139,7 @@
       "MineCon"
     ],
     "category": "Items",
-    "funFact": "Thema: Feuerwerksrakete.",
+    "funFact": "",
     "source": "Feuerwerksrakete",
     "gen": "wiki",
     "rating": 3550,
@@ -21028,7 +21153,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Dreizack.",
+    "funFact": "",
     "source": "Dreizack",
     "gen": "wiki",
     "rating": 3000,
@@ -21042,7 +21167,7 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "Thema: Dreizack.",
+    "funFact": "",
     "source": "Dreizack",
     "gen": "wiki",
     "rating": 3200,
@@ -21056,7 +21181,7 @@
     "unit": "Sekunden",
     "tolerance": 0.1,
     "category": "Items",
-    "funFact": "Thema: Dreizack.",
+    "funFact": "",
     "source": "Dreizack",
     "gen": "wiki",
     "rating": 3050,
@@ -21070,7 +21195,7 @@
     "unit": "HP",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Dreizack.",
+    "funFact": "",
     "source": "Dreizack",
     "gen": "wiki",
     "rating": 2700,
@@ -21084,7 +21209,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Dreizack.",
+    "funFact": "",
     "source": "Dreizack",
     "gen": "wiki",
     "rating": 3450,
@@ -21098,7 +21223,7 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Armbrust.",
+    "funFact": "",
     "source": "Armbrust",
     "gen": "wiki",
     "rating": 3150,
@@ -21112,7 +21237,7 @@
     "unit": "ms",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Armbrust.",
+    "funFact": "",
     "source": "Armbrust",
     "gen": "wiki",
     "rating": 3800,
@@ -21126,7 +21251,7 @@
     "unit": "Meter",
     "tolerance": 10,
     "category": "Items",
-    "funFact": "Thema: Bogen.",
+    "funFact": "",
     "source": "Bogen",
     "gen": "wiki",
     "rating": 3700,
@@ -21140,7 +21265,7 @@
     "unit": "HP",
     "tolerance": 1,
     "category": "Items",
-    "funFact": "Thema: Bogen.",
+    "funFact": "",
     "source": "Bogen",
     "gen": "wiki",
     "rating": 800,
@@ -21154,7 +21279,7 @@
     "unit": "Meter",
     "tolerance": 5,
     "category": "Items",
-    "funFact": "Thema: Bogen.",
+    "funFact": "",
     "source": "Bogen",
     "gen": "wiki",
     "rating": 2600,
@@ -21168,7 +21293,7 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Rüstung.",
+    "funFact": "",
     "source": "Rüstung",
     "gen": "wiki",
     "rating": 2700,
@@ -21182,7 +21307,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Rüstung.",
+    "funFact": "",
     "source": "Rüstung",
     "gen": "wiki",
     "rating": 1350,
@@ -21196,7 +21321,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Rüstung.",
+    "funFact": "",
     "source": "Rüstung",
     "gen": "wiki",
     "rating": 3500,
@@ -21210,7 +21335,7 @@
     "unit": "Punkte",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Rüstung.",
+    "funFact": "",
     "source": "Rüstung",
     "gen": "wiki",
     "rating": 1750,
@@ -21224,7 +21349,7 @@
     "unit": "Einheiten",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Rüstung.",
+    "funFact": "",
     "source": "Rüstung",
     "gen": "wiki",
     "rating": 3550,
@@ -21238,7 +21363,7 @@
     "unit": "Blöcke",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Karte.",
+    "funFact": "",
     "source": "Karte",
     "gen": "wiki",
     "rating": 3800,
@@ -21252,7 +21377,7 @@
     "unit": "Vielfache",
     "tolerance": 0,
     "category": "Items",
-    "funFact": "Thema: Karte.",
+    "funFact": "",
     "source": "Karte",
     "gen": "wiki",
     "rating": 2600,
@@ -21266,7 +21391,7 @@
     "unit": "%",
     "tolerance": 2,
     "category": "Items",
-    "funFact": "Thema: Karte.",
+    "funFact": "",
     "source": "Karte",
     "gen": "wiki",
     "rating": 3700,
@@ -21280,7 +21405,7 @@
     "unit": "Schreiter",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Schreiter.",
+    "funFact": "",
     "source": "Schreiter",
     "gen": "wiki",
     "rating": 1350,
@@ -21294,7 +21419,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Schreiter.",
+    "funFact": "",
     "source": "Schreiter",
     "gen": "wiki",
     "rating": 3750,
@@ -21336,7 +21461,7 @@
     "unit": "Minuten",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Schreiter.",
+    "funFact": "",
     "source": "Schreiter",
     "gen": "wiki",
     "rating": 3050,
@@ -21353,7 +21478,7 @@
       "Warped Fungus"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Schreiter.",
+    "funFact": "",
     "source": "Schreiter",
     "gen": "wiki",
     "rating": 1000,
@@ -21367,7 +21492,7 @@
     "unit": "%",
     "tolerance": 1,
     "category": "Mobs",
-    "funFact": "Thema: Piglin.",
+    "funFact": "",
     "source": "Piglin",
     "gen": "wiki",
     "rating": 3100,
@@ -21381,7 +21506,7 @@
     "unit": "Ticks",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Piglin.",
+    "funFact": "",
     "source": "Piglin",
     "gen": "wiki",
     "rating": 3750,
@@ -21398,7 +21523,7 @@
       "Halloween"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Piglin.",
+    "funFact": "",
     "source": "Piglin",
     "gen": "wiki",
     "rating": 2850,
@@ -21416,7 +21541,7 @@
       "rohen Kabeljau"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Delfin.",
+    "funFact": "",
     "source": "Delfin",
     "gen": "wiki",
     "rating": 1750,
@@ -21430,7 +21555,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Schildkröte.",
+    "funFact": "",
     "source": "Schildkröte",
     "gen": "wiki",
     "rating": 3000,
@@ -21446,7 +21571,7 @@
       "0.31"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Bogen.",
+    "funFact": "",
     "source": "Bogen",
     "gen": "wiki",
     "rating": 3650,
@@ -21463,7 +21588,7 @@
       "1.2.0"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Piglin.",
+    "funFact": "",
     "source": "Piglin",
     "gen": "wiki",
     "rating": 3600,
@@ -21479,7 +21604,7 @@
       "Jens Bergensten"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Schleimblock.",
+    "funFact": "",
     "source": "Schleimblock",
     "gen": "wiki",
     "rating": 2300,
@@ -21495,7 +21620,7 @@
       "ZipKrowd-Mod"
     ],
     "category": "Geschichte & Updates",
-    "funFact": "Thema: Schleimblock.",
+    "funFact": "",
     "source": "Schleimblock",
     "gen": "wiki",
     "rating": 2300,
@@ -21513,7 +21638,7 @@
       "Eichenblätter"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Creeper.",
+    "funFact": "",
     "source": "Creeper",
     "gen": "wiki",
     "rating": 1550,
@@ -21529,7 +21654,7 @@
       "Slender Man"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Enderman.",
+    "funFact": "",
     "source": "Enderman",
     "gen": "wiki",
     "rating": 1800,
@@ -21545,7 +21670,7 @@
       "Zombies"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Zombie.",
+    "funFact": "",
     "source": "Zombie",
     "gen": "wiki",
     "rating": 1950,
@@ -21561,7 +21686,7 @@
       "Federn"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Zombie.",
+    "funFact": "",
     "source": "Zombie",
     "gen": "wiki",
     "rating": 2150,
@@ -21575,7 +21700,7 @@
     "unit": "XP",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Zombie.",
+    "funFact": "",
     "source": "Zombie",
     "gen": "wiki",
     "rating": 3400,
@@ -21589,7 +21714,7 @@
     "unit": "%",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Skelett.",
+    "funFact": "",
     "source": "Skelett",
     "gen": "wiki",
     "rating": 2700,
@@ -21603,7 +21728,7 @@
     "unit": "Quader",
     "tolerance": 5,
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 3300,
@@ -21618,7 +21743,7 @@
       "Jean"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Enderdrache.",
+    "funFact": "",
     "source": "Enderdrache",
     "gen": "wiki",
     "rating": 1550,
@@ -21633,7 +21758,7 @@
       "Whispers in Akarra"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 2900,
@@ -21649,7 +21774,7 @@
       "Die Dürre"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Wither.",
+    "funFact": "",
     "source": "Wither",
     "gen": "wiki",
     "rating": 1950,
@@ -21664,7 +21789,7 @@
       "Theobromin"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Papagei.",
+    "funFact": "",
     "source": "Papagei",
     "gen": "wiki",
     "rating": 2150,
@@ -21681,7 +21806,7 @@
       "Kleinkind"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Phantom.",
+    "funFact": "",
     "source": "Phantom",
     "gen": "wiki",
     "rating": 1000,
@@ -21696,7 +21821,7 @@
       "Newton"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Katze.",
+    "funFact": "",
     "source": "Katze",
     "gen": "wiki",
     "rating": 1150,
@@ -21711,7 +21836,7 @@
       "Jellie"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Katze.",
+    "funFact": "",
     "source": "Katze",
     "gen": "wiki",
     "rating": 1350,
@@ -21725,7 +21850,7 @@
     "unit": "",
     "tolerance": 0,
     "category": "Mobs",
-    "funFact": "Thema: Panda.",
+    "funFact": "",
     "source": "Panda",
     "gen": "wiki",
     "rating": 1550,
@@ -21742,7 +21867,7 @@
       "Laputa"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Eisengolem.",
+    "funFact": "",
     "source": "Eisengolem",
     "gen": "wiki",
     "rating": 2900,
@@ -21760,7 +21885,7 @@
       "Zombie Piglins"
     ],
     "category": "Dorfbewohner",
-    "funFact": "Thema: Dorfbewohner.",
+    "funFact": "",
     "source": "Dorfbewohner",
     "gen": "wiki",
     "rating": 1950,
@@ -21776,7 +21901,7 @@
       "Schafe"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Schaf.",
+    "funFact": "",
     "source": "Schaf",
     "gen": "wiki",
     "rating": 2150,
@@ -21792,7 +21917,7 @@
       "Geist"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Ghast.",
+    "funFact": "",
     "source": "Ghast",
     "gen": "wiki",
     "rating": 1000,
@@ -21807,7 +21932,7 @@
       "Bart"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Herobrine.",
+    "funFact": "",
     "source": "Herobrine",
     "gen": "wiki",
     "rating": 1150,
@@ -21825,7 +21950,7 @@
       "Orientierung"
     ],
     "category": "Blöcke",
-    "funFact": "Thema: Obsidian.",
+    "funFact": "",
     "source": "Obsidian",
     "gen": "wiki",
     "rating": 2750,
@@ -21841,7 +21966,7 @@
       "Bedrock"
     ],
     "category": "Blöcke",
-    "funFact": "Thema: Grundgestein.",
+    "funFact": "",
     "source": "Grundgestein",
     "gen": "wiki",
     "rating": 1550,
@@ -21857,7 +21982,7 @@
       "Füchse"
     ],
     "category": "Mobs",
-    "funFact": "Thema: Fuchs.",
+    "funFact": "",
     "source": "Fuchs",
     "gen": "wiki",
     "rating": 1800,

@@ -9,7 +9,7 @@
     rankup:  { src: 'sounds/rare-achievement.mp3', vol: 0.6 },
     bell:    { src: 'sounds/bell.mp3', vol: 0.8 }
   };
-  var ctx = null, started = false, buffers = {}, current = {};
+  var ctx = null, started = false, buffers = {}, current = {}, playing = {};
   function getVolume() { try { var v = parseFloat(localStorage.getItem('mg_volume')); return isFinite(v) ? Math.max(0, Math.min(1, v)) : 1; } catch (e) { return 1; } }
   function setVolume(v) { try { localStorage.setItem('mg_volume', String(Math.max(0, Math.min(1, v)))); } catch (e) {} }
 
@@ -19,21 +19,27 @@
     try { localStorage.setItem('mg_sound', JSON.stringify(!!v)); } catch (e) {}
     if (!v) Object.keys(current).forEach(function (k) { try { current[k].stop(); } catch (e) {} });
   }
-  function load() {
-    if (started || !AC()) return;
-    started = true;
-    try { ctx = new (AC())(); } catch (e) { ctx = null; return; }
-    Object.keys(FILES).forEach(function (k) {
-      fetch(FILES[k].src).then(function (r) { return r.arrayBuffer(); })
-        .then(function (ab) { return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); }); })
-        .then(function (b) { buffers[k] = b; }).catch(function () {});
-    });
+  var loading = {};
+  function ensureCtx() {
+    if (ctx) return true;
+    if (!AC()) return false;
+    try { ctx = new (AC())(); started = true; return true; } catch (e) { ctx = null; return false; }
   }
+  // Ein Sound wird erst bei erster Nutzung geladen und dekodiert (keine Sound-Requests beim Seitenaufruf)
+  function loadOne(k) {
+    if (buffers[k] || loading[k] || !FILES[k] || !ensureCtx()) return loading[k] || Promise.resolve();
+    loading[k] = fetch(FILES[k].src).then(function (r) { return r.arrayBuffer(); })
+      .then(function (ab) { return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); }); })
+      .then(function (b) { buffers[k] = b; }).catch(function () {});
+    return loading[k];
+  }
+  function load() { ensureCtx(); }
   function unlock() { load(); if (ctx && ctx.state === 'suspended') ctx.resume().catch(function () {}); }
   function play(name) {
     if (!isOn()) return;
     unlock();
     var f = FILES[name], b = buffers[name];
+    if (f && !b) { loadOne(name).then(function () { if (buffers[name] && !playing[name]) { playing[name] = 1; play(name); delete playing[name]; } }); return; }
     if (!f || !b || !ctx) return;
     try {
       if (current[name]) { try { current[name].stop(); } catch (e) {} }
@@ -50,7 +56,7 @@
   var STEPS = [369.99, 440, 554.37, 739.99];       // 3 = F#4, 2 = A4, 1 = C#5, Los = F#5
   var harp = null, harpTried = false, lastNote = null;
   function loadHarp() {
-    if (harpTried || !ctx) return;
+    if (harpTried || !ctx || !global.MG_NOTE_HARP) return;
     harpTried = true;
     fetch('sounds/note-harp.mp3').then(function (r) { if (!r.ok) throw 0; return r.arrayBuffer(); })
       .then(function (ab) { return new Promise(function (res, rej) { ctx.decodeAudioData(ab, res, rej); }); })
@@ -85,6 +91,5 @@
   ['pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
     global.addEventListener(ev, unlock, { once: true, passive: true });
   });
-  load();
   global.MGAudio = { setVolume: setVolume, getVolume: getVolume, play: play, isOn: isOn, setOn: setOn, unlock: unlock, countdown: countdown };
 })(window);
