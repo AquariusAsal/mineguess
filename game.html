@@ -1323,6 +1323,8 @@ header h1 { flex-shrink:0; }
   <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
 <script src="mg-scene.js"></script>
+  <script src="mg-craft.js"></script>
+  <script src="mg-profile.js"></script>
 <script src="mg-panorama.js"></script>
   <script src="mg-video.js"></script>
   <script src="mg-ranklist.js"></script>
@@ -1402,10 +1404,16 @@ header h1 { flex-shrink:0; }
       <span class="mode-desc">5 Fragen täglich, gleiche Fragen für alle. Baue deine Serie auf.</span>
       <span class="mode-tag" id="daily-mode-tag">Täglich</span>
     </button>
+    <button type="button" class="mode-card" onclick="selectMode('crafting')">
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/block/crafting_table_front.png" width="24" height="24" alt="">Crafting-Rätsel</span>
+      <span class="mode-desc">Erkenne, was aus dem Raster entsteht.</span>
+      <span class="mode-tag green-tag">Neu</span>
+    </button>
   </div>
   <div class="mode-actions">
     <button class="btn-lb-header" onclick="showLeaderboard()">Rankliste</button>
     <button class="btn-lb-header" onclick="showBadges()">Abzeichen</button>
+    <button class="btn-lb-header" onclick="MGProfile.open()">Profil</button>
     <button class="btn-lb-header" onclick="showCatStats()">Kategorien</button>
     <button class="btn-lb-header" id="btn-profile" onclick="MGSkin.openProfile()">Mein Spielerkopf</button>
     <button class="btn-lb-header" id="btn-mode-signout" onclick="doSignOut()" style="display:none">Abmelden</button>
@@ -1519,10 +1527,16 @@ header h1 { flex-shrink:0; }
   <div class="report-card">
     <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('report-modal').classList.remove('show')"></button>
     <h3>Frage melden</h3>
-    <button type="button" class="report-opt" onclick="submitReport('wrong_answer')">Falsche Antwort</button>
-    <button type="button" class="report-opt" onclick="submitReport('outdated')">Veraltete Information</button>
-    <button type="button" class="report-opt" onclick="submitReport('typo')">Tippfehler / Grammatik</button>
-    <button type="button" class="report-opt" onclick="submitReport('other')">Sonstiges</button>
+    <div id="report-reasons" role="radiogroup" aria-label="Grund">
+      <button type="button" class="report-opt" role="radio" aria-checked="false" data-reason="falsch">Falsche Antwort</button>
+      <button type="button" class="report-opt" role="radio" aria-checked="false" data-reason="unklar">Frage unklar</button>
+      <button type="button" class="report-opt" role="radio" aria-checked="false" data-reason="doppelt">Doppelte Frage</button>
+      <button type="button" class="report-opt" role="radio" aria-checked="false" data-reason="beleidigend">Unpassender Inhalt</button>
+      <button type="button" class="report-opt" role="radio" aria-checked="false" data-reason="sonstiges">Sonstiges</button>
+    </div>
+    <label for="report-text" class="report-label">Anmerkung (optional, max. 300 Zeichen)</label>
+    <textarea id="report-text" maxlength="300" rows="3" class="report-text" placeholder="Was stimmt nicht?"></textarea>
+    <button type="button" class="btn btn-primary" id="report-send" disabled>Senden</button>
     <button class="report-cancel" onclick="document.getElementById('report-modal').classList.remove('show')">Abbrechen</button>
   </div>
 </div>
@@ -1615,6 +1629,7 @@ header h1 { flex-shrink:0; }
   <div id="solo-scene" aria-hidden="true"></div>
 
   <div class="question-card" id="question-text">Lade Frage…</div>
+  <div id="craft-host" aria-live="polite"></div>
 
   <div class="attempts-bar" id="attempts-bar"></div>
 
@@ -1913,7 +1928,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 
   // Show answer icon in result for entity/block questions
   let resultIconHtml = '';
-  if (question.type === 'entity') {
+  if (question.type === 'entity' || question.type === 'crafting') {
     const img = new Image();
     img.width = 28; img.height = 28;
     img.style.cssText = 'image-rendering:pixelated;vertical-align:middle;margin-right:6px;border-radius:4px';
@@ -1931,6 +1946,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   const raEl = document.getElementById('result-answer');
   raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
+  if (window.MGCraft && question && question.type === 'crafting') MGCraft.reveal(document.getElementById('craft-host'), question);
   document.getElementById('funfact-text').textContent = question.funFact || '';
   { const fb = document.getElementById('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (question.funFact && String(question.funFact).trim()) ? '' : 'none'; }
   document.getElementById('input-area').style.visibility = 'hidden'; // Höhe behalten, kein Layout-Sprung
@@ -2049,6 +2065,8 @@ function stopTimer() {
 function buildInput() {
   const area = document.getElementById('input-area');
   area.innerHTML = '';
+  // Crafting-Raetsel: Werkbank-Raster ueber der Eingabe (Antwort wie bei Entity-Fragen per Dropdown)
+  if (window.MGCraft) { const ch = document.getElementById('craft-host'); if (question && question.type === 'crafting') MGCraft.render(ch, question); else MGCraft.clear(ch); }
 
   if (Array.isArray(question.choices) && question.choices.length === 2 && window.MGIcon && MGIcon.choiceButtons) {
     // ODER-Frage: nur diese zwei Buttons (zufaellige Reihenfolge je Frage), Versuche/Timer/Ranked unveraendert
@@ -2395,7 +2413,10 @@ function loadNextQuestion() {
     dailyIndex++;
   } else {
     if (currentIndex >= questionOrder.length) {
-      questionOrder = freshOrder([...Array(allQuestions.length).keys()]);
+      const _pool = gameMode === 'crafting'
+        ? allQuestions.map((q, i) => q.type === 'crafting' ? i : -1).filter(i => i !== -1)
+        : [...Array(allQuestions.length).keys()];
+      questionOrder = freshOrder(_pool);
       currentIndex  = 0;
       showToast('Alle Fragen durch! Neue Runde…');
     }
@@ -2436,6 +2457,7 @@ function loadNextQuestion() {
 
   renderAttemptBar();
   buildInput();
+  try { document.dispatchEvent(new CustomEvent('mg:question', { detail: question })); } catch (e) {}
   startTimer();
   // Tastatur-Spieler: Eingabe fokussieren (am Handy nicht, sonst springt die Tastatur auf)
   if (window.matchMedia && matchMedia('(hover: hover) and (pointer: fine)').matches) {
@@ -2528,6 +2550,7 @@ async function loadCloudStats() {
       const d = snap.data();
       localStorage.setItem('mg_stats', JSON.stringify({ streak: d.streak||0, best: d.best||0, played: d.played||0 }));
       MGBadges.merge(d.badges);
+      MGBadges.mergeDates(d.badgeDates);
     }
     updateStatsDisplay();
     await loadRankedCloud();
@@ -2541,7 +2564,7 @@ async function saveCloudStats() {
     await fbDb.collection('users').doc(currentUser.uid).set({
       displayName: currentUser.displayName || 'Spieler',
       photoURL: currentUser.photoURL || null,
-      streak: s.streak, best: s.best, played: s.played, badges: [...MGBadges.earned()],
+      streak: s.streak, best: s.best, played: s.played, badges: [...MGBadges.earned()], badgeDates: MGBadges.dates(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch(e) { console.warn('saveCloudStats:', e); }
@@ -3081,6 +3104,7 @@ async function rankedSaveCloud(force) {
       games: rankedProfile.games, answered: rankedProfile.answered, correct: rankedProfile.correct,
       rank: info.rankId, tier: info.rankId, division: info.tier,
       lastPlayedDay: rankedProfile.lastPlayedDay || '', mmrToday: rankedProfile.mmrToday || 0,
+      history: MGRanked.normalizeHistory(rankedProfile.history),
       lastDate: getDateKey(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -3114,7 +3138,10 @@ function rankedAnswered(correct) {
   MGBadges.record('rank', { promoted: r.promoted, demoted: r.demoted });
   rankedProfile.lastDate = getDateKey();
   rankedRun.delta += r.delta; rankedRun.answered++; if (correct) rankedRun.correct++;
-  if (rankedRun.answered === COMP_TOTAL) rankedProfile.games += 1;
+  if (rankedRun.answered === COMP_TOTAL) {
+    rankedProfile.games += 1;
+    rankedProfile = MGRanked.recordRun(rankedProfile, { delta: rankedRun.delta, correct: rankedRun.correct, total: COMP_TOTAL });
+  }
   rankedSaveLocal();
   if (rankedRun.answered === COMP_TOTAL) MGBadges.record('ranked_game', { correct: rankedRun.correct, total: COMP_TOTAL });
   rankedSaveCloud(false);
@@ -3310,6 +3337,12 @@ function selectMode(mode) {
 }
 
 function actualStartMode(mode) {
+  // Crafting-Modus: nur Fragen vom Typ crafting
+  if (mode === 'crafting') {
+    const cr = allQuestions.map((q, i) => q.type === 'crafting' ? i : -1).filter(i => i !== -1);
+    questionOrder = freshOrder(cr);
+    currentIndex = 0;
+  }
   // Apply category filter for endless mode
   if (mode === 'endless' && soloSelectedCats.size > 0) {
     const filtered = allQuestions
@@ -3528,6 +3561,13 @@ function recordCatStat(cat, correct) {
   if (correct) s[cat].c++;
   saveCatStats(s);
   MGBadges.record('answer', { correct: !!correct, rating: (typeof question !== 'undefined' && question) ? question.rating : 0 });
+  // Anonyme Trefferquote (nur Zaehler, keine Nutzer-ID), fire-and-forget
+  try {
+    if (typeof question !== 'undefined' && question && question.id) {
+      fetch('/api/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, keepalive: true,
+        body: JSON.stringify({ questionId: Number(question.id), correct: !!correct, attempts: Math.max(1, Math.min(10, (typeof attempts === 'number' ? attempts : 0) + 0 || 1)) }) }).catch(function () {});
+    }
+  } catch (e) {}
 }
 
 function showCatStats() {
@@ -3556,30 +3596,36 @@ let _reportedQs = new Set(JSON.parse(localStorage.getItem('mg_reported') || '[]'
 
 function openReport() {
   if (!question) return;
+  _reportReason = ''; document.getElementById('report-text').value = ''; document.getElementById('report-send').disabled = true;
+  document.querySelectorAll('#report-reasons .report-opt').forEach(x => { x.setAttribute('aria-checked', 'false'); x.classList.remove('picked'); });
   document.getElementById('report-modal').classList.add('show');
 }
 
+let _reportReason = '';
 function submitReport(reason) {
+  const text = (document.getElementById('report-text').value || '').trim().slice(0, 300);
   document.getElementById('report-modal').classList.remove('show');
   if (!question) return;
-  const qid = question.id || question.question.slice(0,30);
+  const qid = question.id || question.question.slice(0, 30);
   if (_reportedQs.has(qid)) { showToast('Bereits gemeldet.', 1500); return; }
   _reportedQs.add(qid);
-  localStorage.setItem('mg_reported', JSON.stringify([..._reportedQs]));
-  if (typeof FIREBASE_ENABLED !== 'undefined' && FIREBASE_ENABLED && fbDb) {
-    try {
-      fbDb.collection('reports').add({
-        questionId: qid,
-        question: question.question,
-        reason,
-        uid: currentUser ? currentUser.uid : 'guest',
-        ts: new Date().toISOString()
-      });
-    } catch(e) {}
-  }
-  showToast('Danke für dein Feedback!', 2000);
+  try { localStorage.setItem('mg_reported', JSON.stringify([..._reportedQs])); } catch (e) {}
+  // Meldung an den eigenen Server (anonym, nicht oeffentlich)
+  fetch('/api/report', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ questionId: Number(question.id) || 0, reason: reason, text: text }) })
+    .then(r => { showToast(r.status === 429 ? 'Bitte kurz warten, bevor du erneut meldest.' : 'Danke für dein Feedback!', 2200); })
+    .catch(() => showToast('Danke für dein Feedback!', 2000));
 }
-
+document.addEventListener('click', function (e) {
+  const b = e.target.closest && e.target.closest('#report-reasons .report-opt');
+  if (b) {
+    _reportReason = b.getAttribute('data-reason');
+    document.querySelectorAll('#report-reasons .report-opt').forEach(x => { const on = x === b; x.setAttribute('aria-checked', on ? 'true' : 'false'); x.classList.toggle('picked', on); });
+    document.getElementById('report-send').disabled = false;
+  } else if (e.target.id === 'report-send' && _reportReason) {
+    submitReport(_reportReason);
+  }
+});
 // ── Achievement system (Daten und Logik: mg-badges.js) ────────────────────────
 const ACHIEVEMENTS = MGBadges.list;
 function getEarnedBadges() { return MGBadges.earned(); }
@@ -3717,7 +3763,7 @@ if ('serviceWorker' in navigator) {
   var ms = document.getElementById('mode-screen');
   function sync() { document.body.classList.toggle('menu-hidden', ms.classList.contains('hidden')); }
   new MutationObserver(sync).observe(ms, { attributes: true, attributeFilter: ['class'] }); sync();
-  var bands = ['block/grass_block_top', 'block/gold_block', 'block/oak_planks', 'block/redstone_block', 'block/stone_bricks'];
+  var bands = ['block/grass_block_top', 'block/gold_block', 'block/oak_planks', 'block/redstone_block', 'block/stone_bricks', 'block/crafting_table_top'];
   document.querySelectorAll('#mode-screen .mode-card').forEach(function (c, i) {
     c.style.setProperty('--band', 'url(assets/mc/' + bands[i % bands.length] + '.png)');
   });

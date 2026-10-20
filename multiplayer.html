@@ -16,6 +16,7 @@
   <script src="spotify-config.js"></script>
   <script src="mg-spotify.js"></script>
   <script src="mg-scene.js"></script>
+  <script src="mg-craft.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -357,6 +358,22 @@
       <div class="room-code-val" id="lobby-code">---</div>
       <button class="copy-btn" onclick="copyRoomCode()">Code kopieren</button>
     </div>
+    <div id="settings-summary" class="settings-summary" aria-live="polite"></div>
+    <div id="host-settings" class="host-settings" hidden>
+      <h3 class="hs-title">Raum-Einstellungen (Host)</h3>
+      <div class="hs-row"><span class="form-label" id="hs-l-rounds">Runden</span><div class="toggle-row" role="group" aria-labelledby="hs-l-rounds" data-key="rounds">
+        <button type="button" class="toggle-opt" data-v="10">10</button><button type="button" class="toggle-opt" data-v="25">25</button><button type="button" class="toggle-opt" data-v="50">50</button><button type="button" class="toggle-opt" data-v="100">100</button></div></div>
+      <div class="hs-row"><span class="form-label" id="hs-l-time">Antwortzeit</span><div class="toggle-row" role="group" aria-labelledby="hs-l-time" data-key="answerTime">
+        <button type="button" class="toggle-opt" data-v="8">8 s</button><button type="button" class="toggle-opt" data-v="10">10 s</button><button type="button" class="toggle-opt" data-v="15">15 s</button></div></div>
+      <div class="hs-row"><span class="form-label" id="hs-l-diff">Schwierigkeit</span><div class="toggle-row" role="group" aria-labelledby="hs-l-diff" data-key="difficulty">
+        <button type="button" class="toggle-opt" data-v="mixed">Gemischt</button><button type="button" class="toggle-opt" data-v="easy">Leicht</button><button type="button" class="toggle-opt" data-v="medium">Mittel</button><button type="button" class="toggle-opt" data-v="hard">Schwer</button></div></div>
+      <div class="hs-row"><label class="form-label" for="hs-max">Max. Spieler</label>
+        <select id="hs-max" class="form-input" style="max-width:120px"><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></div>
+      <div class="hs-row"><span class="form-label" id="hs-l-vis">Sichtbarkeit</span><div class="toggle-row" role="group" aria-labelledby="hs-l-vis" data-key="isPublic">
+        <button type="button" class="toggle-opt" data-v="true">Öffentlich</button><button type="button" class="toggle-opt" data-v="false">Privat</button></div></div>
+      <div class="hs-row"><label class="form-label" for="hs-pw">Passwort (privat)</label><input id="hs-pw" class="form-input" type="text" maxlength="20" autocomplete="off" placeholder="leer = keins"></div>
+      <div class="hs-row"><span class="form-label">Kategorien (nichts gewählt = alle)</span><div id="hs-cats" style="display:flex;flex-wrap:wrap;gap:6px"></div></div>
+    </div>
     <div class="players-list" id="lobby-players"></div>
     <div class="lobby-actions">
       <button id="btn-ready" class="btn-primary" aria-pressed="false" onclick="toggleReady()">Bereit</button>
@@ -378,6 +395,7 @@
       <span class="round-counter" id="round-counter" style="display:none">Runde&nbsp;<span id="round-num">1</span>/<span id="round-max">10</span></span>
     </div>
     <div id="question-text">Warte auf Frage …</div>
+    <div id="craft-host" aria-live="polite"></div>
 
     <div class="timer-wrap">
       <div class="timer-row">
@@ -445,8 +463,10 @@
     <div class="gameover-title" id="go-title">Alle Runden vorbei</div>
     <div class="gameover-sub">Endabrechnung:</div>
     <div class="gameover-scores" id="gameover-scores"></div>
+    <div id="rematch-status" class="rematch-status" aria-live="polite"></div>
     <div class="gameover-btns">
       <button class="btn-continue" onclick="continueGame()">Weiterspielen</button>
+      <button class="btn-ceremony" id="btn-rematch" aria-pressed="false" onclick="toggleRematch()">Revanche</button>
       <button class="btn-ceremony" onclick="showCeremony()">Siegerehrung</button>
     </div>
   </div>
@@ -704,7 +724,9 @@ function ensureGameScreen() {
   show('game-screen');
 }
 
-socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic, token, rejoined, players, rounds }) => {
+socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic, token, rejoined, players, rounds, hostId: hid, settings: st }) => {
+  if (hid !== undefined) hostId = hid;
+  if (st) applySettings(st);
   if (rounds) maxRounds = rounds;
   myId = playerId; myRoomId = roomId;
   Object.keys(roster).forEach(k => delete roster[k]);
@@ -737,7 +759,10 @@ socket.on('answer_invalid', ({ message }) => {
 });
 
 // ── Room state ────────────────────────────────────────────────────────────────
-socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount, totalCount }) => {
+socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount, totalCount, hostId: hid, settings: st }) => {
+  if (hid !== undefined) hostId = hid;
+  if (st) applySettings(st);
+  renderHostUI();
   lockedOutIds = lockedOut || [];
   (players || []).forEach(p => {
     const old = roster[p.id] || {};
@@ -759,6 +784,18 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
       <span class="player-name">${esc(p.name)}${p.id === myId ? '<span class="you-tag">du</span>' : ''}</span>
       <span class="ready-mark ${p.ready ? 'on' : ''}">${p.connected === false ? 'getrennt' : (p.ready ? 'bereit' : 'wartet')}</span>
       <span class="player-score">${esc(p.score)} Pkt.</span>`;
+    if (p.id === hostId) { const hb = document.createElement('span'); hb.className = 'ready-mark on'; hb.textContent = 'Host'; row.insertBefore(hb, row.querySelector('.ready-mark')); }
+    if (p.id !== myId) {
+      if (hostId === myId) {
+        const kb = document.createElement('button'); kb.type = 'button'; kb.className = 'kick-btn'; kb.textContent = 'Entfernen';
+        kb.setAttribute('aria-label', p.name + ' entfernen'); kb.addEventListener('click', () => socket.emit('kick_player', { id: p.id }));
+        row.appendChild(kb);
+      } else if (players.length >= 3 && p.id !== hostId && p.connected !== false) {
+        const vb = document.createElement('button'); vb.type = 'button'; vb.className = 'kick-btn'; vb.textContent = 'Abstimmen';
+        vb.setAttribute('aria-label', 'Abstimmung zum Entfernen von ' + p.name + ' starten'); vb.addEventListener('click', () => socket.emit('votekick_start', { id: p.id }));
+        row.appendChild(vb);
+      }
+    }
     lobbyList.appendChild(row);
   });
 
@@ -838,6 +875,7 @@ socket.on('question', (q) => {
 
     el('q-category').textContent    = q.category;
     el('question-text').textContent = q.question;
+    if (window.MGCraft) { if (q.type === 'crafting') MGCraft.render(el('craft-host'), q); else MGCraft.clear(el('craft-host')); }
 
     // Reset UI
     el('feedback-box').className   = 'feedback-box';
@@ -1026,7 +1064,8 @@ socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score
 
 // ── Result ────────────────────────────────────────────────────────────────────
 let nextInterval = null;
-socket.on('result', ({ answer, funFact, scores, nextIn, winnerId }) => {
+socket.on('result', ({ answer, funFact, scores, nextIn, winnerId, resultCount }) => {
+  if (window.MGCraft && currentQ && currentQ.type === 'crafting') MGCraft.reveal(el('craft-host'), Object.assign({}, currentQ, { answer: answer }, resultCount ? { resultCount: resultCount } : {}));
   ensureGameScreen();
   el('result-panel').classList.add('show');
   myPhase = 'idle';
@@ -1429,6 +1468,98 @@ socket.on('question', () => { answeredIds = {}; firstBuzzerId = null; closeOffer
 try {
   MGBadges.onUnlock = (b) => showToast('Abzeichen: ' + b.name, 3500);
 } catch (e) {}
+
+// ── Runde 20 Block 3: Host-Einstellungen, Votekick, Revanche ──
+let hostId = null, mpSettings = null;
+const DIFF_DE = { mixed: 'Gemischt', easy: 'Leicht', medium: 'Mittel', hard: 'Schwer' };
+function applySettings(st) {
+  mpSettings = Object.assign({}, mpSettings || {}, st);
+  if (st.rounds) maxRounds = st.rounds;
+  renderHostUI();
+}
+function renderHostUI() {
+  const hs = el('host-settings'), sum = el('settings-summary');
+  if (!hs || !sum) return;
+  const isHost = hostId && hostId === myId, s = mpSettings || {};
+  hs.hidden = !isHost;
+  sum.textContent = isHost ? '' : (s.rounds ? 'Einstellungen: ' + s.rounds + ' Runden · ' + s.answerTime + ' s · ' + (DIFF_DE[s.difficulty] || '') + ' · max. ' + s.maxPlayers + ' Spieler' + (s.isPublic === false ? ' · privat' : '') : '');
+  if (!isHost) return;
+  hs.querySelectorAll('.toggle-row').forEach(row => {
+    const key = row.getAttribute('data-key');
+    row.querySelectorAll('.toggle-opt').forEach(b => {
+      const on = String(s[key]) === b.getAttribute('data-v');
+      b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  });
+  if (s.maxPlayers && el('hs-max')) el('hs-max').value = String(s.maxPlayers);
+  const cats = el('hs-cats');
+  if (cats && !cats.children.length) {
+    ALL_CATEGORIES.forEach(cat => {
+      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = cat; chip.setAttribute('aria-pressed', 'false');
+      chip.addEventListener('click', () => { chip.classList.toggle('on'); chip.setAttribute('aria-pressed', chip.classList.contains('on') ? 'true' : 'false'); pushSettings({ categories: [...cats.querySelectorAll('.chip.on')].map(c => c.textContent) }); });
+      cats.appendChild(chip);
+    });
+  }
+  if (cats && Array.isArray(s.categories)) cats.querySelectorAll('.chip').forEach(c => { const on = s.categories.includes(c.textContent); c.classList.toggle('on', on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+}
+let pushT = null, pending = {};
+function pushSettings(patch) {
+  pending = Object.assign(pending, patch);
+  clearTimeout(pushT);
+  pushT = setTimeout(() => { socket.emit('update_settings', pending); pending = {}; }, 250);
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('#host-settings .toggle-opt');
+  if (!b) return;
+  const key = b.parentElement.getAttribute('data-key'), v = b.getAttribute('data-v');
+  const val = key === 'isPublic' ? v === 'true' : (v === 'mixed' || v === 'easy' || v === 'medium' || v === 'hard') ? v : parseInt(v, 10);
+  pushSettings({ [key]: val });
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'hs-max') pushSettings({ maxPlayers: parseInt(e.target.value, 10) });
+  if (e.target.id === 'hs-pw') pushSettings({ password: e.target.value.trim() });
+});
+socket.on('settings_updated', (st) => applySettings(st));
+socket.on('settings_denied', ({ reason }) => showToast('Einstellung nicht möglich' + (reason === 'phase' ? ' (Spiel läuft schon)' : reason === 'host' ? ' (nur der Host)' : ''), 2800));
+socket.on('host_changed', ({ hostId: hid, name }) => { hostId = hid; renderHostUI(); showToast((hid === myId ? 'Du bist' : name + ' ist') + ' jetzt Host', 2800); });
+socket.on('kicked', ({ reason }) => {
+  showToast(reason === 'vote' ? 'Du wurdest per Abstimmung entfernt.' : 'Du wurdest vom Host entfernt.', 4500);
+  clearSession(); hide('lobby-screen'); hide('game-screen'); show('join-screen');
+  el('room-status').textContent = 'Multiplayer';
+});
+
+// Votekick
+let voteTimer = null;
+function closeVote() { const v = el('vote-card'); if (v) v.remove(); clearInterval(voteTimer); }
+function renderVote(s) {
+  let v = el('vote-card');
+  if (!v) { v = document.createElement('div'); v.id = 'vote-card'; v.setAttribute('role', 'alertdialog'); v.setAttribute('aria-label', 'Abstimmung'); document.body.appendChild(v); }
+  const canVote = s.targetId !== myId;
+  v.innerHTML = '<div class="vote-box"><b>Abstimmung: ' + esc(s.targetName) + ' entfernen?</b>' +
+    '<div class="vote-count">Ja ' + s.yes + ' · Nein ' + s.no + ' · nötig ' + s.needed + ' · <span id="vote-left">' + s.endsIn + '</span> s</div>' +
+    (canVote ? '<div class="vote-btns"><button type="button" class="btn btn-primary" id="vote-yes">Ja</button><button type="button" class="btn" id="vote-no">Nein</button></div>' : '<div class="vote-count">Über dich wird abgestimmt.</div>') + '</div>';
+  if (canVote) {
+    el('vote-yes').addEventListener('click', () => { socket.emit('votekick_vote', { yes: true }); });
+    el('vote-no').addEventListener('click', () => { socket.emit('votekick_vote', { yes: false }); });
+  }
+  let left = s.endsIn; clearInterval(voteTimer);
+  voteTimer = setInterval(() => { left--; const t = el('vote-left'); if (t) t.textContent = Math.max(0, left); if (left <= 0) clearInterval(voteTimer); }, 1000);
+}
+socket.on('votekick_started', renderVote);
+socket.on('votekick_update', renderVote);
+socket.on('votekick_end', ({ targetName, kicked }) => { closeVote(); showToast(kicked ? targetName + ' wurde entfernt.' : 'Abstimmung beendet: ' + targetName + ' bleibt.', 3500); });
+socket.on('votekick_denied', ({ reason }) => showToast({ target: 'Spieler nicht auswählbar', players: 'Abstimmen geht erst ab 3 Spielern', running: 'Es läuft schon eine Abstimmung', host: 'Der Host kann nicht abgestimmt werden', cooldown: 'Bitte kurz warten', target_cooldown: 'Dieser Spieler wurde gerade erst abgestimmt' }[reason] || 'Abstimmung nicht möglich', 3000));
+
+// Revanche
+let myRematch = false;
+function toggleRematch() { myRematch = !myRematch; socket.emit('rematch'); const b = el('btn-rematch'); if (b) { b.setAttribute('aria-pressed', myRematch ? 'true' : 'false'); b.classList.toggle('picked', myRematch); } }
+socket.on('rematch_state', ({ confirmed, total, needed }) => { const s = el('rematch-status'); if (s) s.textContent = 'Revanche: ' + confirmed + ' von ' + total + ' bestätigt (mindestens ' + needed + ')'; });
+socket.on('rematch_start', () => {
+  myRematch = false; const b = el('btn-rematch'); if (b) { b.setAttribute('aria-pressed', 'false'); b.classList.remove('picked'); }
+  el('gameover-overlay').classList.remove('show'); el('ceremony').classList.remove('show');
+  mpGameStarted = false; Object.keys(penaltyTotal).forEach(k => delete penaltyTotal[k]);
+  showToast('Revanche startet!', 2500);
+});
 
 // ── Connection ────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { initUI(); });

@@ -93,7 +93,7 @@ async function main() {
   // Offizielle deutsche Namen statt alter/falscher Bezeichnungen
   const OFFICIAL = { antikesgestein: 'Antiker Schrott', lectern: 'Lesepult' };
   const bad = a => / oder |\/|^\s*$/.test(a) || a.length > 40;
-  q.filter(x => x.type === 'entity').forEach(x => {
+  q.filter(x => x.type === 'entity' || x.type === 'crafting').forEach(x => {
     const canon = String(x.answer);
     if (!names.has(canon)) names.set(canon, { cat: x.category });
   });
@@ -124,7 +124,7 @@ async function main() {
   }
   // 3) Aliase aus den acceptedAnswers: jeder Alias zeigt auf den kanonischen Namen SEINER Frage
   const canonical = a => canonOf.get(String(a)) || canonOf.get([...canonOf.keys()].find(k => norm(k) === norm(a)) || '') || String(a);
-  q.filter(x => x.type === 'entity').forEach(x => {
+  q.filter(x => x.type === 'entity' || x.type === 'crafting').forEach(x => {
     const c = canonical(x.answer);
     (x.acceptedAnswers || []).forEach(a => {
       if (!a || bad(a) || norm(a) === norm(c)) return;
@@ -137,7 +137,7 @@ async function main() {
   // 4) Einheitliche Annahme: jede Frage akzeptiert ihren kanonischen Namen und alle Aliase desselben Objekts (Solo = Multiplayer)
   let accepted = 0;
   if (!DRY) {
-    q.filter(x => x.type === 'entity').forEach(x => {
+    q.filter(x => x.type === 'entity' || x.type === 'crafting').forEach(x => {
       const c = canonical(x.answer);
       const have = new Set((x.acceptedAnswers || []).map(norm));
       const add = [c, ...Object.keys(aliases).filter(a => aliases[a] === c)].filter(a => !have.has(norm(a)));
@@ -183,6 +183,24 @@ async function main() {
     icons[name] = rel; how[name] = mode;
   }
 
+  // Crafting-Raetsel: Icons fuer alle Zutaten (Registry-Name -> Textur + deutscher Name)
+  const ingKeys = new Set();
+  q.filter(x => x.type === 'crafting').forEach(x => x.grid.flat().filter(Boolean).forEach(k => ingKeys.add(k)));
+  const ingredients = {};
+  for (const k of [...ingKeys].sort()) {
+    const ING_ALIAS = { chest: ['block/barrel_side.png'], compass: ['item/compass_00.png'], snow_block: ['block/snow.png'], oak_slab: ['block/oak_planks.png'], pale_oak_slab: ['block/pale_oak_planks.png'],
+      bamboo_slab: ['block/bamboo_planks.png'], purpur_slab: ['block/purpur_block.png'], stone_pressure_plate: ['block/stone.png'], stone_slab: ['block/stone.png'], stripped_warped_hyphae: ['block/stripped_warped_stem.png'], chain: ['item/iron_nugget.png'], cut_copper_slab: ['block/cut_copper.png'], oak_wood: ['block/oak_log.png'], quartz_slab: ['block/quartz_block_side.png'], sandstone_slab: ['block/sandstone.png'], stone_brick_slab: ['block/stone_bricks.png'] };
+    const cands = [...(ING_ALIAS[k] || []), `item/${k}.png`, `block/${k}.png`, `block/${k}_side.png`, `block/${k}_front.png`, `block/${k}_top.png`, `block/${k}_still.png`];
+    let rel = null;
+    for (const c of cands) { rel = await ensureTexture(c); if (rel) break; }
+    ingredients[k] = { icon: rel || 'item/barrier.png', de: de['item.minecraft.' + k] || de['block.minecraft.' + k] || k, real: !!rel };
+  }
+  const ingMissing = Object.keys(ingredients).filter(k => !ingredients[k].real);
+  if (ingKeys.size) console.log('Zutaten-Icons:', ingKeys.size, 'ohne echte Textur:', ingMissing.join(',') || '-');
+  if (!DRY && ingKeys.size) fs.writeFileSync(path.join(MC, 'ingredient-icons.json'), JSON.stringify(ingredients));
+
+  // Schreibvarianten (z. B. "Magmacreme" statt "Magma-Creme") zeigen auf dasselbe Icon, weil der Client exakt nach Anzeigename sucht
+  for (const [v, c] of canonOf) if (v !== c && icons[c] && !icons[v]) icons[v] = icons[c];
   const out = { names: sortedNames, aliases };
   if (!DRY) {
     // Liste der per Skript geladenen Texturen: tools/gen-sw-assets.js cached sie nicht vor (nur on demand)

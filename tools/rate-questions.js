@@ -40,11 +40,38 @@ function raw(x) {
   return s;
 }
 
-const scored = q.map((x, i) => ({ i, r: raw(x) + (i % 7) * 0.01 }));   // winziger Tie-Breaker
+const scored = q.map((x, i) => ({ i, r: raw(x) + (i % 7) * 0.01 })).filter(e => q[e.i].type !== 'crafting');   // winziger Tie-Breaker
 scored.sort((a, b) => a.r - b.r);
 scored.forEach((e, rank) => {
   const pct = scored.length > 1 ? rank / (scored.length - 1) : 0.5;
   const rating = Math.round((600 + 3300 * pct) / 50) * 50;
+  q[e.i].rating = rating;
+  q[e.i].tier = rating < 1200 ? 1 : rating < 2200 ? 2 : rating < 3200 ? 3 : 4;
+});
+
+// Crafting-Raetsel: eigene Heuristik, danach Quantil-Abbildung auf die Ziel-Verteilung (T1 25 %, T2 35 %, T3 25 %, T4 15 %)
+// Score = verschiedene Zutaten + belegte Felder + Form (formlos leichter) + Bekanntheit des Ergebnisses (EASY/HARD-Listen, optional
+// 'bekannt' aus docs/team/crafting-auswahl.json) + Ablenker-Dichte (viele aehnliche Rezepte mit gleichem Namensanfang = etwas schwerer)
+const EASY = /^(Fackel|Werkbank|Truhe|Stock|Ofen|Leiter|Eimer|Schere|Bogen|Pfeil|Brot|Kuchen|Buch|Bücherregal|TNT|Redstone-Fackel|Papier|Schnee|Ton|Leder|Melone|Angel|Kompass|Uhr|Lagerfeuer|Fass|Schiene|Lore|Amboss|Zaubertisch|Eichenholz(boot|tür)|Bambusfloss|Bambusfloß|Weiße[rs]? (Wolle|Bett|Kerze)|Diamant(block|spitzhacke|schwert)|Eisen(block|schaufel)|Gold(block|barren)|Smaragdblock|Lapislazuliblock|Kohleblock|Redstone-Block|Netheritblock|Goldener Apfel|Schüssel|Keks|Ziegelsteine|Sandstein|Leine|Rahmen|Blumentopf|Kessel|Glasflasche|Gemälde|Kerze|Schnee)$/;
+const MID = /^(Antriebsschiene|Aktivierungsschiene|Sensorschiene|Trichter|Spender|Werfer|Schild|Schmelzofen|Räucherofen|Braustand|Kartentisch|Bognertisch|Schmiedetisch|Webstuhl|Schleifstein|Steinsäge|Laterne|Armbrust|Bienenstock|Plattenspieler|Kolben|Redstone-Lampe|Leuchtstein|Eisengitter|Netheritbarren|Enderauge|Diamant(harnisch|helm)|Eisen(stiefel|beinschutz))$/;
+const HARD = /^(Beobachter|Redstone-Komparator|Redstone-Verstärker|Leuchtfeuer|Klebriger Kolben|Tageslichtsensor|Blitzableiter|Leitstein|Seelenanker|Kalibrierter Sculk-Sensor|Werker|Aquisator|Streitkolben|Fernrohr|Spektralpfeil|Bergungskompass|Kupferleuchte|Zielblock|Kupferrost|Wirrpilzrute|Karottenrute|Endstab|Enderkristall|Feuerkugel|Fermentiertes Spinnenauge|Glitzernde Melonenscheibe|Getöntes Glas|Gerüst|Lesepult|Haken|Wolfspanzer|Lederner Rossharnisch|Purpursäule|Seelenlaterne|Seelenlagerfeuer|Seelenfackel|Endersteinziegel|Endsteinziegel|Tiefenschieferfliesen|Tiefenschieferziegel|Tuffsteinziegel|Leere Karte|Magmacreme|Honigflasche|Blaueis|Packeis|Fester Schlamm)$/;
+let known = new Set();
+try { const sel = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'docs', 'team', 'crafting-auswahl.json'), 'utf8'));
+  (Array.isArray(sel) ? [] : (sel.bekannt || [])).forEach(n => known.add(String(n))); } catch (e) {}
+const cr = q.map((x, i) => ({ i, x })).filter(e => e.x.type === 'crafting').map(e => {
+  const cells = e.x.grid.flat().filter(Boolean), kinds = new Set(cells).size;
+  let sc = kinds * 1.0 + cells.length * 0.3 + (e.x.shapeless ? -0.4 : 0) + (e.x.resultCount > 1 ? -0.2 : 0);
+  if (EASY.test(e.x.answer) || known.has(e.x.answer)) sc -= 3;
+  else if (MID.test(e.x.answer)) sc -= 0.6;
+  else if (HARD.test(e.x.answer)) sc += 2.2;
+  return { i: e.i, sc: sc + (e.i % 7) * 0.001 };
+}).sort((a, b) => a.sc - b.sc);
+const BANDS = [[0.25, 600, 1150], [0.60, 1200, 2150], [0.85, 2200, 3150], [1.0, 3200, 3500]];
+cr.forEach((e, rank) => {
+  const p = (rank + 0.5) / cr.length;
+  let lo = 0, band = BANDS.find(b => p <= b[0]);
+  for (const b of BANDS) { if (b === band) break; lo = b[0]; }
+  const rating = Math.round((band[1] + (band[2] - band[1]) * ((p - lo) / (band[0] - lo))) / 50) * 50;
   q[e.i].rating = rating;
   q[e.i].tier = rating < 1200 ? 1 : rating < 2200 ? 2 : rating < 3200 ? 3 : 4;
 });

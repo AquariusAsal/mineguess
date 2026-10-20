@@ -66,7 +66,7 @@
   // profile: { mmr, peak, games, answered, correct, lastDate, lastPlayedDay, mmrDayStart, mmrToday }
   function newProfile() {
     return { mmr: START_MMR, peak: START_MMR, games: 0, answered: 0, correct: 0, lastDate: '',
-             lastPlayedDay: '', mmrDayStart: START_MMR, mmrToday: 0 };
+             lastPlayedDay: '', mmrDayStart: START_MMR, mmrToday: 0, history: [] };
   }
   function normalizeProfile(o) {
     var p = newProfile();
@@ -81,7 +81,31 @@
     p.lastPlayedDay = typeof o.lastPlayedDay === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o.lastPlayedDay) ? o.lastPlayedDay : '';
     p.mmrDayStart = num(o.mmrDayStart, p.mmr, 0, MAX_MMR);
     p.mmrToday = Math.max(-MAX_MMR, Math.min(MAX_MMR, Math.round(Number(o.mmrToday) || 0)));
+    p.history = normalizeHistory(o.history);
     return p;
+  }
+
+  // Verlauf der letzten Ranked-Laeufe: [{day:'YYYY-MM-DD', mmr, delta, correct, total}], hoechstens HISTORY_MAX (aelteste zuerst)
+  var HISTORY_MAX = 30;
+  function normalizeHistory(h) {
+    if (!Array.isArray(h)) return [];
+    var out = [];
+    h.forEach(function (e) {
+      if (!e || typeof e !== 'object') return;
+      var mmr = Number(e.mmr), delta = Number(e.delta), c = Number(e.correct), t = Number(e.total);
+      if (!isFinite(mmr) || !isFinite(delta) || !isFinite(c) || !isFinite(t)) return;
+      out.push({ day: typeof e.day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(e.day) ? e.day : '',
+        mmr: Math.min(MAX_MMR, Math.max(0, Math.round(mmr))), delta: Math.max(-MAX_MMR, Math.min(MAX_MMR, Math.round(delta))),
+        correct: Math.max(0, Math.round(c)), total: Math.max(1, Math.round(t)) });
+    });
+    return out.slice(-HISTORY_MAX);
+  }
+  // Lauf abschliessen: haengt einen Eintrag an (MMR nach dem Lauf, Summe der Aenderungen, Treffer)
+  function recordRun(profile, run) {
+    var prof = normalizeProfile(profile);
+    run = run || {};
+    prof.history = normalizeHistory(prof.history.concat([{ day: dayKey(), mmr: prof.mmr, delta: run.delta, correct: run.correct, total: run.total }]));
+    return prof;
   }
 
   /**
@@ -197,7 +221,7 @@
 
   var api = {
     START_MMR: START_MMR, K: K, DEFAULT_RATING: DEFAULT_RATING, RANKS: RANKS,
-    expected: expected, rankInfo: rankInfo, rankData: rankData, dayKey: dayKey, newProfile: newProfile, normalizeProfile: normalizeProfile,
+    expected: expected, rankInfo: rankInfo, rankData: rankData, dayKey: dayKey, newProfile: newProfile, normalizeProfile: normalizeProfile, normalizeHistory: normalizeHistory, recordRun: recordRun, HISTORY_MAX: HISTORY_MAX,
     applyAnswer: applyAnswer, pickIndex: pickIndex, templateKey: templateKey, formatKey: formatKey
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

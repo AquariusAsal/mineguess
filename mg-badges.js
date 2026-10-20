@@ -154,6 +154,7 @@
     });
     if (fresh.length) {
       saveEarned(have);
+      stampDates(fresh.map(function (a) { return a.id; }));
       fresh.forEach(function (a, i) {
         if (typeof api.onUnlock === 'function') setTimeout(function () { api.onUnlock(a); }, i * 1500);
       });
@@ -170,6 +171,7 @@
     ids.forEach(function (id) { if (known[id] && !have.has(id)) { have.add(id); changed = true; } });
     if (changed) saveEarned(have);
   }
+  // (Datum bei Cloud-Uebernahme: MGBadges.mergeDates; fehlt es dort, bleibt das Datum leer)
 
   // Fortschritt je Abzeichen fuer die Anzeige (0..1 fuer zaehlbare Bedingungen, sonst 0/1)
   var PROGRESS = {
@@ -187,6 +189,59 @@
     return { value: Math.min(p[1], s[p[0]] || 0), target: p[1] };
   }
 
-  var api = { list: LIST, stats: stats, earned: earned, record: record, check: check, merge: merge, progress: progress, onUnlock: null };
+  // Freischalt-Daten: mg_badge_dates = { id: 'YYYY-MM-DD' } (alte Abzeichen ohne Datum -> null)
+  function dayStr(d) { d = d || new Date(); var m = d.getMonth() + 1, x = d.getDate(); return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (x < 10 ? '0' : '') + x; }
+  function dates() {
+    var o = readJSON('mg_badge_dates', {}), r = {};
+    if (o && typeof o === 'object') Object.keys(o).forEach(function (k) { if (typeof o[k] === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(o[k])) r[k] = o[k]; });
+    return r;
+  }
+  function stampDates(ids) {
+    var d = dates(), t = dayStr(), changed = false;
+    ids.forEach(function (id) { if (!d[id]) { d[id] = t; changed = true; } });
+    if (changed) writeJSON('mg_badge_dates', d);
+  }
+  // Cloud: Daten uebernehmen (frueheres Datum gewinnt)
+  function mergeDates(o) {
+    if (!o || typeof o !== 'object') return;
+    var d = dates(), changed = false;
+    Object.keys(o).forEach(function (id) {
+      var v = o[id];
+      if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return;
+      if (!d[id] || v < d[id]) { d[id] = v; changed = true; }
+    });
+    if (changed) writeJSON('mg_badge_dates', d);
+  }
+
+  var RARITY_ORDER = ['common', 'uncommon', 'rare', 'epic', 'legendary'];
+  var RARITY_LABEL = { common: 'Gewöhnlich', uncommon: 'Ungewöhnlich', rare: 'Selten', epic: 'Episch', legendary: 'Legendär' };
+  /** Album-Daten: alle Abzeichen mit Seltenheit, Status, Datum, Fortschritt (Sammlerkarten, gesperrte ausgegraut) */
+  function album() {
+    var have = earned(), dd = dates();
+    return LIST.map(function (a) {
+      var p = progress(a.id), got = have.has(a.id);
+      return { id: a.id, name: a.name, desc: a.desc, texture: a.texture, rarity: a.rarity, rarityLabel: RARITY_LABEL[a.rarity] || a.rarity,
+               rarityRank: RARITY_ORDER.indexOf(a.rarity), unlocked: got, date: got ? (dd[a.id] || null) : null,
+               progress: got ? { value: p.target, target: p.target } : p, countable: p.target > 1 };
+    });
+  }
+  /** Trefferquote je Kategorie aus mg_cat_stats: [{category, correct, total, rate 0..1}], meistgespielt zuerst */
+  function categoryStats() {
+    var cs = readJSON('mg_cat_stats', {});
+    return Object.keys(cs).map(function (k) {
+      var c = Number(cs[k].c) || 0, t = Number(cs[k].t) || 0;
+      return { category: k, correct: c, total: t, rate: t ? c / t : 0 };
+    }).filter(function (e) { return e.total > 0; }).sort(function (a, b) { return b.total - a.total; });
+  }
+  /** Kennzahlen fuer die Profilseite (ohne Spielinhalt, teilbar) */
+  function summary() {
+    var s = stats(), have = earned();
+    return { played: s.played, answered: s.answered, correct: s.totalCorrect, rate: s.answered ? s.totalCorrect / s.answered : 0,
+             bestStreak: s.bestStreak, dailyStreak: s.dailyStreak, blitzBest: s.blitzBest, rankedGames: s.rankedGames, peakMmr: s.peakMmr,
+             badgesEarned: LIST.filter(function (a) { return have.has(a.id); }).length, badgesTotal: LIST.length };
+  }
+
+  var api = { list: LIST, stats: stats, earned: earned, record: record, check: check, merge: merge, progress: progress, onUnlock: null,
+              dates: dates, mergeDates: mergeDates, album: album, categoryStats: categoryStats, summary: summary, rarityOrder: RARITY_ORDER, rarityLabel: RARITY_LABEL };
   root.MGBadges = api;
 })(typeof window !== 'undefined' ? window : this);

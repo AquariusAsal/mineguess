@@ -15,6 +15,8 @@ const crypto     = require('crypto');
 const zlib       = require('zlib');
 const MGAnswer   = require('./answer-check.js');
 const MGRanked   = require('./ranked.js');
+const store      = require('./lib/store.js');
+const PKG        = (() => { try { return require('./package.json'); } catch (e) { return {}; } })();
 
 const app    = express();
 const server = http.createServer(app);
@@ -30,34 +32,39 @@ app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
   if (/[\\\0%]|\/\/|(^|\/)\.{1,2}(\/|$)/.test(p) || path.posix.normalize(p) !== p) return res.status(404).end();   // nicht kanonisch
-  if (p === '/' || p === '/premium.html' || p.startsWith('/api/') || p.startsWith('/socket.io/')) return next();
+  if (p === '/' || p === '/health' || p === '/premium.html' || p.startsWith('/api/') || p.startsWith('/socket.io/')) return next();
   if (ROOT_FILE.test(p) && !ROOT_DENY.test(p)) return next();
   if (ALLOWED_DIRS.test(p) && !/(^|\/)\./.test(p)) return next();
   return res.status(404).end();
 });
+// ── Strukturierte Logs (ohne personenbezogene Daten: keine Namen, IDs, IPs) und Zaehler ───────
+const counters = { errors: 0, rateLimited: 0, rankedRuns: 0, rankedAnswers: 0, reports: 0 };
+const BOOT = Date.now();
+function log(level, event, fields) {
+  if (level === 'error') counters.errors++;
+  if (event === 'ranked_start') counters.rankedRuns++;
+  if (event === 'ranked_answer') counters.rankedAnswers++;
+  if (process.env.LOG_LEVEL === 'silent') return;
+  console.log(JSON.stringify(Object.assign({ t: new Date().toISOString(), level, event }, fields || {})));
+}
+app.get('/health', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const st = store.info();
+  res.json({ ok: true, version: PKG.version || null, uptimeSec: Math.round((Date.now() - BOOT) / 1000), rooms: Object.keys(rooms).length,
+    players: Object.values(rooms).reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0),
+    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, counters });
+});
+
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
 // Speicher: RAM + data/ranked.json. Auf Hosts mit fluechtigem Dateisystem (z. B. Render) geht die Datei beim Neustart verloren.
 app.set('trust proxy', 1);
-const RANKED_FILE = path.join(__dirname, 'data', 'ranked.json');
 const RANKED_MAX_ENTRIES = 5000;
 const rankedStore = new Map();            // key -> Eintrag
-try {
-  const arr = JSON.parse(fs.readFileSync(RANKED_FILE, 'utf8'));
+function hydrateRanked() {
+  const arr = store.get('ranked');
   if (Array.isArray(arr)) arr.forEach(e => { if (e && typeof e.key === 'string' && Number.isInteger(e.mmr)) rankedStore.set(e.key, e); });
-} catch (e) { /* noch keine Datei */ }
-let rankedSaveTimer = null;
-function saveRankedSoon() {
-  if (rankedSaveTimer) return;
-  rankedSaveTimer = setTimeout(() => {
-    rankedSaveTimer = null;
-    try {
-      fs.mkdirSync(path.dirname(RANKED_FILE), { recursive: true });
-      const tmp = RANKED_FILE + '.tmp';
-      fs.writeFileSync(tmp, JSON.stringify([...rankedStore.values()]));
-      fs.renameSync(tmp, RANKED_FILE);
-    } catch (e) { console.warn('ranked.json nicht gespeichert:', e.message); }
-  }, 2000);
 }
+function saveRankedSoon() { store.set('ranked', [...rankedStore.values()]); }
 const ipBuckets = new Map();
 function ipAllowed(ip) {
   const now = Date.now();
@@ -76,6 +83,7 @@ const ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
 app.get('/api/ranked', (req, res) => {
   res.set('Cache-Control', 'no-store');
   const list = [...rankedStore.values()]
+    .filter(e => e.verified)
     .sort((a, b) => b.mmr - a.mmr)
     .slice(0, 100)
     .map(e => ({ key: keyHash(e.key), uid: e.uid || null, name: e.name, tier: e.tier, division: e.division,
@@ -86,6 +94,7 @@ app.get('/api/ranked', (req, res) => {
 app.post('/api/ranked', express.json({ limit: '2kb' }), (req, res) => {
   try {
     if (!ipAllowed(req.ip)) return res.status(429).json({ ok: false });
+    if (process.env.RANKED_LEGACY !== '1') return res.json({ ok: true, legacy: true });   // Anti-Cheat: Client-Werte haben keine Wirkung auf die Rangliste (nur /api/ranked/*)
     const b = req.body || {};
     const mmr = b.mmr;                      // nur echte Zahlen (kein null, String, Objekt)
     if (typeof mmr !== 'number') return res.status(400).json({ ok: false });
@@ -123,6 +132,58 @@ app.post('/api/ranked', express.json({ limit: '2kb' }), (req, res) => {
     res.status(400).json({ ok: false });
   }
 });
+
+// ── Block 2: Fragen melden und anonyme Statistik (data/ wird nicht ausgeliefert) ───────────
+const REPORT_REASONS = new Set(['falsch', 'unklar', 'doppelt', 'beleidigend', 'sonstiges']);
+const knownQuestionId = (id) => Number.isInteger(id) && Array.isArray(allQuestions) && allQuestions.some(q => q.id === id);
+// eigener, engerer Bucket je IP und Zweck (Meldungen: 1 je 30 s, Burst 3)
+const apiBuckets = new Map();
+function apiAllowed(kind, ip, burst, refillMs) {
+  const k = kind + '|' + ip, now = Date.now();
+  let b = apiBuckets.get(k);
+  if (!b) { b = { tokens: burst, ts: now }; apiBuckets.set(k, b); }
+  b.tokens = Math.min(burst, b.tokens + (now - b.ts) / refillMs);
+  b.ts = now;
+  if (apiBuckets.size > 10000) apiBuckets.clear();
+  if (b.tokens < 1) return false;
+  b.tokens -= 1;
+  return true;
+}
+app.post('/api/report', express.json({ limit: '2kb' }), (req, res) => {
+  try {
+    if (!apiAllowed('report', req.ip, 3, 30000)) return res.status(429).json({ ok: false });
+    const b = req.body || {};
+    if (!knownQuestionId(b.questionId)) return res.status(400).json({ ok: false });
+    if (typeof b.reason !== 'string' || !REPORT_REASONS.has(b.reason)) return res.status(400).json({ ok: false });
+    if (b.text != null && typeof b.text !== 'string') return res.status(400).json({ ok: false });
+    const text = cleanText(b.text || '', 300);
+    let reports = store.get('reports');
+    if (!Array.isArray(reports)) reports = [];
+    if (reports.length >= 5000) reports.shift();
+    reports.push({ questionId: b.questionId, reason: b.reason, text, ts: Date.now() });
+    store.set('reports', reports);
+    res.json({ ok: true });
+  } catch (e) { res.status(400).json({ ok: false }); }
+});
+
+app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
+  try {
+    if (!apiAllowed('stats', req.ip, 30, 2000)) return res.status(429).json({ ok: false });
+    const b = req.body || {};
+    if (!knownQuestionId(b.questionId)) return res.status(400).json({ ok: false });
+    if (typeof b.correct !== 'boolean') return res.status(400).json({ ok: false });
+    const att = b.attempts;
+    if (!Number.isInteger(att) || att < 1 || att > 10) return res.status(400).json({ ok: false });
+    let statsCache = store.get('qstats');
+    if (!statsCache || typeof statsCache !== 'object' || Array.isArray(statsCache)) statsCache = {};
+    const s = statsCache[b.questionId] || (statsCache[b.questionId] = { n: 0, correct: 0, attempts: 0 });
+    s.n++; if (b.correct) s.correct++; s.attempts += att;     // nur Zaehler, keine Personendaten
+    store.set('qstats', statsCache);
+    res.json({ ok: true });
+  } catch (e) { res.status(400).json({ ok: false }); }
+});
+
+require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log });
 
 // Premium wurde abgeschafft: alte Links auf die Startseite
 app.get('/premium.html', (req, res) => res.redirect(301, '/'));
@@ -173,6 +234,9 @@ function loadQuestions() {
       if (typeof q.answer !== 'number' || !isFinite(q.answer)) return bad('answer keine Zahl');
     } else if (q.type === 'entity') {
       if (typeof q.answer !== 'string' || !Array.isArray(q.acceptedAnswers) || !q.acceptedAnswers.length) return bad('acceptedAnswers fehlt');
+    } else if (q.type === 'crafting') {
+      if (typeof q.answer !== 'string' || !Array.isArray(q.acceptedAnswers) || !q.acceptedAnswers.length) return bad('acceptedAnswers fehlt');
+      if (!Array.isArray(q.grid) || q.grid.length !== 3 || q.grid.some(r => !Array.isArray(r) || r.length !== 3)) return bad('grid ungueltig');
     } else return bad('type unbekannt');
     ok.push(q);
   });
@@ -181,7 +245,7 @@ function loadQuestions() {
 let allQuestions = [];
 try {
   allQuestions = loadQuestions();
-  console.log(`${allQuestions.length} Fragen geladen (questions.json).`);
+  log('info', 'questions_loaded', { count: allQuestions.length });
 } catch (e) { console.error('Fragen laden fehlgeschlagen:', e.message); }
 if (!allQuestions.length) { console.error('Keine Fragen – Abbruch.'); process.exit(1); }
 const KNOWN_CATEGORIES = new Set(allQuestions.map(q => q.category));
@@ -199,6 +263,10 @@ const RESULT_TIME  = 6;
 const MAX_PLAYERS  = 8;
 const DEFAULT_ROUNDS = 10;
 const ROUND_CHOICES  = [10, 25, 50, 100];
+const ANSWER_CHOICES = [8, 10, 15];
+const DIFFICULTIES   = { mixed: null, easy: [1, 2], medium: [2, 3], hard: [3, 4] };
+const MIN_PLAYERS_SETTING = 2;
+const atime = (room) => room.answerTime || ANSWER_TIME;
 const PTS_CORRECT  = 150;
 const PTS_SPEED    = 50;
 const PTS_WRONG    = 50;
@@ -259,18 +327,33 @@ function makeLimiter(cap, perSec) {
 // ── Raum-Verwaltung ───────────────────────────────────────────────────────────
 const rooms = {};
 
-function buildPool(categories) {
+function buildPool(categories, difficulty) {
   let pool = allQuestions.map((q, i) => i);
   if (categories && categories.length) {
     const set = new Set(categories);
     const filtered = allQuestions.map((q, i) => set.has(q.category) ? i : -1).filter(i => i !== -1);
     if (filtered.length >= 5) pool = filtered;
   }
+  const tiers = DIFFICULTIES[difficulty];
+  if (tiers) {
+    const t = pool.filter(i => tiers.includes(allQuestions[i].tier));
+    if (t.length >= 20) pool = t;           // zu kleine Auswahl: Schwierigkeit ignorieren
+  }
   return pool;
 }
 
-function makeRoom({ id, displayName, isPublic, password, categories, permanent, rounds }) {
+function makeRoom({ id, displayName, isPublic, password, categories, permanent, rounds, answerTime, difficulty, maxPlayers, hostId }) {
   return {
+    hostId:        hostId || null,
+    answerTime:    ANSWER_CHOICES.includes(answerTime) ? answerTime : ANSWER_TIME,
+    difficulty:    Object.prototype.hasOwnProperty.call(DIFFICULTIES, difficulty) ? difficulty : 'mixed',
+    maxPlayers:    Number.isInteger(maxPlayers) && maxPlayers >= 2 && maxPlayers <= MAX_PLAYERS ? maxPlayers : MAX_PLAYERS,
+    vote:          null,        // laufende Votekick-Abstimmung
+    voteCooldown:  new Map(),   // Initiator-Token/ID -> frueheste naechste Abstimmung
+    targetCooldown: new Map(),  // Zielname -> frueheste naechste Abstimmung
+    kickBan:       new Map(),   // IP -> Ablauf der Sperre
+    rematch:       new Set(),
+    rematchTimer:  null,
     id,
     displayName:   displayName || id,
     isPublic:      !!isPublic,
@@ -315,7 +398,7 @@ function later(room, fn, ms) {
   const t = setTimeout(() => {
     room.pending.delete(t);
     if (room.dead) return;
-    try { fn(); } catch (e) { console.error('Timer-Fehler:', e); }
+    try { fn(); } catch (e) { log('error', 'timer_error', { error: String(e && e.message).slice(0, 120) }); }
   }, ms);
   room.pending.add(t);
   return t;
@@ -331,6 +414,7 @@ function stopTimers(room) { clearInterval(room.timerIv); room.timerIv = null; cl
 function destroyRoom(room) {
   room.dead = true;
   stopTimers(room);
+  if (room.vote) clearTimeout(room.vote.timer); clearTimeout(room.rematchTimer);
   Object.values(room.players).forEach(p => clearTimeout(p.dcTimer));
   if (rooms[room.id] === room) delete rooms[room.id];
   broadcastPublicRooms();
@@ -374,13 +458,28 @@ function scoreList(room) {
 function getPublicRooms() {
   return Object.values(rooms)
     .filter(r => r.isPublic)
-    .map(r => ({ id: r.id, displayName: r.displayName, playerCount: playerCount(r), hasPassword: !!r.password, maxPlayers: MAX_PLAYERS, phase: r.phase, roundNum: r.roundNum }))
+    .map(r => ({ id: r.id, displayName: r.displayName, playerCount: playerCount(r), hasPassword: !!r.password, maxPlayers: r.maxPlayers, phase: r.phase, roundNum: r.roundNum }))
     .sort((a, b) => b.playerCount - a.playerCount);
 }
 let pubTimer = null;
 function broadcastPublicRooms() {
   if (pubTimer) return;
   pubTimer = setTimeout(() => { pubTimer = null; io.emit('public_rooms_update', getPublicRooms()); }, 250);
+}
+
+function settingsOf(room) {
+  return { rounds: room.rounds, answerTime: room.answerTime, categories: room.categories, difficulty: room.difficulty,
+           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password };
+}
+
+// Host-Uebergabe: naechster verbundener Spieler (nach Beitrittsreihenfolge)
+function passHost(room) {
+  if (room.permanent) return;
+  const cur = room.players[room.hostId];
+  if (cur && cur.connected) return;
+  const next = Object.values(room.players).find(p => p.connected);
+  room.hostId = next ? next.id : null;
+  if (next) io.to(room.id).emit('host_changed', { hostId: next.id, name: next.name });
 }
 
 function broadcastLobby(room) {
@@ -391,6 +490,8 @@ function broadcastLobby(room) {
     currentBuzzer: room.currentBuzzer,
     firstBuzzer: room.firstBuzzer,
     maxRounds: room.rounds,
+    hostId: room.hostId,
+    settings: settingsOf(room),
     answered: [...room.answers.keys()],
     readyCount: room.ready.size,
     totalCount: connectedIds(room).length,
@@ -399,7 +500,26 @@ function broadcastLobby(room) {
 }
 
 // ── Antwort-Optionen (Entity-Fragen): richtige Antwort + Ablenker ────────────
+// Crafting-Raetsel: 8 Optionen, Distraktoren bevorzugt aus aehnlichen Rezepten (gemeinsame Zutaten, aehnliche Feldzahl)
+function buildCraftingOptions(q) {
+  const ing = g => new Set(g.flat().filter(Boolean));
+  const mine = ing(q.grid), slots = q.grid.flat().filter(Boolean).length;
+  const scored = [];
+  for (const o of allQuestions) {
+    if (o === q || o.type !== 'crafting' || MGAnswer.normText(o.answer) === MGAnswer.normText(q.answer)) continue;
+    const theirs = ing(o.grid);
+    let inter = 0; mine.forEach(k => { if (theirs.has(k)) inter++; });
+    const jac = inter / (mine.size + theirs.size - inter || 1);
+    const sl = o.grid.flat().filter(Boolean).length;
+    scored.push({ a: o.answer, s: jac * 2 + (sl === slots ? 0.5 : 0) + Math.random() * 0.6 });
+  }
+  scored.sort((x, y) => y.s - x.s);
+  const pool = shuffle(scored.slice(0, 24)).slice(0, OPTION_COUNT - 1).map(x => x.a);
+  return shuffle([q.answer, ...pool]);
+}
+
 function buildOptions(q) {
+  if (q.type === 'crafting') return buildCraftingOptions(q);
   // Zwei-Optionen-Fragen: genau diese zwei Antworten, pro Runde zufaellig gemischt, nie Zusatzoptionen
   if (Array.isArray(q.choices) && q.choices.length === 2) return shuffle([...q.choices]);
   const own = new Set(q.acceptedAnswers.map(MGAnswer.normText));
@@ -426,6 +546,7 @@ function questionPayload(room) {
   return {
     id: q.id, type: q.type, question: q.question, category: q.category,
     unit: q.unit || null, options: room.options || null,
+    ...(q.type === 'crafting' ? { grid: q.grid, shapeless: !!q.shapeless } : {}),
     choiceOnly: !!(Array.isArray(q.choices) && q.choices.length === 2),   // nur diese zwei Optionen, kein freies Tippen
     roundNum: room.roundNum,
     maxRounds: room.rounds,
@@ -452,14 +573,14 @@ function nextQuestion(room) {
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
     const lastIdx = room.questionOrder.length ? room.questionOrder[room.questionOrder.length - 1] : -1;
-    room.questionOrder = shuffle(buildPool(room.categories));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty));
     if (room.questionOrder.length > 1 && room.questionOrder[0] === lastIdx) {
       const t = room.questionOrder[0]; room.questionOrder[0] = room.questionOrder[1]; room.questionOrder[1] = t;
     }
     room.currentIndex  = 0;
   }
   room.question = allQuestions[room.questionOrder[room.currentIndex++]];
-  room.options  = room.question.type === 'entity' ? buildOptions(room.question) : null;
+  room.options  = (room.question.type === 'entity' || room.question.type === 'crafting') ? buildOptions(room.question) : null;
   room.roundNum++;
   room.phase     = 'buzzer';
   room.timerLeft = BUZZER_TIME;
@@ -487,11 +608,11 @@ function startBuzzerCountdown(room) {
 
 function startAnswerCountdown(room) {
   clearInterval(room.timerIv);
-  room.timerLeft = ANSWER_TIME;
+  room.timerLeft = atime(room);
   room.timerIv = setInterval(() => {
     if (room.dead) return clearInterval(room.timerIv);
     room.timerLeft--;
-    io.to(room.id).emit('timer', { left: room.timerLeft, max: ANSWER_TIME, phase: 'answering' });
+    io.to(room.id).emit('timer', { left: room.timerLeft, max: atime(room), phase: 'answering' });
     if (room.timerLeft <= 0) {
       clearInterval(room.timerIv);
       finishAnswerPhase(room, 'timeout');
@@ -579,7 +700,7 @@ function resolveAnswers(room) {
     let points = 0, penalty = 0;
     if (!e.skipped && p) {
       const isBell = e.playerId === room.firstBuzzer;
-      const max = PTS_CORRECT + Math.round(e.timeLeft / ANSWER_TIME * PTS_SPEED);
+      const max = PTS_CORRECT + Math.round(e.timeLeft / atime(room) * PTS_SPEED);
       if (e.correct) points = max + (isBell ? BELL_BONUS : 0);
       else if (mode === 'closest' && inBand(e)) {
         if (isBell) points = Math.round(max / 2) + BELL_BONUS;
@@ -631,6 +752,7 @@ function resolveAnswers(room) {
   room.lastReveal = {
     mode, winnerId, winnerIds: answers.filter(a => a.winner).map(a => a.playerId),
     firstBuzzerId: room.firstBuzzer || null, answers,
+    ...(q.type === 'crafting' ? { resultCount: q.resultCount || 1 } : {}),
     correctAnswer: q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer,
   };
   io.to(room.id).emit('answers_revealed', room.lastReveal);
@@ -656,7 +778,7 @@ function revealResult(room, winnerId) {
 
   const q      = room.question;
   const answer = q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer;
-  room.lastResult = { answer, funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
+  room.lastResult = { answer, ...(q.type === 'crafting' ? { resultCount: q.resultCount || 1, grid: q.grid, shapeless: !!q.shapeless } : {}), funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
     mode: room.skippedRound ? 'skipped' : (room.lastReveal ? room.lastReveal.mode : 'none'), skipped: !!room.skippedRound,
     answers: room.lastReveal ? room.lastReveal.answers : [] };
   io.to(room.id).emit('result', room.lastResult);
@@ -680,6 +802,7 @@ function resetRoom(room) {
   room.phase = 'waiting'; room.roundNum = 0; room.question = null; room.options = null;
   room.lockedOut = new Set(); room.currentBuzzer = null; room.answered = false;
   room.ready.clear(); room.lastResult = null; room.lastGameOver = null;
+  room.rematch = new Set(); clearTimeout(room.rematchTimer); room.rematchTimer = null;
   Object.values(room.players).forEach(p => { p.score = 0; });
   broadcastLobby(room);
 }
@@ -723,12 +846,12 @@ function resolveBuzz(room) {
   room.answerSeq     = 0;
   room.resolving     = false;
   room.answered      = false;
-  room.timerLeft     = ANSWER_TIME;
+  room.timerLeft     = atime(room);
 
   room.typingId = null;
   io.to(room.id).emit('buzzer_won', { playerId: winner.id, playerName: winner.name });
   io.to(room.id).emit('buzzed', { playerId: winner.id, playerName: winner.name });
-  io.to(room.id).emit('answer_phase', { firstBuzzerId: winner.id, endsIn: ANSWER_TIME, answered: [] });
+  io.to(room.id).emit('answer_phase', { firstBuzzerId: winner.id, endsIn: atime(room), answered: [] });
   broadcastLobby(room);
   startAnswerCountdown(room);
 }
@@ -752,7 +875,7 @@ function sendSnapshot(socket, room) {
   broadcastLobby(room);
   if (room.phase === 'buzzer' || room.phase === 'answering') {
     socket.emit('question', questionPayload(room));
-    socket.emit('timer', { left: room.timerLeft, max: room.phase === 'buzzer' ? BUZZER_TIME : ANSWER_TIME, phase: room.phase === 'buzzer' ? 'buzzer' : 'answering' });
+    socket.emit('timer', { left: room.timerLeft, max: room.phase === 'buzzer' ? BUZZER_TIME : atime(room), phase: room.phase === 'buzzer' ? 'buzzer' : 'answering' });
     if (room.phase === 'answering' && room.currentBuzzer && room.players[room.currentBuzzer]) {
       socket.emit('buzzer_won', { playerId: room.currentBuzzer, playerName: room.players[room.currentBuzzer].name });
     }
@@ -765,6 +888,74 @@ function sendSnapshot(socket, room) {
   socket.emit('scene', sceneState(room));
 }
 
+// ── Host-Einstellungen, Votekick, Revanche ───────────────────────────────────
+const KICK_BAN_MS = 5 * 60 * 1000;
+const VOTE_WINDOW_MS = 15000;
+const VOTE_MIN_PLAYERS = 3;
+const VOTE_COOLDOWN_MS = 60000;      // je Initiator
+const TARGET_COOLDOWN_MS = 120000;   // je Ziel nach gescheiterter Abstimmung
+function ipOf(socket) {
+  const xf = socket.handshake.headers && socket.handshake.headers['x-forwarded-for'];
+  return (typeof xf === 'string' && xf.split(',')[0].trim()) || socket.handshake.address || '';
+}
+function kickPlayer(room, targetId, reason) {
+  const t = io.sockets.sockets.get(targetId);
+  const p = room.players[targetId];
+  if (!p) return false;
+  if (t) {
+    room.kickBan.set(ipOf(t), Date.now() + KICK_BAN_MS);
+    t.emit('kicked', { reason: reason || 'host' });
+    if (typeof t.data.leaveRoom === 'function') t.data.leaveRoom();
+  } else {
+    clearTimeout(p.dcTimer); delete room.players[targetId];
+    io.to(room.id).emit('player_left', { id: targetId });
+    broadcastLobby(room);
+  }
+  return true;
+}
+function voteStatus(v) { return { voteId: v.id, targetId: v.targetId, targetName: v.targetName, initiatorId: v.initiatorId, yes: v.yes.size, no: v.no.size, needed: v.needed, endsIn: Math.max(0, Math.ceil((v.endsAt - Date.now()) / 1000)) }; }
+function voters(room, v) { return connectedIds(room).filter(id => id !== v.targetId); }
+function endVote(room, kicked, why) {
+  const v = room.vote; if (!v) return;
+  clearTimeout(v.timer); room.vote = null;
+  io.to(room.id).emit('votekick_end', { voteId: v.id, targetId: v.targetId, targetName: v.targetName, kicked: !!kicked, reason: why });
+  if (kicked) kickPlayer(room, v.targetId, 'vote');
+  else room.targetCooldown.set(String(v.targetName).toLowerCase(), Date.now() + TARGET_COOLDOWN_MS);
+}
+function voteEval(room) {
+  const v = room.vote; if (!v) return;
+  const n = voters(room, v).length;
+  v.needed = Math.floor(n / 2) + 1;
+  if (v.yes.size >= v.needed) return endVote(room, true, 'mehrheit');
+  if (v.no.size > n - v.needed || n < 2) return endVote(room, false, 'abgelehnt');
+  io.to(room.id).emit('votekick_update', voteStatus(v));
+}
+function voteCheckTarget(room, leftId) {
+  const v = room.vote; if (!v) return;
+  if (v.targetId === leftId) { clearTimeout(v.timer); room.vote = null; io.to(room.id).emit('votekick_end', { voteId: v.id, targetId: v.targetId, targetName: v.targetName, kicked: false, reason: 'verlassen' }); }
+  else { v.yes.delete(leftId); v.no.delete(leftId); voteEval(room); }
+}
+function startRematch(room) {
+  clearTimeout(room.rematchTimer); room.rematchTimer = null;
+  const ready = [...room.rematch].filter(id => room.players[id] && room.players[id].connected);
+  room.rematch = new Set();
+  resetRoom(room);
+  ready.forEach(id => room.ready.add(id));
+  io.to(room.id).emit('rematch_start', { confirmed: ready });
+  broadcastLobby(room);
+  maybeAutoStart(room);
+}
+function rematchCheck(room) {
+  if (room.phase !== 'game_over') return;
+  const ids = connectedIds(room);
+  const conf = [...room.rematch].filter(id => ids.includes(id));
+  io.to(room.id).emit('rematch_state', { confirmed: conf, total: ids.length, needed: Math.min(2, ids.length) });
+  if (ids.length && conf.length === ids.length) return startRematch(room);
+  if (conf.length >= Math.min(2, ids.length) && !room.rematchTimer) {
+    room.rematchTimer = setTimeout(() => { room.rematchTimer = null; if (!room.dead && room.phase === 'game_over') startRematch(room); }, 5000);
+  }
+}
+
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
   let currentRoom = null;           // Raum-ID
@@ -772,6 +963,7 @@ io.on('connection', (socket) => {
   let lastCreate = 0;
   let joinFails  = 0, joinBlockUntil = 0;
   socket.data.rtt = 0;
+  socket.data.leaveRoom = () => leaveCurrent(true);
 
   // Latenz messen (Client antwortet per Ack auf 'sync_ping')
   const measure = () => {
@@ -787,7 +979,7 @@ io.on('connection', (socket) => {
 
   const on = (ev, fn) => socket.on(ev, (...args) => {
     if (!limiter()) return;
-    try { fn(...args); } catch (e) { console.error(`Fehler in ${ev}:`, e); }
+    try { fn(...args); } catch (e) { log('error', 'socket_handler_error', { ev, error: String(e && e.message).slice(0, 120) }); }
   });
 
   function getRoom() {
@@ -809,6 +1001,7 @@ io.on('connection', (socket) => {
     socket.emit('joined', {
       playerId: p.id, roomId: room.id, displayName: room.displayName, playerName: p.name,
       isPublic: room.isPublic, categories: room.categories, rounds: room.rounds, skin: p.skin || null,
+      hostId: room.hostId, settings: settingsOf(room),
       token: p.token, rejoined: !!rejoinPlayer,
       character: p.character,
       players: Object.values(room.players).map(fullPlayer),
@@ -837,6 +1030,9 @@ io.on('connection', (socket) => {
       room.ready.delete(p.id);
       if (room.currentBuzzer === p.id) room.currentBuzzer = null;
       if (room.dead) return;
+      room.rematch.delete(p.id);
+      if (room.hostId === p.id) { room.hostId = null; passHost(room); }
+      voteCheckTarget(room, p.id);
       if (playerCount(room) === 0) {
         if (room.permanent) resetRoom(room); else destroyRoom(room);
         return;
@@ -849,6 +1045,7 @@ io.on('connection', (socket) => {
 
     p.connected = false;
     p.dcTimer = setTimeout(finalize, GRACE_MS);
+    passHost(room);
     if (connectedIds(room).length === 0 && room.phase !== 'waiting') stopTimers(room);   // niemand da → pausieren
     broadcastLobby(room);
     checkBuzzerDeadlock(room);
@@ -878,11 +1075,13 @@ io.on('connection', (socket) => {
       isPublic: !!d.isPublic,
       password: pw || null,
       categories: cats,
+      answerTime: d.answerTime, difficulty: d.difficulty, maxPlayers: d.maxPlayers,
+      hostId: socket.id,
     });
-    room.questionOrder = shuffle(buildPool(room.categories));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty));
     rooms[rid] = room;
     joinRoomAs(room, cleanText(d.playerName, MAX_NAME_LEN) || 'Host', validSkin(d.skin), null, d.character);
-    console.log(`Raum: ${rid}${room.categories ? ' [' + room.categories.join(',') + ']' : ''}`);
+    log('info', 'room_created', { rooms: Object.keys(rooms).length });
   });
 
   // Raum beitreten ─────────────────────────────────────────────────────────────
@@ -897,13 +1096,15 @@ io.on('connection', (socket) => {
     };
     if (!room || room.dead) return fail(`Raum "${cleanText(rid, 40)}" nicht gefunden.`);
     if (currentRoom === rid && room.players[socket.id]) return;     // schon drin
-    if (playerCount(room) >= MAX_PLAYERS) return fail('Raum voll.');
+    if (playerCount(room) >= room.maxPlayers) return fail('Raum voll.');
+    const ban = room.kickBan.get(ipOf(socket));
+    if (ban && ban > Date.now()) return fail('Du wurdest aus diesem Raum entfernt.');
     if (room.password && room.password !== d.password) return fail('Falsches Passwort.');
     joinFails = 0;
     if (currentRoom) leaveCurrent(true);
     const name = cleanText(d.playerName, MAX_NAME_LEN) || `Spieler ${playerCount(room) + 1}`;
     joinRoomAs(room, name, validSkin(d.skin), null, d.character);
-    console.log(`+ Spieler -> ${rid}`);
+    log('info', 'player_joined', { players: playerCount(room) });
   });
 
   // Reconnect (Token aus 'joined') ─────────────────────────────────────────────
@@ -924,6 +1125,8 @@ io.on('connection', (socket) => {
     if (room.lockedOut.has(oldId)) { room.lockedOut.delete(oldId); room.lockedOut.add(socket.id); }
     io.to(room.id).emit('player_id_changed', { oldId, newId: socket.id });
     if (room.currentBuzzer === oldId) room.currentBuzzer = socket.id;
+    if (room.hostId === oldId) room.hostId = socket.id;
+    if (room.rematch.delete(oldId)) room.rematch.add(socket.id);
     joinRoomAs(room, old.name, null, old);
   });
 
@@ -1042,6 +1245,84 @@ io.on('connection', (socket) => {
     if (!room.offers.size) proceedAfterDecision(room);
   });
 
+  // Host-Einstellungen (nur Host, nur in der Lobby), serverseitig validiert ─────────────
+  on('update_settings', (d) => {
+    const room = getRoom();
+    if (!room || !d || typeof d !== 'object') return;
+    if (room.permanent || room.hostId !== socket.id) return socket.emit('settings_denied', { reason: 'host' });
+    if (room.phase !== 'waiting' || room.starting) return socket.emit('settings_denied', { reason: 'phase' });
+    const deny = (reason) => socket.emit('settings_denied', { reason });
+    // erst alles pruefen, dann uebernehmen
+    if (d.rounds !== undefined && !ROUND_CHOICES.includes(d.rounds)) return deny('rounds');
+    if (d.answerTime !== undefined && !ANSWER_CHOICES.includes(d.answerTime)) return deny('answerTime');
+    if (d.difficulty !== undefined && (typeof d.difficulty !== 'string' || !Object.prototype.hasOwnProperty.call(DIFFICULTIES, d.difficulty))) return deny('difficulty');
+    if (d.maxPlayers !== undefined && (!Number.isInteger(d.maxPlayers) || d.maxPlayers < MIN_PLAYERS_SETTING || d.maxPlayers > MAX_PLAYERS || d.maxPlayers < playerCount(room))) return deny('maxPlayers');
+    if (d.categories !== undefined && !Array.isArray(d.categories)) return deny('categories');
+    if (d.password !== undefined && typeof d.password !== 'string') return deny('password');
+    if (d.rounds !== undefined) room.rounds = d.rounds;
+    if (d.answerTime !== undefined) room.answerTime = d.answerTime;
+    if (d.difficulty !== undefined) room.difficulty = d.difficulty;
+    if (d.maxPlayers !== undefined) room.maxPlayers = d.maxPlayers;
+    if (d.categories !== undefined) {
+      const cats = d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30);
+      room.categories = cats.length ? cats : null;
+    }
+    if (d.isPublic !== undefined) room.isPublic = !!d.isPublic;
+    if (d.password !== undefined) room.password = d.password.slice(0, 40) || null;
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty)); room.currentIndex = 0;
+    io.to(room.id).emit('settings_updated', settingsOf(room));
+    broadcastLobby(room);
+  });
+
+  // Host entfernt direkt ──────────────────────────────────────────────────────────
+  on('kick_player', (d) => {
+    const room = getRoom();
+    if (!room || !d || typeof d.id !== 'string') return;
+    if (room.permanent || room.hostId !== socket.id || d.id === socket.id) return;
+    const t = room.players[d.id];
+    if (!t || !t.connected) return;
+    kickPlayer(room, d.id, 'host');
+  });
+
+  // Votekick: ab 3 verbundenen Spielern, 15 s, Mehrheit der uebrigen Spieler ──────────────
+  on('votekick_start', (d) => {
+    const room = getRoom();
+    if (!room || !d || typeof d.id !== 'string') return;
+    const me = room.players[socket.id], t = room.players[d.id];
+    if (!me || !t || !t.connected || d.id === socket.id) return socket.emit('votekick_denied', { reason: 'target' });
+    if (connectedIds(room).length < VOTE_MIN_PLAYERS) return socket.emit('votekick_denied', { reason: 'players' });
+    if (room.vote) return socket.emit('votekick_denied', { reason: 'running' });
+    if (d.id === room.hostId) return socket.emit('votekick_denied', { reason: 'host' });
+    const now = Date.now();
+    if ((room.voteCooldown.get(me.token) || 0) > now) return socket.emit('votekick_denied', { reason: 'cooldown' });
+    if ((room.targetCooldown.get(t.name.toLowerCase()) || 0) > now) return socket.emit('votekick_denied', { reason: 'target_cooldown' });
+    room.voteCooldown.set(me.token, now + VOTE_COOLDOWN_MS);
+    const v = { id: crypto.randomBytes(4).toString('hex'), targetId: d.id, targetName: t.name, initiatorId: socket.id,
+                yes: new Set([socket.id]), no: new Set(), needed: 0, endsAt: now + VOTE_WINDOW_MS, timer: null };
+    v.timer = setTimeout(() => { if (room.vote === v) endVote(room, false, 'zeit'); }, VOTE_WINDOW_MS);
+    room.vote = v;
+    v.needed = Math.floor(voters(room, v).length / 2) + 1;
+    io.to(room.id).emit('votekick_started', voteStatus(v));
+    voteEval(room);
+  });
+  on('votekick_vote', (d) => {
+    const room = getRoom();
+    if (!room || !room.vote || !d || typeof d.yes !== 'boolean') return;
+    const v = room.vote;
+    if (socket.id === v.targetId || !room.players[socket.id] || !room.players[socket.id].connected) return;
+    v.yes.delete(socket.id); v.no.delete(socket.id);
+    (d.yes ? v.yes : v.no).add(socket.id);
+    voteEval(room);
+  });
+
+  // Revanche nach dem Spielende (alle bestaetigen, oder mindestens 2 und nach 5 s) ──────────
+  on('rematch', () => {
+    const room = getRoom();
+    if (!room || room.phase !== 'game_over' || !room.players[socket.id]) return;
+    if (room.rematch.has(socket.id)) room.rematch.delete(socket.id); else room.rematch.add(socket.id);
+    rematchCheck(room);
+  });
+
   // Weiterspielen ──────────────────────────────────────────────────────────────
   on('continue_game', () => {
     const room = getRoom();
@@ -1052,7 +1333,7 @@ io.on('connection', (socket) => {
   // Disconnect ─────────────────────────────────────────────────────────────────
   socket.on('disconnect', () => {
     clearInterval(pingIv);
-    try { leaveCurrent(false); } catch (e) { console.error('disconnect:', e); }
+    try { leaveCurrent(false); } catch (e) { log('error', 'disconnect_error', { error: String(e && e.message).slice(0, 120) }); }
     broadcastPublicRooms();
   });
 });
@@ -1065,10 +1346,14 @@ function makePermanentRoom(i) {
   rooms[id] = r;
 }
 for (let i = 1; i <= 5; i++) makePermanentRoom(i);
-console.log('5 permanente oeffentliche Raeume erstellt');
+log('info', 'permanent_rooms', { count: 5 });
 
-process.on('uncaughtException', (e) => console.error('uncaughtException:', e));
-process.on('unhandledRejection', (e) => console.error('unhandledRejection:', e));
+process.on('uncaughtException', (e) => log('error', 'uncaught_exception', { error: String(e && e.message).slice(0, 160) }));
+process.on('unhandledRejection', (e) => log('error', 'unhandled_rejection', { error: String(e && e.message).slice(0, 160) }));
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`http://localhost:${PORT}`));
+store.init(['ranked', 'reports', 'qstats', 'runs'], { ranked: [], reports: [], qstats: {}, runs: {} }).then((kind) => {
+  hydrateRanked();
+  server.listen(PORT, () => console.log(JSON.stringify({ level: 'info', event: 'listening', port: Number(PORT), persist: kind })));
+});
+process.on('SIGTERM', () => { store.flush().finally(() => process.exit(0)); });

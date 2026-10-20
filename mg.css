@@ -394,3 +394,60 @@ button.chip:hover { background:var(--bg2); color:var(--text); }
 .choice-btn kbd { font-family:var(--font-px); font-size:.7rem; color:var(--muted); border:2px solid var(--border2); border-radius:3px; padding:0 6px; }
 @media (hover:none) { .choice-btn kbd { display:none; } }
 @media (max-width:560px) { .choice-grid { grid-template-columns:1fr; } .choice-btn { min-height:60px; } }
+
+/* Crafting-Raetsel: heller Werkbank-Rahmen, 3x3-Slots, Pfeil + Ergebnis-Slot wie in Minecraft */
+.craft-host { display:flex; justify-content:center; margin:12px 0; }
+.craft-wrap { width:min(100%,520px); }
+.craft-panel { position:relative; display:flex; align-items:center; gap:4%; padding:5% 5% 5% 6%; background:url('assets/mc/block/crafting_table_top.png') center/cover; image-rendering:pixelated; border:6px solid #3b2412; box-shadow:inset 0 0 0 4px #e3b277, inset 0 0 0 8px #9b6234; box-sizing:border-box; }
+.craft-grid { flex:0 0 58%; display:grid; grid-template-rows:repeat(3,1fr); gap:4%; padding:3%; background:#5b3a1f; border:4px solid #2b1a0c; box-sizing:border-box; }
+.craft-row { display:grid; grid-template-columns:repeat(3,1fr); gap:4%; }
+.craft-slot { position:relative; display:flex; align-items:center; justify-content:center; aspect-ratio:1; min-width:44px; min-height:44px; background:#8b5a31; border:3px solid; border-color:#3a2412 #b98550 #b98550 #3a2412; }
+.craft-slot.full { background:#f1f1f1; border-color:#8a8a8a #ffffff #ffffff #8a8a8a; }
+.craft-ico { width:78%; height:78%; max-width:56px; max-height:56px; min-width:36px; min-height:36px; image-rendering:pixelated; }
+.craft-arrow { flex:0 0 7%; height:22px; position:relative; }
+.craft-arrow::before { content:""; position:absolute; left:0; right:8px; top:8px; height:6px; background:#3b2412; }
+.craft-arrow::after { content:""; position:absolute; right:0; top:1px; border-left:10px solid #3b2412; border-top:10px solid transparent; border-bottom:10px solid transparent; }
+.craft-out { flex:1 1 auto; display:flex; justify-content:center; }
+.craft-slot.out { width:100%; max-width:110px; background:#5b3a1f; border-color:#2b1a0c #9b6234 #9b6234 #2b1a0c; }
+.craft-slot.out.pop { background:#f1f1f1; border-color:#8a8a8a #ffffff #ffffff #8a8a8a; animation:craftPop .45s cubic-bezier(.2,1.4,.3,1); }
+.craft-q { font:700 1.6rem var(--font-px); color:#c98f55; }
+.craft-big { width:76%; height:76%; max-width:80px; max-height:80px; image-rendering:pixelated; }
+.craft-count { position:absolute; right:4px; bottom:2px; font:700 .9rem var(--font-px); color:#fff; text-shadow:1px 1px 0 #333; }
+.craft-name { min-height:1.6em; margin-top:10px; text-align:center; font:700 1.05rem var(--font-px); color:var(--text); }
+.craft-tag { position:absolute; left:50%; bottom:-14px; transform:translateX(-50%); background:#2b1a0c; color:#fff; font:700 .72rem var(--font-px); padding:2px 8px; }
+@keyframes craftPop { from { transform:scale(.5); opacity:.4; } to { transform:none; opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .craft-slot.out.pop { animation:none; } }
+[data-motion="reduce"] .craft-slot.out.pop { animation:none; }
+
+/* Host-Einstellungen, Votekick, Revanche */
+.host-settings { margin:12px 0; padding:12px; border:2px solid var(--border2); border-radius:var(--r); background:var(--bg); display:grid; gap:10px; }
+.hs-title { font-family:var(--font-px); font-size:.9rem; }
+.hs-row { display:grid; gap:6px; }
+.settings-summary { margin:8px 0; font-size:.85rem; color:var(--muted); }
+.kick-btn { min-height:36px; padding:0 10px; background:transparent; border:2px solid var(--red); border-radius:var(--r); color:var(--red); font:700 .75rem var(--font); cursor:pointer; }
+.kick-btn:hover { background:rgba(229,96,77,.12); }
+#vote-card { position:fixed; left:50%; bottom:calc(16px + var(--safe-b)); transform:translateX(-50%); z-index:1650; width:min(420px,calc(100vw - 24px)); }
+.vote-box { background:var(--bg1); border:2px solid var(--gold); border-radius:var(--r); padding:12px 14px; display:grid; gap:8px; }
+.vote-btns { display:flex; gap:8px; } .vote-btns .btn { flex:1; }
+.vote-count { font-size:.85rem; color:var(--muted); }
+.rematch-status { font-size:.85rem; color:var(--muted); margin:0 0 10px; min-height:1.2em; }
+
+/* Profilseite */
+#profile-modal { display:none; position:fixed; inset:0; z-index:410; background:rgba(0,0,0,.8); align-items:flex-start; justify-content:center; overflow-y:auto; padding:16px; }
+#profile-modal.show { display:flex; }
+.pf-box { position:relative; width:min(760px,100%); background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:20px 18px; display:grid; gap:12px; }
+.pf-box h2, .pf-box h3 { font-family:var(--font-px); }
+.pf-box h3 { font-size:.95rem; margin-top:8px; }
+.pf-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; }
+.pf-stat { background:var(--bg2); border-radius:var(--r); padding:10px; display:grid; gap:2px; }
+.pf-stat b { font-size:1.15rem; } .pf-stat span { font-size:.78rem; color:var(--muted); }
+.pf-radar { width:min(340px,100%); margin:0 auto; display:block; }
+.pf-grid { fill:none; stroke:var(--border); stroke-width:1; }
+.pf-area { fill:rgba(106,176,76,.28); stroke:var(--green); stroke-width:2; }
+.pf-lbl { fill:var(--text); font-size:9px; }
+.pf-line { width:100%; max-width:480px; } .pf-path { fill:none; stroke:var(--green); stroke-width:2; } .pf-dot { fill:var(--green); }
+.pf-catlist { list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:4px 12px; font-size:.85rem; }
+.pf-catlist li { display:flex; gap:6px; align-items:baseline; } .pf-catlist span { flex:1; }
+.pf-empty { color:var(--muted); font-size:.9rem; }
+.pf-album { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:8px; }
+.pf-actions { display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
