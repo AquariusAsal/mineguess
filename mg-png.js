@@ -119,7 +119,16 @@
       for (y = y0; y < y0 + h; y++) for (x = x0; x < x0 + w; x++) { v = res.rgb[y * res.w + x]; if (!m[v]) { m[v] = 1; n++; } }
       return n;
     }
-    return !(distinct(8, 8, 8, 8) >= 40 || distinct(20, 20, 8, 12) >= 55);
+    if (distinct(8, 8, 8, 8) >= 40 || distinct(20, 20, 8, 12) >= 55) return false;
+    // Gesamtbild: Rauschen erzeugt fast pro sichtbarem Pixel eine eigene Farbe bzw. viele Alpha-Stufen
+    var m = {}, a = {}, n = 0, na = 0, op = 0, i, v;
+    for (i = 0; i < res.alpha.length; i++) {
+      if (!a[res.alpha[i]]) { a[res.alpha[i]] = 1; na++; }
+      if (res.alpha[i] > 0) { op++; v = res.rgb[i]; if (!m[v]) { m[v] = 1; n++; } }
+    }
+    if (na > 16) return false;
+    if (op > 400 && n > 450 && n > op * 0.45) return false;
+    return true;
   }
   global.MGPng = { plausible: plausible, header: header, alpha: alpha, dataUrlBytes: dataUrlBytes, toDataUrl: toDataUrl, isPng: isPng };
 })(window);

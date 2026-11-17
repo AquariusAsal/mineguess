@@ -33,9 +33,15 @@
     var cur = null; try { cur = localStorage.getItem(KEY_SKIN); } catch (e) {}
     if (!cur || !global.MGPng) return;
     var b = global.MGPng.dataUrlBytes(cur);
-    if (!b) { lsSet(KEY_SKIN, null); return; }
-    global.MGPng.alpha(b).then(function (res) { if (res && !global.MGPng.plausible(res)) save(null); });
+    if (!b) { try { console.warn('[MineGuess] Skin zurueckgesetzt: beschaedigt'); } catch (e) {} lsSet(KEY_SKIN, null); return; }
+    global.MGPng.alpha(b).then(function (res) { if (!res) discard('unverified'); else if (!global.MGPng.plausible(res)) discard('noise'); });
   })();
+  /** Verwirft den gespeicherten Skin (mit Grund in der Konsole); die Standardfigur greift. 'texture' (GPU-Problem) loescht nichts. */
+  function discard(reason) {
+    try { console.warn('[MineGuess] Skin zurueckgesetzt: ' + reason); } catch (e) {}
+    global.MGSkinDiag = { reason: String(reason), at: Date.now() };
+    if (reason !== 'texture') save(null);
+  }
   function getCharacter() { var c = lsGet(KEY_CHAR); return c === 'alex' || c === 'steve' ? c : null; }
   function setCharacter(c) { lsSet(KEY_CHAR, c === 'alex' ? 'alex' : c === 'steve' ? 'steve' : null); emit(); }
   function getName() { return (lsGet(KEY_NAME) || '').slice(0, 20); }
@@ -103,7 +109,7 @@
         '<div class="skin-up-text">' +
           '<label class="btn skin-up-btn" for="skin-up-file">Skin wählen</label>' +
           '<input type="file" id="skin-up-file" accept="image/png" class="sr-only">' +
-          '<button type="button" class="btn btn-ghost skin-up-clear" id="skin-up-clear">Entfernen</button>' +
+          '<button type="button" class="btn btn-ghost skin-up-clear" id="skin-up-clear">Skin zurücksetzen</button>' +
           '<p class="skin-up-hint">64x64 Skin-PNG hochladen, wir nutzen den ganzen Skin für deine Figur. Du kannst die Datei auch hierher ziehen. Wird nur im Spiel angezeigt, nicht auf dem Server gespeichert.</p>' +
           '<p class="skin-up-msg" id="skin-up-msg" role="status" aria-live="polite"></p>' +
         '</div>' +
@@ -112,7 +118,6 @@
     var input = container.querySelector('#skin-up-file'), clear = container.querySelector('#skin-up-clear'), msg = container.querySelector('#skin-up-msg');
     function render() {
       prev.innerHTML = imgHTML(get(), 'xl');
-      clear.style.display = get() ? '' : 'none';
     }
     function say(t, bad) { msg.textContent = t || ''; msg.className = 'skin-up-msg' + (bad ? ' bad' : ''); }
     function handle(file) {
@@ -249,6 +254,6 @@
     get: get, save: save, isValid: isValid, fromFile: fromFile, imgHTML: imgHTML,
     getCharacter: getCharacter, setCharacter: setCharacter, ensureCharacter: ensureCharacter,
     getName: getName, setName: setName, openProfile: openProfile, mountChip: mountChip, mountUploader: mountUploader,
-    defaultSrc: defaultSrc
+    defaultSrc: defaultSrc, discard: discard
   };
 })(window);

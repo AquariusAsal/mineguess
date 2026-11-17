@@ -850,7 +850,9 @@ main {
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;
   pointer-events: none;
-  white-space: nowrap;
+  white-space: normal; text-align: center;
+  width: max-content; max-width: calc(100vw - 32px);
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   z-index: 600;
 }
 #toast.show {
@@ -1324,6 +1326,9 @@ header h1 { flex-shrink:0; }
   <script src="mg-skin.js"></script>
 <script src="mg-scene.js"></script>
   <script src="mg-craft.js"></script>
+  <script src="craft-check.js"></script>
+  <script src="mg-craft-build.js"></script>
+  <script src="mg-hand.js"></script>
   <script src="mg-profile.js"></script>
 <script src="mg-panorama.js"></script>
   <script src="mg-video.js"></script>
@@ -1372,6 +1377,18 @@ header h1 { flex-shrink:0; }
 
 <!-- ── Mode Selection ─────────────────────────────────────────────────────── -->
 <div id="menu-pano" class="pano" aria-hidden="true"></div>
+<div id="craft-mode-dialog" class="cm-dialog" role="dialog" aria-modal="true" aria-labelledby="cm-title">
+  <div class="cm-box">
+    <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="closeCraftMode()"></button>
+    <h2 id="cm-title">Crafting-Rätsel</h2>
+    <div role="radiogroup" aria-labelledby="cm-title" style="display:grid;gap:8px">
+      <button type="button" class="cm-opt" role="radio" data-m="guess"><b>Erraten</b><span>Du siehst das Raster und nennst das Ergebnis.</span></button>
+      <button type="button" class="cm-opt" role="radio" data-m="build"><b>Selber bauen</b><span>Du siehst das Ergebnis und legst das Rezept ins Raster.</span></button>
+      <button type="button" class="cm-opt" role="radio" data-m="mix"><b>Mix</b><span>Mal erraten, mal bauen, zufällig gemischt.</span></button>
+    </div>
+    <button type="button" class="btn btn-primary" id="cm-go" style="min-height:48px">Los geht's</button>
+  </div>
+</div>
 <div id="mode-screen" class="hidden">
   <div id="mode-profile"></div>
   <div class="menu-status" id="menu-status" aria-live="polite"></div>
@@ -1406,7 +1423,7 @@ header h1 { flex-shrink:0; }
     </button>
     <button type="button" class="mode-card" onclick="selectMode('crafting')">
       <span class="mode-name"><img class="mc-icon" src="assets/mc/block/crafting_table_front.png" width="24" height="24" alt="">Crafting-Rätsel</span>
-      <span class="mode-desc">Erkenne, was aus dem Raster entsteht.</span>
+      <span class="mode-desc">Erkenne, was aus dem Raster entsteht, oder baue das Rezept selbst.</span>
       <span class="mode-tag green-tag">Neu</span>
     </button>
   </div>
@@ -1823,7 +1840,7 @@ function updateAttemptLabel() {
   if (!l && bar) { l = document.createElement('span'); l.id = 'attempt-label'; l.className = 'attempt-label'; l.setAttribute('role', 'status'); bar.parentNode.insertBefore(l, bar.nextSibling); }
   if (!l) return;
   const used = (typeof attempts === 'number') ? attempts : 0;
-  l.textContent = 'Versuch ' + Math.min(used + 1, MAX_ATTEMPTS) + '/' + MAX_ATTEMPTS;
+  l.textContent = 'Versuch ' + (typeof finished !== "undefined" && finished ? Math.max(1, Math.min(used, MAX_ATTEMPTS)) : Math.min(used + 1, MAX_ATTEMPTS)) + '/' + MAX_ATTEMPTS;
 }
 function renderAttemptBar() {
   const bar = document.getElementById('attempts-bar');
@@ -1892,6 +1909,16 @@ function addGuessRow(value, unit, fb) {
 }
 
 // ── Show result panel ─────────────────────────────────────────────────────────
+let _buildActive = false, _buildFb = null;
+async function submitBuild(grid) {
+  if (finished || _srvBusy || !window._build) return;
+  const d = CraftCheck.diff(question, grid);
+  _buildFb = d.ok ? { correct: true, text: 'Richtig!', arrow: MGIcon.html('px.check', 16), cls: 'fb-correct' }
+    : { correct: false, text: d.correct + ' von ' + d.total + ' Slots richtig', arrow: MGIcon.html('px.cross', 16), cls: 'fb-wrong' };
+  const ctl = window._build;
+  await submitGuess();
+  if (!finished && ctl) { ctl.setMarks(d); }
+}
 function showResult(won, ptsThisQuestion, speedBonus) {
   sessTotal++;
   if (won) sessCorrect++;
@@ -1946,7 +1973,8 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   const raEl = document.getElementById('result-answer');
   raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
-  if (window.MGCraft && question && question.type === 'crafting') MGCraft.reveal(document.getElementById('craft-host'), question);
+  if (window._build) window._build.finish(won, question);
+  else if (window.MGCraft && question && question.type === 'crafting') { MGCraft.reveal(document.getElementById('craft-host'), question); if (window.MGHand) MGHand.reveal(document.querySelector('#craft-host .craft-slot.out')); }
   document.getElementById('funfact-text').textContent = question.funFact || '';
   { const fb = document.getElementById('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (question.funFact && String(question.funFact).trim()) ? '' : 'none'; }
   document.getElementById('input-area').style.visibility = 'hidden'; // Höhe behalten, kein Layout-Sprung
@@ -2000,7 +2028,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 function startTimer() {
   if (finished) return;
   clearInterval(timerInterval);
-  TIMER_SECONDS = question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER;
+  TIMER_SECONDS = _buildActive ? 90 : (question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER);
   timerLeft = TIMER_SECONDS;
 
   const wrap = document.getElementById('timer-wrap');
@@ -2013,7 +2041,7 @@ function startTimer() {
   arc.style.strokeDashoffset = '0';
   ring.className = 'timer-ring';
 
-  timerInterval = setInterval(() => {
+  timerInterval = setInterval(async () => {
     timerLeft--;
     num.textContent = timerLeft;
 
@@ -2026,6 +2054,12 @@ function startTimer() {
     if (timerLeft <= 0) {
       clearInterval(timerInterval);
       if (!finished) {
+        if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
+          _srvBusy = true;
+          const tr = await rankedSrvAnswer(null, true);
+          _srvBusy = false;
+          if (!tr) { showToast('Verbindung zum Ranked-Server verloren. Lauf wird beendet.', 3000); setTimeout(() => location.reload(), 2500); return; }
+        }
         // Time's up – count as wrong guess
         addGuessRow('Zeit abgelaufen', '', { arrow: MGIcon.html('ui.clock', 16), text: 'Zeit abgelaufen!', cls: 'fb-wrong', correct: false });
         markDot(attempts, 'used');
@@ -2043,7 +2077,7 @@ function startTimer() {
           if (!isGuest) { const stats = getStats(); stats.played++; stats.streak = 0; saveStats(stats); saveCloudStats(); updateStatsDisplay(); }
           recordCatStat(question ? question.category : null, false);
           playSound('wrong');
-          if (gameMode === 'competition') rankedAnswered(false);
+          if (gameMode === 'competition') await rankedAnswered(false);
     showResult(false, questionPoints);
     rankedNote();
         } else {
@@ -2066,7 +2100,24 @@ function buildInput() {
   const area = document.getElementById('input-area');
   area.innerHTML = '';
   // Crafting-Raetsel: Werkbank-Raster ueber der Eingabe (Antwort wie bei Entity-Fragen per Dropdown)
+  if (window._build) { try { window._build.destroy(); } catch (e) {} window._build = null; }
+  _buildActive = false;
+  if (question && question.type === 'crafting' && gameMode === 'crafting' && question.buildable && question.solution && window.MGCraftBuild && window.CraftCheck) {
+    const pm = craftModePref();
+    if (question.__bm === undefined) question.__bm = (pm === 'build' || (pm === 'mix' && Math.random() < 0.5));
+    _buildActive = !!question.__bm;
+  }
+  if (_buildActive) {
+    const ch = document.getElementById('craft-host');
+    document.getElementById('question-text').textContent = 'Baue dieses Rezept: ' + question.answer;
+    window._build = MGCraftBuild.mount(ch, question, { onCheck: submitBuild, onHint: () => useHint() });
+    if (window.MGHand) MGHand.show(ch.querySelector('.craft-panel'));
+    // Raster (und Ergebnis) vollstaendig ins Bild holen, falls es unter dem Falz liegt
+    setTimeout(() => { const p = ch.querySelector('.craft-panel'); if (!p) return; const r = p.getBoundingClientRect(); if (r.bottom > innerHeight - 12 || r.top < 8) p.scrollIntoView({ block: 'center', behavior: 'auto' }); }, 60);
+    return;
+  }
   if (window.MGCraft) { const ch = document.getElementById('craft-host'); if (question && question.type === 'crafting') MGCraft.render(ch, question); else MGCraft.clear(ch); }
+  if (window.MGHand) { if (question && question.type === 'crafting' && gameMode === 'crafting') { MGHand.show(document.querySelector('#craft-host .craft-panel')); MGHand.hold(null); } else MGHand.hide(); }
 
   if (Array.isArray(question.choices) && question.choices.length === 2 && window.MGIcon && MGIcon.choiceButtons) {
     // ODER-Frage: nur diese zwei Buttons (zufaellige Reihenfolge je Frage), Versuche/Timer/Ranked unveraendert
@@ -2216,15 +2267,23 @@ function buildInput() {
 }
 
 
-function submitGuess() {
-  if (finished) return;
+async function submitGuess() {
+  if (finished || _srvBusy) return;
 
-  const inp = document.getElementById('answer-input');
-  const val = inp.value.trim();
+  const inp = document.getElementById('answer-input') || { value: '' };
+  const val = _buildFb ? 'Raster' : inp.value.trim();
   // Leere/ungueltige Eingabe: nur Hinweis, Timer laeuft unveraendert weiter (kein Zeitgewinn)
   if (!val) { showToast('Bitte eine Antwort eingeben!'); return; }
 
-  const fb = getFeedback(question, val);
+  let fb;
+  if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
+    _srvBusy = true;
+    const sr = await rankedSrvAnswer(val, false);
+    _srvBusy = false;
+    if (!sr) { showToast('Verbindung zum Ranked-Server verloren. Lauf wird beendet.', 3000); setTimeout(() => location.reload(), 2500); return; }
+    fb = srvFeedback(sr);
+  } else fb = _buildFb || getFeedback(question, val);
+  _buildFb = null;
   if (fb.invalid) { showToast(fb.text); return; }
   clearInterval(timerInterval);
   addGuessRow(val, question.type === 'number' ? question.unit : '', fb);
@@ -2261,7 +2320,7 @@ function submitGuess() {
     if (gameMode === 'competition') compCorrect++;
     if (!isGuest) { const s=getStats(); s.played++; const yd=localStorage.getItem('mg_today_'+getYesterdayKey()); const ydS=yd?JSON.parse(yd):null; s.streak=(ydS&&ydS.done)?s.streak+1:1; s.best=Math.max(s.best,s.streak); saveStats(s); saveCloudStats(); updateStatsDisplay(); }
     recordCatStat(question.category, true);
-    if (gameMode === 'competition') rankedAnswered(true);
+    if (gameMode === 'competition') await rankedAnswered(true);
     showResult(true, Math.max(0, questionPoints), speedBonus);
     rankedNote();
     return;
@@ -2278,7 +2337,7 @@ function submitGuess() {
     if (!isGuest) { const s=getStats(); s.played++; s.streak=0; saveStats(s); saveCloudStats(); updateStatsDisplay(); }
     recordCatStat(question ? question.category : null, false);
     playSound('wrong');
-    if (gameMode === 'competition') rankedAnswered(false);
+    if (gameMode === 'competition') await rankedAnswered(false);
     showResult(false, questionPoints);
     rankedNote();
   } else {
@@ -2379,7 +2438,7 @@ function getEnglishName(name) {
 }
 
 // ── Load next question ────────────────────────────────────────────────────────
-function loadNextQuestion() {
+async function loadNextQuestion() {
   document.getElementById('result-panel').classList.remove('show');
   document.getElementById('next-countdown').innerHTML = '';
   document.getElementById('guesses-list').innerHTML   = '';
@@ -2393,11 +2452,23 @@ function loadNextQuestion() {
 
   if (gameMode === 'competition') {
     if (compIndex >= COMP_TOTAL) return; // handled by showResult
-    // Ranked: Frage passend zur aktuellen MMR-Zone (adaptiv), keine Wiederholung im Lauf
-    const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed, Math.random, { seen: seenLoad(), picked: compPicked });
-    compUsed.add(_ri);
-    compPicked.push(allQuestions[_ri]);
-    question = allQuestions[_ri];
+    // Ranked: Frage kommt vom Server (ohne Loesung); ohne Server-Verbindung zu Beginn lokaler Modus
+    let _srvQ = null;
+    if (compIndex === 0 && !rankedSrv) await rankedSrvStart();
+    if (rankedSrv && rankedSrv.active) {
+      _srvQ = await rankedSrvNext();
+      if (!_srvQ) { showToast('Verbindung zum Ranked-Server verloren. Lauf wird beendet.', 3000); setTimeout(() => location.reload(), 2500); return; }
+      if (gameMode !== 'competition') return;
+    }
+    if (_srvQ) {
+      question = _srvQ;
+    } else {
+      // Ranked lokal: Frage passend zur aktuellen MMR-Zone (adaptiv), keine Wiederholung im Lauf
+      const _ri = MGRanked.pickIndex(allQuestions, rankedEnsure().mmr, compUsed, Math.random, { seen: seenLoad(), picked: compPicked });
+      compUsed.add(_ri);
+      compPicked.push(allQuestions[_ri]);
+      question = allQuestions[_ri];
+    }
     compIndex++;
     updateCompBar();
     if (compIndex === COMP_TOTAL) setTimeout(() => showToast('Letzte Frage! Alles geben!', 2500), 300);
@@ -2413,8 +2484,9 @@ function loadNextQuestion() {
     dailyIndex++;
   } else {
     if (currentIndex >= questionOrder.length) {
+      const _cmb = (typeof craftModePref === 'function') ? craftModePref() : 'guess';
       const _pool = gameMode === 'crafting'
-        ? allQuestions.map((q, i) => q.type === 'crafting' ? i : -1).filter(i => i !== -1)
+        ? allQuestions.map((q, i) => q.type === 'crafting' && (_cmb !== 'build' || (q.buildable && q.solution)) ? i : -1).filter(i => i !== -1)
         : [...Array(allQuestions.length).keys()];
       questionOrder = freshOrder(_pool);
       currentIndex  = 0;
@@ -2426,6 +2498,7 @@ function loadNextQuestion() {
 
   attempts = 0;
   finished = false;
+  question.__bm = undefined;
   seenAdd(question.id);
 
   document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
@@ -2734,8 +2807,16 @@ function resetHints() {
   renderJokerTokens();
 }
 
-function useHint() {
-  if (!question || questionHints >= MAX_HINTS) return;
+async function useHint() {
+  if (!question || questionHints >= MAX_HINTS || _srvBusy) return;
+  let srvText = null;
+  if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
+    _srvBusy = true;
+    const j = await srvPost('hint', { runId: rankedSrv.runId });
+    _srvBusy = false;
+    if (!j || !j.ok) { showToast('Tipp nicht verfügbar'); return; }
+    srvText = j.text;
+  }
   questionHints++;
   if (jokersLeft > 0) {
     jokersLeft--;
@@ -2746,8 +2827,14 @@ function useHint() {
     addPoints(POINTS_HINT);
     playSound('wrong');
   }
-  const text = getHintText(question, questionHints);
+  if (_buildActive && window._build) {
+    const h = CraftCheck.hint(question, window._build.getGrid());
+    document.getElementById('hint-box').textContent = h ? 'Tipp: ein Item wurde in Reihe ' + (h.r + 1) + ', Spalte ' + (h.c + 1) + ' gelegt.' : 'Das Raster ist schon vollständig richtig.';
+    if (h) window._build.applyHint(h);
+  } else {
+  const text = srvText || getHintText(question, questionHints);
   document.getElementById('hint-box').innerHTML = text;
+  }
   const btn = document.getElementById('hint-btn');
   if (questionHints >= MAX_HINTS) {
     btn.disabled = true;
@@ -3060,6 +3147,7 @@ function rankedGid() {
 }
 // Server-Fallback der Rankliste (funktioniert ohne Firestore-Regeln, auch fuer Gaeste)
 function rankedPostApi(force) {
+  if (rankedSrv && rankedSrv.active) return;   // Rangliste fuehrt der Server
   if (!rankedProfile || rankedProfile.answered < 1) return;
   const now = Date.now();
   if (!force && now - _rankedApiAt < 6000) return;
@@ -3127,7 +3215,84 @@ async function loadRankedCloud() {
 }
 
 // Ergebnis einer Frage -> MMR. Ergebnisfaktor: Erstversuch 1.0, -0.15 je Fehlversuch, -0.1 je Tipp (min 0.4)
-function rankedAnswered(correct) {
+// ── Server-validierter Ranked-Lauf (Anti-Cheat) ─────────────────────────────────
+// Fragen ohne Loesung (/api/ranked/next), Pruefung, Tipps und MMR-Berechnung laufen auf dem Server; das Profil kommt signiert zurueck.
+let rankedSrv = null;      // { runId, active, final }
+let _srvBusy = false;
+async function srvPost(path, body) {
+  // 429 (zu schnell) wurde nicht verarbeitet: bis zu 4 Wiederholungen, damit keine gueltige Antwort verloren geht
+  for (let i = 0; i < 5; i++) {
+    try {
+      const r = await fetch('api/ranked/' + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (r.status === 429 && i < 4) { await new Promise(res => setTimeout(res, 700 * (i + 1))); continue; }
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) { return null; }
+  }
+  return null;
+}
+async function rankedSrvStart() {
+  const p = rankedEnsure();
+  let name = '', token = '';
+  try { name = localStorage.getItem('mg_player_name') || ''; token = localStorage.getItem('mg_ranked_token') || ''; } catch (e) {}
+  if (currentUser && currentUser.displayName) name = currentUser.displayName;
+  const body = { name: name || 'Gast', gid: rankedGid(), profile: p, history: p.history, token: token, seen: seenLoad().slice(-1500) };
+  if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
+  const j = await srvPost('start', body);
+  if (!j || !j.ok || !j.runId) return false;
+  rankedSrv = { runId: j.runId, active: true, final: null };
+  rankedProfile = MGRanked.normalizeProfile(j.profile);       // Server ist massgeblich
+  try { localStorage.setItem('mg_ranked_token', j.token || ''); if (j.key) localStorage.setItem('mg_ranked_key', j.key); } catch (e) {}
+  rankedSaveLocal();
+  return true;
+}
+async function rankedSrvNext() {
+  const j = await srvPost('next', { runId: rankedSrv.runId });
+  return j && j.ok && j.question ? j.question : null;
+}
+// Antwort (oder Zeitablauf) melden. Rueckgabe: Server-Antwort oder null bei Verbindungsfehler.
+async function rankedSrvAnswer(val, timeout) {
+  const j = await srvPost('answer', timeout ? { runId: rankedSrv.runId, timeout: true } : { runId: rankedSrv.runId, answer: val });
+  if (!j || !j.ok) return null;
+  if (j.final) {
+    rankedSrv.final = j;
+    question.answer = j.answer;
+    question.funFact = j.funFact || '';
+    question.acceptedAnswers = j.acceptedAnswers || [];
+  }
+  return j;
+}
+function srvFeedback(r) {
+  if (!r.valid) return { correct: false, invalid: true, arrow: MGIcon.html('px.ask', 16), cls: 'fb-wrong', text: question.type === 'number' ? 'Bitte eine Zahl eingeben' : 'Bitte eine Antwort eingeben' };
+  if (r.correct) return { correct: true, text: 'Richtig!', arrow: MGIcon.html('px.check', 16), cls: 'fb-correct' };
+  if (question.type === 'number' && r.dir) {
+    const higher = r.dir === 'high';
+    return { correct: false, text: (higher ? 'Zu hoch' : 'Zu niedrig') + (r.close ? ' – aber nah dran!' : ''), arrow: MGIcon.html(higher ? 'px.down' : 'px.up', 16), cls: r.close ? 'fb-close' : (higher ? 'fb-high' : 'fb-low') };
+  }
+  return { correct: false, text: 'Falsch – versuch nochmal!', arrow: MGIcon.html('px.cross', 16), cls: 'fb-wrong' };
+}
+function rankedSrvApply() {
+  const f = rankedSrv.final; rankedSrv.final = null;
+  if (f.notCounted && !rankedSrv.warned) { rankedSrv.warned = true; showToast('Lauf wird nicht gewertet: Antworten kamen unnatürlich schnell.', 4000); }
+  const r = Object.assign({}, f.result, { profile: MGRanked.normalizeProfile(f.profile) });
+  rankedProfile = r.profile;
+  try { localStorage.setItem('mg_ranked_token', f.token || ''); } catch (e) {}
+  return r;
+}
+
+async function rankedAnswered(correct) {
+  if (rankedSrv && rankedSrv.active && rankedSrv.final) {
+    const r = rankedSrvApply();
+    MGBadges.record('rank', { promoted: r.promoted, demoted: r.demoted });
+    rankedProfile.lastDate = getDateKey();
+    rankedRun.delta += r.delta; rankedRun.answered++; if (correct) rankedRun.correct++;
+    rankedSaveLocal();
+    if (rankedRun.answered === COMP_TOTAL) MGBadges.record('ranked_game', { correct: rankedRun.correct, total: COMP_TOTAL });
+    rankedSaveCloud(false);
+    window.lastRanked = r;
+    try { document.dispatchEvent(new CustomEvent('mg:ranked', { detail: r })); } catch (e) {}
+    return;
+  }
   const p = rankedEnsure();
   const q = question || {};
   const wrong = Math.max(0, attempts - (correct ? 1 : 0));
@@ -3320,7 +3485,30 @@ function showCountdown(callback) {
   tick();
 }
 
-function selectMode(mode) {
+function craftModePref() { try { var v = localStorage.getItem('mg_craft_mode'); return (v === 'build' || v === 'mix') ? v : 'guess'; } catch (e) { return 'guess'; } }
+function openCraftMode() {
+  const d = document.getElementById('craft-mode-dialog'), cur = craftModePref();
+  d.querySelectorAll('.cm-opt').forEach(b => { const on = b.dataset.m === cur; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.tabIndex = on ? 0 : -1; });
+  d.classList.add('show');
+  const f = d.querySelector('.cm-opt[aria-checked="true"]'); if (f) f.focus();
+}
+function closeCraftMode() { document.getElementById('craft-mode-dialog').classList.remove('show'); }
+(function () {
+  const d = document.getElementById('craft-mode-dialog'); if (!d) return;
+  d.addEventListener('click', e => {
+    const b = e.target.closest('.cm-opt');
+    if (b) { d.querySelectorAll('.cm-opt').forEach(x => { const on = x === b; x.setAttribute('aria-checked', on ? 'true' : 'false'); x.tabIndex = on ? 0 : -1; }); try { localStorage.setItem('mg_craft_mode', b.dataset.m); } catch (er) {} }
+    else if (e.target === d) closeCraftMode();
+  });
+  d.addEventListener('keydown', e => {
+    const opts = [...d.querySelectorAll('.cm-opt')], i = opts.indexOf(document.activeElement);
+    if (e.key === 'Escape') { closeCraftMode(); e.stopPropagation(); }
+    else if (i >= 0 && (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowLeft')) { e.preventDefault(); const n = opts[(i + (/Down|Right/.test(e.key) ? 1 : opts.length - 1)) % opts.length]; n.focus(); n.click(); }
+  });
+  document.getElementById('cm-go').addEventListener('click', () => { closeCraftMode(); selectMode('crafting', true); });
+})();
+function selectMode(mode, craftChosen) {
+  if (mode === 'crafting' && !craftChosen) { openCraftMode(); return; }
   if (!allQuestions.length) {
     (window.questionsReady || Promise.resolve()).then(() => { if (allQuestions.length) selectMode(mode); });
     return;
@@ -3339,7 +3527,10 @@ function selectMode(mode) {
 function actualStartMode(mode) {
   // Crafting-Modus: nur Fragen vom Typ crafting
   if (mode === 'crafting') {
-    const cr = allQuestions.map((q, i) => q.type === 'crafting' ? i : -1).filter(i => i !== -1);
+    // Untermodus 'Selber bauen': nur baubare Raetsel (Loesung vorhanden und eindeutig); 'Mix'/'Erraten': alle
+    const _cm = (typeof craftModePref === 'function') ? craftModePref() : 'guess';
+    let cr = allQuestions.map((q, i) => q.type === 'crafting' && (_cm !== 'build' || (q.buildable && q.solution)) ? i : -1).filter(i => i !== -1);
+    if (!cr.length) cr = allQuestions.map((q, i) => q.type === 'crafting' ? i : -1).filter(i => i !== -1);
     questionOrder = freshOrder(cr);
     currentIndex = 0;
   }
@@ -3380,6 +3571,7 @@ function actualStartMode(mode) {
     }
     compUsed = new Set();
     compPicked = [];
+    rankedSrv = null;
     rankedRun = { start: rankedEnsure().mmr, delta: 0, answered: 0, correct: 0 };
     compIndex   = 0; compScore = 0; compCorrect = 0;
     document.getElementById('comp-bar').classList.add('show');
@@ -3733,6 +3925,14 @@ if ('serviceWorker' in navigator) {
   var _load = window.loadNextQuestion;
   window.loadNextQuestion = loadNextQuestion = function () {
     var r = _load.apply(this, arguments);
+    var host0 = document.getElementById('solo-scene');
+    if (typeof gameMode !== 'undefined' && gameMode === 'crafting') {
+      // Crafting: keine Szene (kein Reporter, keine Figur, kein WebGL-Canvas); Platz gehoert dem Raster
+      if (scene) { try { scene.destroy(); } catch (e) {} scene = null; if (host0) host0.innerHTML = ''; }
+      if (host0) host0.style.display = 'none';
+      return r;
+    }
+    if (host0) host0.style.display = '';
     try {
       var s = ensure();
       if (s && typeof question !== 'undefined' && question) { s.resetRound(); s.say('reporter', question.question, 'ask'); }
@@ -3761,7 +3961,7 @@ if ('serviceWorker' in navigator) {
     if (window.MGVideo) MGVideo.mount(el, { fallback: pano }); else pano();
   })();
   var ms = document.getElementById('mode-screen');
-  function sync() { document.body.classList.toggle('menu-hidden', ms.classList.contains('hidden')); }
+  function sync() { document.body.classList.toggle('menu-hidden', ms.classList.contains('hidden')); if (!ms.classList.contains('hidden') && window.MGHand) MGHand.hide(); }
   new MutationObserver(sync).observe(ms, { attributes: true, attributeFilter: ['class'] }); sync();
   var bands = ['block/grass_block_top', 'block/gold_block', 'block/oak_planks', 'block/redstone_block', 'block/stone_bricks', 'block/crafting_table_top'];
   document.querySelectorAll('#mode-screen .mode-card').forEach(function (c, i) {

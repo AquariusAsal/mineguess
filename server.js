@@ -16,6 +16,8 @@ const zlib       = require('zlib');
 const MGAnswer   = require('./answer-check.js');
 const MGRanked   = require('./ranked.js');
 const store      = require('./lib/store.js');
+const { clientIp } = require('./lib/clientip.js');
+const { redactText, purgeReports } = require('./lib/privacy.js');
 const PKG        = (() => { try { return require('./package.json'); } catch (e) { return {}; } })();
 
 const app    = express();
@@ -58,6 +60,8 @@ app.get('/health', (req, res) => {
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
 // Speicher: RAM + data/ranked.json. Auf Hosts mit fluechtigem Dateisystem (z. B. Render) geht die Datei beim Neustart verloren.
 app.set('trust proxy', 1);
+// req.ip = echte Client-IP (hinter Render/Cloudflare ueber CF-Connecting-IP bzw. X-Forwarded-For), damit Rate-Limits je Client statt je Proxy gelten
+Object.defineProperty(app.request, 'ip', { configurable: true, get() { return clientIp(this.headers, this.socket && this.socket.remoteAddress); } });
 const RANKED_MAX_ENTRIES = 5000;
 const rankedStore = new Map();            // key -> Eintrag
 function hydrateRanked() {
@@ -83,7 +87,7 @@ const ID_RE = /^[A-Za-z0-9_-]{6,64}$/;
 app.get('/api/ranked', (req, res) => {
   res.set('Cache-Control', 'no-store');
   const list = [...rankedStore.values()]
-    .filter(e => e.verified)
+    .filter(e => e.verified && e.games >= 1)
     .sort((a, b) => b.mmr - a.mmr)
     .slice(0, 100)
     .map(e => ({ key: keyHash(e.key), uid: e.uid || null, name: e.name, tier: e.tier, division: e.division,
@@ -151,16 +155,16 @@ function apiAllowed(kind, ip, burst, refillMs) {
 }
 app.post('/api/report', express.json({ limit: '2kb' }), (req, res) => {
   try {
-    if (!apiAllowed('report', req.ip, 3, 30000)) return res.status(429).json({ ok: false });
+    if (!apiAllowed('report', req.ip, 10, 10000)) return res.status(429).json({ ok: false });
     const b = req.body || {};
     if (!knownQuestionId(b.questionId)) return res.status(400).json({ ok: false });
     if (typeof b.reason !== 'string' || !REPORT_REASONS.has(b.reason)) return res.status(400).json({ ok: false });
     if (b.text != null && typeof b.text !== 'string') return res.status(400).json({ ok: false });
-    const text = cleanText(b.text || '', 300);
+    const text = cleanText(b.text || '', 300);          // hart auf 300 Zeichen begrenzt (laengerer Text wird gekuerzt)
     let reports = store.get('reports');
     if (!Array.isArray(reports)) reports = [];
     if (reports.length >= 5000) reports.shift();
-    reports.push({ questionId: b.questionId, reason: b.reason, text, ts: Date.now() });
+    reports.push({ questionId: b.questionId, reason: b.reason, text: redactText(text), ts: Date.now() });   // nur diese Felder: keine IP, keine ID, kein Name
     store.set('reports', reports);
     res.json({ ok: true });
   } catch (e) { res.status(400).json({ ok: false }); }
@@ -168,7 +172,7 @@ app.post('/api/report', express.json({ limit: '2kb' }), (req, res) => {
 
 app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
   try {
-    if (!apiAllowed('stats', req.ip, 30, 2000)) return res.status(429).json({ ok: false });
+    if (!apiAllowed('stats', req.ip, 300, 100)) return res.json({ ok: true, dropped: true });   // nie 429 (Konsolenfehler im Client): ueberzaehlige Zaehler werden still verworfen
     const b = req.body || {};
     if (!knownQuestionId(b.questionId)) return res.status(400).json({ ok: false });
     if (typeof b.correct !== 'boolean') return res.status(400).json({ ok: false });
@@ -183,7 +187,7 @@ app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
   } catch (e) { res.status(400).json({ ok: false }); }
 });
 
-require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log });
+require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log, keyHash });
 
 // Premium wurde abgeschafft: alte Links auf die Startseite
 app.get('/premium.html', (req, res) => res.redirect(301, '/'));
@@ -894,10 +898,7 @@ const VOTE_WINDOW_MS = 15000;
 const VOTE_MIN_PLAYERS = 3;
 const VOTE_COOLDOWN_MS = 60000;      // je Initiator
 const TARGET_COOLDOWN_MS = 120000;   // je Ziel nach gescheiterter Abstimmung
-function ipOf(socket) {
-  const xf = socket.handshake.headers && socket.handshake.headers['x-forwarded-for'];
-  return (typeof xf === 'string' && xf.split(',')[0].trim()) || socket.handshake.address || '';
-}
+function ipOf(socket) { return clientIp(socket.handshake.headers, socket.handshake.address); }
 function kickPlayer(room, targetId, reason) {
   const t = io.sockets.sockets.get(targetId);
   const p = room.players[targetId];
@@ -1258,7 +1259,7 @@ io.on('connection', (socket) => {
     if (d.difficulty !== undefined && (typeof d.difficulty !== 'string' || !Object.prototype.hasOwnProperty.call(DIFFICULTIES, d.difficulty))) return deny('difficulty');
     if (d.maxPlayers !== undefined && (!Number.isInteger(d.maxPlayers) || d.maxPlayers < MIN_PLAYERS_SETTING || d.maxPlayers > MAX_PLAYERS || d.maxPlayers < playerCount(room))) return deny('maxPlayers');
     if (d.categories !== undefined && !Array.isArray(d.categories)) return deny('categories');
-    if (d.password !== undefined && typeof d.password !== 'string') return deny('password');
+    if (d.password !== undefined && (typeof d.password !== 'string' || d.password.length > 40)) return deny('password');
     if (d.rounds !== undefined) room.rounds = d.rounds;
     if (d.answerTime !== undefined) room.answerTime = d.answerTime;
     if (d.difficulty !== undefined) room.difficulty = d.difficulty;
@@ -1354,6 +1355,22 @@ process.on('unhandledRejection', (e) => log('error', 'unhandled_rejection', { er
 const PORT = process.env.PORT || 3000;
 store.init(['ranked', 'reports', 'qstats', 'runs'], { ranked: [], reports: [], qstats: {}, runs: {} }).then((kind) => {
   hydrateRanked();
+  // Datenschutz: Meldungen hoechstens 12 Monate speichern (beim Start und taeglich); Altbestand ohne Zeitstempel bekommt das Startdatum
+  const purge = () => { const before = store.get('reports'); const after = purgeReports(before); if (!Array.isArray(before) || after.length !== before.length || before.some(r => !Number.isFinite(r && r.ts))) store.set('reports', after); };
+  purge();
+  setInterval(purge, 24 * 3600 * 1000).unref();
   server.listen(PORT, () => console.log(JSON.stringify({ level: 'info', event: 'listening', port: Number(PORT), persist: kind })));
 });
-process.on('SIGTERM', () => { store.flush().finally(() => process.exit(0)); });
+// Sauberes Beenden (Render sendet SIGTERM bei Deploy/Neustart): keine neuen Verbindungen, Daten speichern, nach spaetestens 8 s beenden
+let shuttingDown = false;
+function shutdown(sig) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log('info', 'shutdown', { signal: sig });
+  const force = setTimeout(() => process.exit(0), 8000); force.unref();
+  try { io.emit('server_restart', {}); } catch (e) {}
+  try { server.close(); } catch (e) {}
+  store.flush().catch(() => {}).finally(() => process.exit(0));
+}
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));

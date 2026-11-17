@@ -1389,7 +1389,8 @@ socket.on('answer_submitted', ({ playerId, delta }) => {
   if (playerId === myId) { myPhase = 'waiting'; renderTotem(); }
   sceneLive(nameOf(playerId) + ' hat geantwortet');
 });
-socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId, answers }) => {
+socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId, answers, correctAnswer, resultCount }) => {
+  if (window.MGCraft && currentQ && currentQ.type === 'crafting' && correctAnswer) MGCraft.reveal(el('craft-host'), Object.assign({}, currentQ, { answer: correctAnswer }, resultCount ? { resultCount: resultCount } : {}));
   const list = answers || [];
   const wins = {}; (winnerIds || (winnerId ? [winnerId] : [])).forEach(id => { wins[id] = 1; });
   list.forEach(a => { if (wins[a.playerId]) a.winner = true; });

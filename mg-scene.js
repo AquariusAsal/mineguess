@@ -105,7 +105,8 @@
           for (yy = 20; yy < 32 && clear; yy++) for (xx = 54; xx < 56; xx++) if (res.alpha[yy * res.w + xx] !== 0) { clear = false; break; }
           slim = clear;
         }
-      } else if (src.indexOf('/slim/') >= 0) { slim = true; }
+      } else if (src.indexOf('data:') === 0) { throw new Error('unverified'); }   // eigener Skin, den wir nicht pruefen koennen: Standardfigur
+      else if (src.indexOf('/slim/') >= 0) { slim = true; }
       return { canvas: h === 64 ? img : c, slim: slim };
     });
   }
@@ -232,7 +233,9 @@
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
     if (gl.UNPACK_COLORSPACE_CONVERSION_WEBGL) gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    try { while (gl.getError() !== gl.NO_ERROR) { /* alte Fehler leeren */ } gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src); }
+    catch (e) { gl.deleteTexture(t); return null; }
+    if (gl.getError() !== gl.NO_ERROR) { gl.deleteTexture(t); return null; }   // Upload fehlgeschlagen: nie eine halbfertige/undefinierte Textur zeichnen
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -518,11 +521,22 @@
         f.srcKey = src;
         loadSkin(src).then(function (s) {
           if (f.srcKey !== src || self.destroyed) return;
+          if (self.R) {
+            var tex = self.R.texFromCanvas(s.canvas);
+            if (!tex) throw new Error('texture');
+            if (f.tex) self.R.gl.deleteTexture(f.tex);
+            f.tex = tex; f.geos = partGeos(self.R, s.slim);
+          }
           f.slim = s.slim;
-          if (self.R) { if (f.tex) self.R.gl.deleteTexture(f.tex); f.tex = self.R.texFromCanvas(s.canvas); f.geos = partGeos(self.R, s.slim); }
           self.needsRender = true;
-        }, function () {
-          if (src !== characterSrc(p.character)) { f.srcKey = ''; self.setPlayers(self.players.map(function (q) { return q.id === p.id ? { id: q.id, name: q.name, character: q.character, connected: q.connected } : q; })); }
+        }).catch(function (err) {
+          if (f.srcKey !== src || self.destroyed) return;
+          if (src !== characterSrc(p.character)) {
+            var why = (err && err.message) || 'unbekannt';
+            try { console.warn('[MineGuess] Eigener Skin verworfen (' + why + '), Standardfigur wird gerendert.'); } catch (e) {}
+            if (global.MGSkin && global.MGSkin.discard && p.id === self.myId || (global.MGSkin && global.MGSkin.get && src === global.MGSkin.get())) { try { global.MGSkin.discard(why); } catch (e) {} }
+            f.srcKey = ''; self.setPlayers(self.players.map(function (q) { return q.id === p.id ? { id: q.id, name: q.name, character: q.character, connected: q.connected } : q; }));
+          }
         });
       }
     });

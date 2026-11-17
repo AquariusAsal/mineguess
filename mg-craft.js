@@ -71,11 +71,17 @@
   }
 
   // Ergebnis erst NACH der Antwort/Aufloesung: fuellt den Ergebnis-Slot rechts vom Raster (Pop), Name darunter
+  // Ergebnis-Icon: zuerst der deutsche Name (answers.json), dann der Registry-Schluessel
+  function resultIcon(q) {
+    if (global.MGIcon && MGIcon.forLabel && q.answer) { var p = MGIcon.forLabel(q.answer, q.resultKey || ''); if (p && p !== 'item/barrier') return p; }
+    return texOf(q.resultKey || q.answer);
+  }
   function reveal(host, q) {
     if (!host || !q) return;
     var out = host.querySelector('.craft-slot.out'), name = host.querySelector('.craft-name');
     if (!out) return;
-    var path = texOf(q.resultKey || q.answer), n = q.resultCount > 1 ? q.resultCount : 0;
+    if (host.classList.contains('revealed') && name && name.textContent === ((q.resultCount > 1 ? q.resultCount + 'x ' : '') + (q.answer || ''))) return;   // schon gezeigt (answers_revealed vor result)
+    var path = resultIcon(q), n = q.resultCount > 1 ? q.resultCount : 0;
     out.innerHTML = img(path, 64, 'craft-big') + (n ? '<span class="craft-count">' + n + '</span>' : '');
     out.classList.add('pop');
     out.setAttribute('aria-label', 'Ergebnis: ' + (n ? n + ' mal ' : '') + (q.answer || ''));
@@ -84,5 +90,5 @@
   }
   function clear(host) { if (host) { host.innerHTML = ''; host.classList.remove('revealed'); host.className = host.className.replace(/\bcraft-host\b/, '').trim(); } }
 
-  global.MGCraft = { render: render, reveal: reveal, clear: clear };
+  global.MGCraft = { resultIcon: resultIcon, render: render, reveal: reveal, clear: clear };
 })(window);

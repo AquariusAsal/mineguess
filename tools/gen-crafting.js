@@ -83,7 +83,7 @@ const OK = n => KEEP.has(n) || !TECH.test(n);
     const filled = cells.flat().filter(Boolean);
     if (filled.length < 2) continue;
     if (filled.some(k => !deName(k))) continue;
-    rows.push({ name, shapeless, cells, count: pick.result.count, filled: filled.length, kinds: new Set(filled).size });
+    rows.push({ list, name, shapeless, cells, count: pick.result.count, filled: filled.length, kinds: new Set(filled).size });
   }
 
   // Eindeutigkeit: gleiches Raster darf nie zu zwei verschiedenen Ergebnissen fuehren
@@ -113,12 +113,57 @@ const OK = n => KEEP.has(n) || !TECH.test(n);
   const base = all.filter(q => q.gen !== 'crafting');
   let nextId = Math.max(...base.map(q => q.id)) + 1;
   const existing = new Set(base.filter(q => q.type === 'crafting').map(q => q.answer));
+  // Loesung fuer den Bau-Modus: je Slot alle erlaubten Schluessel (Tags aufgeloest = Vereinigung aller gleichartigen Varianten)
+  const CraftCheck = require('../craft-check.js');
+  const occ = cells => cells.map(row => row.map(k => (k ? 1 : 0)).join('')).join('|');
+  const padTL = shape => { const c = [[null, null, null], [null, null, null], [null, null, null]]; shape.forEach((row, y) => row.forEach((id, x) => { if (id != null && id !== -1) c[y][x] = byId.get(id) || null; })); return c; };
+  const ingNames = list => list.filter(x => x != null && x !== -1).map(id => byId.get(id) || null);
+  let solBad = 0, withAlts = 0;
+  const NOT_BUILDABLE = /^(suspicious_stew|mace|decorated_pot|music_disc_5)$/;   // mehrdeutig/nicht baubar (docs/team/CRAFT-UX.md)
+  // Skelett einer Variante: geformt = Belegung im 3x3 (oben links), formlos = Zutatenanzahl
+  const skel = v => v.inShape ? 'G' + occ(padTL(v.inShape)) : 'S' + ingNames(v.ingredients).length;
+  const mkSolution = (variants, base) => {
+    if (base.shapeless) {
+      const items = base.items.map(k => [k]);
+      variants.forEach(v => { const ing = ingNames(v.ingredients); if (ing.length !== items.length || ing.some(k => !k)) return; ing.forEach((k, i) => { if (!items[i].includes(k)) items[i].push(k); }); });
+      return { shapeless: true, items };
+    }
+    const grid = base.cells.map(row => row.map(k => (k ? [k] : null)));
+    variants.forEach(v => { padTL(v.inShape).forEach((row, y) => row.forEach((k, x) => { if (k && grid[y][x] && !grid[y][x].includes(k)) grid[y][x].push(k); })); });
+    return { shapeless: false, grid };
+  };
+  chosen.forEach(r => {
+    if (NOT_BUILDABLE.test(r.name)) return;
+    const groups = new Map();
+    r.list.filter(v => v.result && v.result.count === r.count || !v.result).forEach(v => { const k = skel(v); (groups.get(k) || groups.set(k, []).get(k)).push(v); });
+    const baseSkel = r.shapeless ? 'S' + r.cells.flat().filter(Boolean).length : 'G' + occ(r.cells);
+    const baseObj = r.shapeless ? { shapeless: true, items: r.cells.flat().filter(Boolean) } : { shapeless: false, cells: r.cells };
+    const mainVars = groups.get(baseSkel) || [];
+    const sol = mkSolution(mainVars, baseObj);
+    if (!CraftCheck.matches({ solution: sol }, r.cells)) { solBad++; return; }
+    r.solution = sol;
+    // weitere Rezeptformen (z. B. Barren aus Block oder aus Nuggets) als Alternativen
+    const alts = [];
+    for (const [k, vs] of groups) {
+      if (k === baseSkel) continue;
+      const v0 = vs[0], cells0 = v0.inShape ? padTL(v0.inShape) : null;
+      const b0 = v0.inShape ? { shapeless: false, cells: cells0 } : { shapeless: true, items: ingNames(v0.ingredients).filter(Boolean) };
+      if (b0.shapeless && !b0.items.length) continue;
+      if (!v0.inShape && ingNames(v0.ingredients).some(x => !x)) continue;
+      const alt = mkSolution(vs, b0);
+      const sample = v0.inShape ? cells0 : (() => { const g = [[null, null, null], [null, null, null], [null, null, null]]; b0.items.forEach((x, i) => { g[Math.floor(i / 3)][i % 3] = x; }); return g; })();
+      if (CraftCheck.matches({ solution: alt }, sample)) alts.push(alt);
+    }
+    if (alts.length) { r.alts = alts; withAlts++; }
+  });
+  console.log('Loesungen mit weiteren Rezeptformen:', withAlts, 'Selbsttest fehlgeschlagen:', solBad);
   const out = chosen.map(r => {
     const d = deName(r.name), e = enName(r.name);
     return {
       id: nextId++, type: 'crafting', question: r.shapeless ? 'Was entsteht hier? (formloses Rezept)' : 'Was entsteht hier?',
       answer: d, acceptedAnswers: [...new Set([d, ...(e && norm(e) !== norm(d) ? [e] : [])])],
       category: 'Crafting', grid: r.cells, shapeless: r.shapeless, resultCount: r.count,
+      resultKey: r.name, solution: r.solution || undefined, solutionAlts: r.alts || undefined, buildable: r.solution ? true : undefined,
       funFact: `Das Rezept liefert ${r.count} ${r.count === 1 ? 'Stück' : 'Stück'} ${d}.`, gen: 'crafting',
     };
   });
@@ -131,6 +176,42 @@ const OK = n => KEEP.has(n) || !TECH.test(n);
   console.log(`Kandidaten ${rows.length}, mehrdeutig ${ambiguous}, eindeutig ${final.length}, gewaehlt ${out.length}, unloesbar ${unsolvable}, verschiedene Antworten ${answers.size}`);
   const kinds = new Set(); out.forEach(q => q.grid.flat().filter(Boolean).forEach(k => kinds.add(k)));
   console.log('verwendete Zutaten:', kinds.size);
+  console.log('Loesungen (baubar):', out.filter(q => q.buildable).length, 'ohne Loesung:', out.filter(q => !q.buildable).length);
   if (DRY) console.log(out.map(q => q.answer + (q.shapeless ? "*" : "")).join(" | "));
   if (!DRY) fs.writeFileSync(qPath, JSON.stringify([...base, ...out], null, 2));
+
+  // ── Item-Katalog fuer die Suche im Bau-Modus: alle Loesungs-Schluessel + haeufige Zutaten als Ablenker (Ziel ~450) ──
+  const keys = new Map();   // key -> Prioritaet
+  out.forEach(q => [q.solution, ...(q.solutionAlts || [])].filter(Boolean).forEach(sol => {
+    (sol.shapeless ? sol.items : sol.grid.flat()).filter(Boolean).forEach(list => list.forEach(k => keys.set(k, 1e9)));
+  }));
+  const freq = {};
+  Object.values(recipes).forEach(list => list.forEach(v => (v.inShape ? v.inShape.flat() : v.ingredients).forEach(id => { const n = byId.get(id); if (n && !keys.has(n)) freq[n] = (freq[n] || 0) + 1; })));
+  Object.entries(freq).sort((a, b) => b[1] - a[1]).forEach(([n, f]) => { if (keys.size < 460 && deName(n)) keys.set(n, f); });
+  const ALIAS = {
+    stick: ['Stöcke', 'Stock', 'Stab', 'Sticks'], string: ['Faden', 'Schnur', 'Fäden'], iron_ingot: ['Eisen', 'Eisenbarren', 'Iron'], gold_ingot: ['Gold', 'Goldbarren'], copper_ingot: ['Kupfer', 'Kupferbarren'],
+    netherite_ingot: ['Netherit', 'Netheritbarren'], diamond: ['Diamanten', 'Diamant'], emerald: ['Smaragde', 'Smaragd'], redstone: ['Redstone', 'Redstonestaub', 'Redstone-Staub'],
+    cobblestone: ['Bruchstein', 'Cobble', 'Cobblestone'], stone: ['Stein', 'Glatter Stein'], coal: ['Kohle', 'Steinkohle'], charcoal: ['Holzkohle'], leather: ['Leder'], paper: ['Papier'], sugar: ['Zucker'],
+    wheat: ['Weizen'], slime_ball: ['Schleimball', 'Schleim'], ender_pearl: ['Enderperle', 'Enderperlen'], blaze_rod: ['Lohenrute', 'Lohenstab'], blaze_powder: ['Lohenstaub'], quartz: ['Quarz', 'Netherquarz'],
+    glass: ['Glas'], sand: ['Sand'], gravel: ['Kies'], clay_ball: ['Tonklumpen', 'Ton'], brick: ['Ziegel', 'Ziegelstein'], book: ['Buch'], feather: ['Feder'], flint: ['Feuerstein'], gunpowder: ['Schießpulver', 'Schiesspulver', 'Pulver'],
+    bone: ['Knochen'], bone_meal: ['Knochenmehl'], egg: ['Ei'], milk_bucket: ['Milch', 'Milcheimer'], water_bucket: ['Wasser', 'Wassereimer'], bucket: ['Eimer'], honey_bottle: ['Honig', 'Honigflasche'],
+    amethyst_shard: ['Amethyst', 'Amethystscherbe'], lapis_lazuli: ['Lapis', 'Lapislazuli'], obsidian: ['Obsidian'], glowstone_dust: ['Leuchtsteinstaub'], glowstone: ['Leuchtstein'], torch: ['Fackel'],
+    crafting_table: ['Werkbank', 'Crafting Table'], chest: ['Truhe', 'Kiste'], furnace: ['Ofen'], iron_nugget: ['Eisennugget', 'Eisenklumpen'], gold_nugget: ['Goldnugget', 'Goldklumpen'], wool: ['Wolle'],
+  };
+  const aliasesFor = (k, d, e) => {
+    const out = new Set(ALIAS[k] || []);
+    if (/_planks$/.test(k)) ['Planken', 'Bretter', 'Holzbretter', 'Holzplanken', 'Planks'].forEach(a => out.add(a));
+    if (/_log$|_stem$|_wood$|_hyphae$/.test(k)) ['Stamm', 'Stämme', 'Baumstamm', 'Holz', 'Log'].forEach(a => out.add(a));
+    if (/_wool$/.test(k)) ['Wolle'].forEach(a => out.add(a));
+    if (/_slab$/.test(k)) ['Stufe', 'Halbblock', 'Slab'].forEach(a => out.add(a));
+    if (/_ingot$/.test(k)) out.add('Barren');
+    if (/_nugget$/.test(k)) out.add('Nugget');
+    if (/_dye$/.test(k)) out.add('Farbstoff');
+    if (/_stairs$/.test(k)) out.add('Treppe');
+    out.delete(d); out.delete(e);
+    return [...out];
+  };
+  const catalog = [...keys.keys()].sort().map(k => { const d = deName(k), e = enName(k) || k; return { key: k, de: d, en: e, aliases: aliasesFor(k, d, e), icon: null }; }).filter(x => x.de);
+  console.log('Katalog:', catalog.length, 'Items');
+  if (!DRY) fs.writeFileSync(path.join(ROOT, 'assets', 'mc', 'craft-items.json'), JSON.stringify(catalog));
 })();

@@ -139,6 +139,8 @@ async function main() {
   if (!DRY) {
     q.filter(x => x.type === 'entity' || x.type === 'crafting').forEach(x => {
       const c = canonical(x.answer);
+      // Crafting: Antwort auf den kanonischen Namen (Dropdown-Eintrag) vereinheitlichen, die alte Schreibweise bleibt akzeptiert
+      if (x.type === 'crafting' && c !== x.answer && norm(c) === norm(x.answer)) { x.acceptedAnswers = [...new Set([...(x.acceptedAnswers || []), x.answer])]; x.answer = c; }
       const have = new Set((x.acceptedAnswers || []).map(norm));
       const add = [c, ...Object.keys(aliases).filter(a => aliases[a] === c)].filter(a => !have.has(norm(a)));
       if (add.length) { x.acceptedAnswers = [...(x.acceptedAnswers || [x.answer]), ...add]; accepted += add.length; }
@@ -186,18 +188,42 @@ async function main() {
   // Crafting-Raetsel: Icons fuer alle Zutaten (Registry-Name -> Textur + deutscher Name)
   const ingKeys = new Set();
   q.filter(x => x.type === 'crafting').forEach(x => x.grid.flat().filter(Boolean).forEach(k => ingKeys.add(k)));
+  let catalog = null;
+  try { catalog = JSON.parse(fs.readFileSync(path.join(MC, 'craft-items.json'), 'utf8')); catalog.forEach(it => ingKeys.add(it.key)); } catch (e) {}   // Item-Katalog des Bau-Modus (tools/gen-crafting.js)
   const ingredients = {};
   for (const k of [...ingKeys].sort()) {
     const ING_ALIAS = { chest: ['block/barrel_side.png'], compass: ['item/compass_00.png'], snow_block: ['block/snow.png'], oak_slab: ['block/oak_planks.png'], pale_oak_slab: ['block/pale_oak_planks.png'],
       bamboo_slab: ['block/bamboo_planks.png'], purpur_slab: ['block/purpur_block.png'], stone_pressure_plate: ['block/stone.png'], stone_slab: ['block/stone.png'], stripped_warped_hyphae: ['block/stripped_warped_stem.png'], chain: ['item/iron_nugget.png'], cut_copper_slab: ['block/cut_copper.png'], oak_wood: ['block/oak_log.png'], quartz_slab: ['block/quartz_block_side.png'], sandstone_slab: ['block/sandstone.png'], stone_brick_slab: ['block/stone_bricks.png'] };
-    const cands = [...(ING_ALIAS[k] || []), `item/${k}.png`, `block/${k}.png`, `block/${k}_side.png`, `block/${k}_front.png`, `block/${k}_top.png`, `block/${k}_still.png`];
+    // abgeleitete Stellvertreter: Stufen/Holz/Betten/Teppiche/Kupfer-Varianten zeigen die Textur ihres Grundblocks
+    const D = [];
+    let m;
+    if ((m = k.match(/^(.*)_slab$/))) { const b = m[1]; D.push(`block/${b}_planks.png`, `block/${b}.png`, `block/${b}s.png`, `block/${b}_top.png`, `block/${b}_side.png`); }
+    if ((m = k.match(/^(stripped_)?(.*)_wood$/))) D.push(`block/${m[1] || ''}${m[2]}_log.png`);
+    if ((m = k.match(/^(stripped_)?(.*)_hyphae$/))) D.push(`block/stripped_${m[2]}_stem.png`, `block/${m[1] || ''}${m[2]}_stem.png`);
+    if ((m = k.match(/^(.*)_(bed|carpet)$/))) D.push(`block/${m[1]}_wool.png`);
+    if ((m = k.match(/^waxed_(.*)$/))) D.push(`block/${m[1]}.png`);
+    if ((m = k.match(/^(.*cut_copper)_(slab|stairs)$/))) D.push(`block/${m[1]}.png`);
+    const SP = { smooth_quartz: ['block/quartz_block_bottom.png'], smooth_sandstone: ['block/sandstone_top.png'], smooth_red_sandstone: ['block/red_sandstone_top.png'], prismarine: ['block/prismarine_bricks.png', 'block/prismarine_bricks_0.png'],
+      dried_kelp_block: ['block/dried_kelp_side.png'], enchanted_golden_apple: ['item/golden_apple.png'], creeper_head: ['item/creeper_banner_pattern.png', 'item/gunpowder.png'], wither_skeleton_skull: ['item/bone.png'] };
+    const cands = [...(ING_ALIAS[k] || []), ...D, ...(SP[k] || []), `item/${k}.png`, `block/${k}.png`, `block/${k}_side.png`, `block/${k}_front.png`, `block/${k}_top.png`, `block/${k}_still.png`];
     let rel = null;
     for (const c of cands) { rel = await ensureTexture(c); if (rel) break; }
     ingredients[k] = { icon: rel || 'item/barrier.png', de: de['item.minecraft.' + k] || de['block.minecraft.' + k] || k, real: !!rel };
   }
   const ingMissing = Object.keys(ingredients).filter(k => !ingredients[k].real);
   if (ingKeys.size) console.log('Zutaten-Icons:', ingKeys.size, 'ohne echte Textur:', ingMissing.join(',') || '-');
+  const TINT = (() => { try { return require('./tint-icons.js'); } catch (e) { return null; } })();   // gefaerbte Icons (Leder, Traenke, Biomfarben) uebernehmen
+  if (TINT) TINT.remap(null, ingredients, null);
   if (!DRY && ingKeys.size) fs.writeFileSync(path.join(MC, 'ingredient-icons.json'), JSON.stringify(ingredients));
+  if (!DRY && catalog) {
+    // Katalog: Icon eintragen (Pfad relativ zu assets/mc ohne .png); Items ohne Textur entfallen
+    const used = new Set();
+    q.filter(x => x.type === 'crafting').forEach(x => [x.solution, ...(x.solutionAlts || [])].filter(Boolean).forEach(sol => (sol.shapeless ? sol.items : sol.grid.flat()).filter(Boolean).forEach(l => l.forEach(k => used.add(k)))));
+    const keep = catalog.filter(it => ingredients[it.key] && (ingredients[it.key].real || used.has(it.key))).map(it => Object.assign({}, it, { icon: ingredients[it.key].icon.replace(/[.]png$/, '') }));
+    if (TINT) TINT.remap(null, null, keep);
+    fs.writeFileSync(path.join(MC, 'craft-items.json'), JSON.stringify(keep));
+    console.log('Item-Katalog:', keep.length, 'von', catalog.length, '(ohne Textur entfernt:', catalog.length - keep.length + ')');
+  }
 
   // Schreibvarianten (z. B. "Magmacreme" statt "Magma-Creme") zeigen auf dasselbe Icon, weil der Client exakt nach Anzeigename sucht
   for (const [v, c] of canonOf) if (v !== c && icons[c] && !icons[v]) icons[v] = icons[c];
@@ -207,6 +233,7 @@ async function main() {
     const odPath = path.join(MC, 'ondemand.json');
     let od = []; try { od = JSON.parse(fs.readFileSync(odPath, 'utf8')); } catch (e) {}
     fs.writeFileSync(odPath, JSON.stringify([...new Set([...od, ...DOWNLOADED])].sort()));
+    if (TINT) TINT.remap(icons, null, null);
     fs.writeFileSync(path.join(MC, 'icons.json'), JSON.stringify(icons, null, 1));
     fs.writeFileSync(path.join(MC, 'answers.json'), JSON.stringify(out));
   }
