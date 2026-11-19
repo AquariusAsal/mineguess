@@ -218,4 +218,57 @@
     var mine = (answers || []).filter(function (a) { return a.playerId === myId; })[0];
     if (mine && !S.myDone) showToast(mine.correct ? 'Gelöst!' : 'Nicht gelöst', 2500);
   };
+
+  // ═══ Raum-Einladungen von Freunden (Profil-Token noetig) ═══
+  var PT = function () { try { return localStorage.getItem('mg_pt'); } catch (e) { return null; } };
+  var INV_ERR = { auth: 'Erstelle zuerst ein Profil (im Spiel unter Freunde).', room: 'Du bist in keinem Raum.', friend: 'Ihr seid nicht befreundet.', offline: 'Dein Freund ist gerade nicht online.', rate: 'Zu viele Einladungen. Bitte kurz warten.', limit: 'Dein Freund hat schon mehrere offene Einladungen.' };
+  function profAuth() { var t = PT(); if (t) socket.emit('profile_auth', { pt: t }); }
+  socket.on('connect', profAuth); if (socket.connected) profAuth();
+  var authed = false;
+  socket.on('profile_auth_ok', function () { authed = true; var b = $('mp2-invbtn'); if (b) b.hidden = false; });
+  socket.on('profile_auth_failed', function () { authed = false; var b = $('mp2-invbtn'); if (b) b.hidden = true; });
+  function invBanner() {
+    var b = $('mp2-invites'); if (!b) { b = document.createElement('div'); b.id = 'mp2-invites'; b.className = 'mp2-invites'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Einladungen'); b.setAttribute('aria-live', 'polite'); document.body.appendChild(b); } return b;
+  }
+  socket.on('room_invite', function (d) {
+    if (!d || !d.inviteId) return; var b = invBanner(), id = 'inv-' + d.inviteId; if ($(id)) return;
+    var n = document.createElement('div'); n.id = id; n.className = 'mp2-inv';
+    n.innerHTML = '<span><b>' + E(d.from && d.from.name) + '</b> lädt dich in den Raum „' + E(d.roomName || d.roomId) + '“ ein.</span><span class="mp2-inv-b"><button type="button" class="btn btn-primary" data-a="yes">Beitreten</button><button type="button" class="btn" data-a="no">Ablehnen</button></span>';
+    n.addEventListener('click', function (e) { var x = e.target.closest('button[data-a]'); if (!x) return; socket.emit('invite_respond', { inviteId: d.inviteId, accept: x.getAttribute('data-a') === 'yes' }); n.remove(); });
+    b.appendChild(n); try { n.querySelector('button').focus({ preventScroll: true }); } catch (e) {}
+    setTimeout(function () { if (n.isConnected) n.remove(); }, (d.expiresIn || 300) * 1000);
+  });
+  socket.on('invite_expired', function (d) { var n = d && $('inv-' + d.inviteId); if (n) n.remove(); });
+  socket.on('invite_accepted', function (d) {
+    if (!d || !d.roomId) return;
+    var nm = ''; try { nm = ($('input-name') && $('input-name').value.trim()) || (window.MGSkin && MGSkin.getName && MGSkin.getName()) || ''; } catch (e) {}
+    socket.emit('join_room', { roomId: d.roomId, inviteId: d.inviteId, playerName: nm || 'Spieler', password: null, skin: typeof mySkin === 'function' ? mySkin() : null, character: typeof myChar === 'function' ? myChar() : 'steve' });
+  });
+  socket.on('invite_sent', function () { showToast('Einladung gesendet.', 2200); });
+  socket.on('invite_declined', function () { showToast('Dein Freund hat abgelehnt.', 2500); });
+  socket.on('invite_denied', function (d) { showToast(INV_ERR[d && d.reason] || 'Einladung nicht möglich.', 3500); });
+  // Lobby: "Freunde einladen"
+  function ensureInviteBtn() {
+    if ($('mp2-invbtn')) return; var rb = $('btn-ready'); if (!rb || !PT()) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'mp2-invbtn'; b.className = 'btn-ceremony'; b.textContent = 'Freunde einladen'; b.hidden = !authed;
+    b.addEventListener('click', openInvite); rb.parentNode.insertBefore(b, rb.nextSibling);
+  }
+  function openInvite() {
+    var d = dialog('mp2-invdlg', 'Freunde einladen'), b = d.querySelector('.mp2-body'); b.innerHTML = '<p class="mp2-sub">Lade …</p>'; openDlg(d);
+    fetch('api/friends', { headers: { Authorization: 'Bearer ' + PT() } }).then(function (r) { return r.json(); }).then(function (j) {
+      var fr = (j && j.friends) || [];
+      b.innerHTML = fr.length ? '<ul class="mp2-flist">' + fr.map(function (f) { return '<li><span>' + E(f.name) + '</span><button type="button" class="btn" data-pid="' + E(f.pid) + '">Einladen</button></li>'; }).join('') + '</ul><p class="mp2-sub">Nur Freunde, die gerade online sind, können eingeladen werden. Einladungen gelten 5 Minuten.</p>' : '<p class="mp2-sub">Noch keine Freunde. Füge im Spiel unter „Freunde“ welche hinzu.</p>';
+      b.onclick = function (e) { var x = e.target.closest('button[data-pid]'); if (!x) return; socket.emit('invite_friend', { pid: x.getAttribute('data-pid') }); x.disabled = true; x.textContent = 'Gesendet'; };
+    }).catch(function () { b.innerHTML = '<p class="mp2-sub">Die Freundesliste ist gerade nicht erreichbar.</p>'; });
+  }
+  socket.on('joined', function () { ensureInviteBtn(); });
+  // Neues Geraet: Profil-Skin uebernehmen, wenn lokal keiner gewaehlt ist (nur geprueft)
+  (function () {
+    var t = PT(); if (!t || !window.MGSkin || MGSkin.get() || !window.MGPng) return;
+    fetch('api/profile/me', { headers: { Authorization: 'Bearer ' + t } }).then(function (r) { return r.json(); }).then(function (j) {
+      var u = j && j.me && j.me.skin; if (typeof u !== 'string' || !MGSkin.isValid(u)) return;
+      var by = MGPng.dataUrlBytes(u); if (!by) return;
+      MGPng.alpha(by).then(function (res) { if (res && MGPng.plausible(res) && !MGSkin.get()) MGSkin.save(u); });
+    }).catch(function () {});
+  })();
 })();

@@ -80,4 +80,4 @@ function stats(img) {
   return { sat: n ? s / n : 0, visible: n / (img.w * img.h) };
 }
 
-module.exports = { decode, encode, tint, over, stats };
+module.exports = { decode, encode, tint, over, stats, crc32 };

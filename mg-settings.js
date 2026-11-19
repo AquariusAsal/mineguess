@@ -38,6 +38,7 @@
         '<div class="mg-set-row"><span>Musik</span><button type="button" class="btn" id="mg-set-music">Spotify öffnen</button></div>' +
         '<div class="mg-set-row"><label for="mg-set-theme">Helles Design</label><input type="checkbox" id="mg-set-theme" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-motion">Animationen reduzieren</label><input type="checkbox" id="mg-set-motion" class="mg-switch"></div>' +
+        '<div class="mg-set-row"><label for="mg-set-loader">Lade-Bildschirm kurz halten</label><input type="checkbox" id="mg-set-loader" class="mg-switch"></div>' +
         '<div class="mg-set-sec" role="group" aria-labelledby="mg-set-a11y">' +
           '<h3 id="mg-set-a11y">Barrierefreiheit</h3>' +
           '<div class="mg-set-row"><label for="mg-set-contrast">Hoher Kontrast</label><input type="checkbox" id="mg-set-contrast" class="mg-switch"></div>' +
@@ -66,6 +67,7 @@
     $('mg-set-report').addEventListener('click', function () { close(); if (global.MGReport) MGReport.open(); });
     $('mg-set-theme').addEventListener('change', function (e) { applyTheme(e.target.checked ? 'light' : 'dark'); });
     $('mg-set-motion').addEventListener('change', function (e) { applyMotion(e.target.checked); });
+    $('mg-set-loader').addEventListener('change', function (e) { ls('mg_loader_short', e.target.checked ? '1' : '0'); });
     $('mg-set-profile').addEventListener('click', function () { close(); if (global.MGSkin) MGSkin.openProfile(); });
     $('mg-set-rank').addEventListener('click', function () {
       close();
@@ -100,6 +102,7 @@
     panel.querySelector('#mg-set-vol').value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100);
     panel.querySelector('#mg-set-theme').checked = document.documentElement.getAttribute('data-theme') === 'light';
     panel.querySelector('#mg-set-motion').checked = document.documentElement.getAttribute('data-motion') === 'reduce';
+    panel.querySelector('#mg-set-loader').checked = ls('mg_loader_short') === '1';
     panel.querySelector('#mg-set-contrast').checked = ls(A11Y.contrast) === '1';
     panel.querySelector('#mg-set-font').checked = ls(A11Y.font) === '1';
     syncText();
@@ -125,7 +128,11 @@
   }
   // Service Worker auf jeder Seite registrieren (Offline-Start auch ab der Startseite)
   if ('serviceWorker' in navigator) {
-    global.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+    global.addEventListener('load', function () {
+      var had = !!navigator.serviceWorker.controller, reloaded = false;   // Update: nach dem Wechsel auf den neuen Service Worker einmal neu laden
+      navigator.serviceWorker.addEventListener('controllerchange', function () { if (had && !reloaded) { reloaded = true; location.reload(); } had = true; });
+      navigator.serviceWorker.register('/sw.js').catch(function () {});
+    });
   }
   // Esc schließt alle bekannten Overlays (Abzeichen, Statistik, Report, Rankliste)
   document.addEventListener('keydown', function (e) {

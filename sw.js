@@ -1,7 +1,7 @@
 // MineGuess Service Worker — Offline Support
 // Version bei jedem Deploy erhöhen. HTML/JS/CSS/JSON: network-first (frische Deploys),
 // Bilder/Fonts: cache-first. Socket.io und Firebase werden nie abgefangen.
-const CACHE = 'mineguess-v128';
+const CACHE = 'mineguess-v143';
 // ASSETS_START (generiert von tools/gen-sw-assets.js)
 const ASSETS = [
   "/",
@@ -39,6 +39,8 @@ const ASSETS = [
   "/mg-report.js",
   "/mg-rounds.js",
   "/mg-social.js",
+  "/mg-social2.js",
+  "/mg-loader.js",
   "/mg-mp2.js",
   "/fonts/AtkinsonHyperlegible-Regular.ttf",
   "/fonts/AtkinsonHyperlegible-Bold.ttf",

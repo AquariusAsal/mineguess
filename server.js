@@ -187,6 +187,7 @@ app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
   } catch (e) { res.status(400).json({ ok: false }); }
 });
 
+let profilesApi = null;       // Profile/Soziales (wird nach dem Laden des Speichers eingehaengt)
 const rankedApi = require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log, keyHash });
 
 // Premium wurde abgeschafft: alte Links auf die Startseite
@@ -1141,6 +1142,29 @@ function rematchCheck(room) {
   }
 }
 
+// ── Raum-Einladungen von Freunden (Sockets) ─────────────────────────────────────
+const INVITE_TTL = Number(process.env.INVITE_TTL_MS) > 0 ? Number(process.env.INVITE_TTL_MS) : 5 * 60 * 1000;   // ENV nur fuer Tests
+const onlinePids = new Map();     // pid -> Set(socketId)  (nur im Speicher, nur fuer angemeldete Profile)
+const invites = new Map();        // inviteId -> { id, from, to, roomId, createdAt, accepted }
+const inviteRate = new Map();     // pid -> Zeitstempel der letzten Einladungen
+function socketsOf(pid) { return [...(onlinePids.get(pid) || [])]; }
+function inviteAllowed(pid) {
+  const now = Date.now(), a = (inviteRate.get(pid) || []).filter(t => now - t < 600000);
+  if (a.length >= 10) return false;
+  a.push(now); inviteRate.set(pid, a); return true;
+}
+function dropInvite(inv, notifyTarget) {
+  invites.delete(inv.id);
+  if (notifyTarget) socketsOf(inv.to).forEach(sid => io.to(sid).emit('invite_expired', { inviteId: inv.id }));
+}
+setInterval(() => {
+  const now = Date.now();
+  for (const inv of [...invites.values()]) {
+    const room = rooms[inv.roomId];
+    if (now - inv.createdAt > INVITE_TTL || !room || room.dead) dropInvite(inv, true);
+  }
+}, 15000).unref();
+
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 io.on('connection', (socket) => {
   let currentRoom = null;           // Raum-ID
@@ -1289,8 +1313,11 @@ io.on('connection', (socket) => {
     if (playerCount(room) >= room.maxPlayers) return fail('Raum voll.');
     const ban = room.kickBan.get(ipOf(socket));
     if (ban && ban > Date.now()) return fail('Du wurdest aus diesem Raum entfernt.');
-    if (room.password && room.password !== d.password) return fail('Falsches Passwort.');
+    const inv = typeof d.inviteId === 'string' ? invites.get(d.inviteId) : null;
+    const invited = !!(inv && inv.to === socket.data.pid && inv.roomId === room.id && inv.accepted && Date.now() - inv.createdAt <= INVITE_TTL);
+    if (room.password && room.password !== d.password && !invited) return fail('Falsches Passwort.');
     joinFails = 0;
+    if (invited) invites.delete(inv.id);
     if (currentRoom) leaveCurrent(true);
     const name = cleanText(d.playerName, MAX_NAME_LEN) || `Spieler ${playerCount(room) + 1}`;
     joinRoomAs(room, name, validSkin(d.skin), null, d.character);
@@ -1599,6 +1626,60 @@ io.on('connection', (socket) => {
     p.teamId = d.teamId; broadcastLobby(room);
   });
 
+  // Raum-Einladungen: Profil-Anmeldung des Sockets, Freund einladen, annehmen/ablehnen ────────
+  const meProfile = () => (socket.data.pid && profilesApi ? profilesApi.profiles()[socket.data.pid] || null : null);
+  const unlinkPid = () => { const set = onlinePids.get(socket.data.pid); if (set) { set.delete(socket.id); if (!set.size) onlinePids.delete(socket.data.pid); } };
+  socket.on('disconnect', () => { if (socket.data.pid) unlinkPid(); });
+  on('profile_auth', (d) => {
+    const p = profilesApi ? profilesApi.authToken(d && d.pt) : null;
+    if (!p) return socket.emit('profile_auth_failed', {});
+    if (socket.data.pid && socket.data.pid !== p.pid) unlinkPid();
+    socket.data.pid = p.pid;
+    if (!onlinePids.has(p.pid)) onlinePids.set(p.pid, new Set());
+    onlinePids.get(p.pid).add(socket.id);
+    socket.emit('profile_auth_ok', { pid: p.pid, name: p.name });
+  });
+  on('invite_friend', (d) => {
+    const deny = (reason) => socket.emit('invite_denied', { reason });
+    const me = meProfile(); if (!me) return deny('auth');
+    const room = getRoom();
+    if (!room || !room.players[socket.id] || playerCount(room) >= room.maxPlayers) return deny('room');
+    const target = d && typeof d.pid === 'string' ? profilesApi.profiles()[d.pid] : null;
+    if (!target || !profilesApi.social.friends(me, target) || profilesApi.social.blockedEither(me, target)) return deny('friend');
+    const tsock = socketsOf(target.pid);
+    if (!tsock.length) return deny('offline');
+    if (tsock.some(sid => room.players[sid])) return deny('room');                    // schon im Raum
+    const pend = [...invites.values()].filter(i => i.to === target.pid);
+    if (pend.filter(i => i.from === me.pid).length >= 3 || pend.length >= 10) return deny('limit');
+    if (!inviteAllowed(me.pid)) return deny('rate');
+    const id = crypto.randomBytes(6).toString('hex');
+    invites.set(id, { id, from: me.pid, to: target.pid, roomId: room.id, createdAt: Date.now(), accepted: false });
+    tsock.forEach(sid => io.to(sid).emit('room_invite', { inviteId: id, from: { pid: me.pid, name: me.name }, roomId: room.id, roomName: room.displayName, hasPassword: !!room.password, expiresIn: Math.round(INVITE_TTL / 1000) }));
+    socket.emit('invite_sent', { inviteId: id });
+  });
+  on('invite_respond', (d) => {
+    const me = meProfile(); const inv = me && d && typeof d.inviteId === 'string' ? invites.get(d.inviteId) : null;
+    if (!inv || inv.to !== me.pid || typeof d.accept !== 'boolean') return;
+    const room = rooms[inv.roomId];
+    if (Date.now() - inv.createdAt > INVITE_TTL || !room || room.dead) { dropInvite(inv, false); return socket.emit('invite_expired', { inviteId: inv.id }); }
+    if (d.accept) {
+      inv.accepted = true;
+      socket.emit('invite_accepted', { roomId: inv.roomId, inviteId: inv.id });
+      socketsOf(inv.from).forEach(sid => io.to(sid).emit('invite_accepted_by', { pid: me.pid, name: me.name }));
+    } else {
+      dropInvite(inv, false);
+      socketsOf(inv.from).forEach(sid => io.to(sid).emit('invite_declined', { pid: me.pid, name: me.name }));
+    }
+  });
+  on('get_invites', () => {
+    const me = meProfile(); if (!me) return;
+    const list = [...invites.values()].filter(i => i.to === me.pid && rooms[i.roomId] && !rooms[i.roomId].dead).map(i => {
+      const r = rooms[i.roomId], f = profilesApi.profiles()[i.from];
+      return { inviteId: i.id, from: f ? { pid: f.pid, name: f.name } : null, roomId: i.roomId, roomName: r.displayName, hasPassword: !!r.password, accepted: i.accepted, expiresIn: Math.max(0, Math.round((INVITE_TTL - (Date.now() - i.createdAt)) / 1000)) };
+    });
+    socket.emit('invites', { list });
+  });
+
   // Weiterspielen ──────────────────────────────────────────────────────────────
   on('continue_game', () => {
     const room = getRoom();
@@ -1628,10 +1709,12 @@ process.on('uncaughtException', (e) => log('error', 'uncaught_exception', { erro
 process.on('unhandledRejection', (e) => log('error', 'unhandled_rejection', { error: String(e && e.message).slice(0, 160) }));
 
 const PORT = process.env.PORT || 3000;
-store.init(['ranked', 'reports', 'qstats', 'runs', 'profiles'], { ranked: [], reports: [], qstats: {}, runs: {}, profiles: {} }).then((kind) => {
+store.init(['ranked', 'reports', 'qstats', 'runs', 'profiles', 'skins', 'social'], { ranked: [], reports: [], qstats: {}, runs: {}, profiles: {}, skins: {}, social: {} }).then((kind) => {
   hydrateRanked();
   // Profile und Freunde (lib/profiles.js): nach dem Laden des Speichers einhaengen; nutzt die signierten Ranked-Tokens zur Anmeldung
-  require('./lib/profiles.js').create({ app, express, store, rankedStore, saveRankedSoon, sign: rankedApi.sign, verify: rankedApi.verify, apiAllowed, log, categories: { has: (k) => KNOWN_CATEGORIES.has(k) } });
+  profilesApi = require('./lib/profiles.js').create({ app, express, store, rankedStore, saveRankedSoon, sign: rankedApi.sign, verify: rankedApi.verify, apiAllowed, log, getQuestions: () => allQuestions, categories: { has: (k) => KNOWN_CATEGORIES.has(k) } });
+  rankedApi.hooks.onRankUp = (key, d) => profilesApi.social.onRankUp(key, d);
+  rankedApi.hooks.onCommit = (key) => profilesApi.social.onRankedCommit(key);
   // Datenschutz: Meldungen hoechstens 12 Monate speichern (beim Start und taeglich); Altbestand ohne Zeitstempel bekommt das Startdatum
   const purge = () => { const before = store.get('reports'); const after = purgeReports(before); if (!Array.isArray(before) || after.length !== before.length || before.some(r => !Number.isFinite(r && r.ts))) store.set('reports', after); };
   purge();

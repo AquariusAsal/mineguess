@@ -18,7 +18,7 @@ async function startServer(env) {
   const port = await freePort();
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mg-test-'));
   const child = spawn(process.execPath, [path.join(__dirname, '..', 'server.js')], {
-    env: Object.assign({}, process.env, { PORT: String(port), DATA_DIR: dataDir, RANKED_SECRET: 'test-secret', RANKED_STRICT: '0', LOG_LEVEL: 'silent' }, env || {}),
+    env: Object.assign({}, process.env, { PORT: String(port), DATA_DIR: dataDir, RANKED_SECRET: 'test-secret', RANKED_STRICT: '0', RANKED_NEW_KEYS_HOUR: '5000', RANKED_NEW_KEYS_DAY: '50000', LOG_LEVEL: 'silent' }, env || {}),
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let out = '';

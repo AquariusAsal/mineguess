@@ -187,12 +187,15 @@ async function main() {
 
   // Crafting-Raetsel: Icons fuer alle Zutaten (Registry-Name -> Textur + deutscher Name)
   const ingKeys = new Set();
-  q.filter(x => x.type === 'crafting').forEach(x => x.grid.flat().filter(Boolean).forEach(k => ingKeys.add(k)));
+  q.filter(x => x.type === 'crafting').forEach(x => { x.grid.flat().filter(Boolean).forEach(k => ingKeys.add(k)); if (x.resultKey) ingKeys.add(x.resultKey); });   // auch die Ergebnis-Items (Bau-Slot, Ergebnis-Icon)
   let catalog = null;
   try { catalog = JSON.parse(fs.readFileSync(path.join(MC, 'craft-items.json'), 'utf8')); catalog.forEach(it => ingKeys.add(it.key)); } catch (e) {}   // Item-Katalog des Bau-Modus (tools/gen-crafting.js)
   const ingredients = {};
   for (const k of [...ingKeys].sort()) {
-    const ING_ALIAS = { chest: ['block/barrel_side.png'], compass: ['item/compass_00.png'], snow_block: ['block/snow.png'], oak_slab: ['block/oak_planks.png'], pale_oak_slab: ['block/pale_oak_planks.png'],
+    const ING_ALIAS = { clock: ['item/clock_00.png'], recovery_compass: ['item/recovery_compass_00.png', 'item/compass_00.png'], sticky_piston: ['block/piston_top_sticky.png'], cobblestone_stairs: ['block/cobblestone.png'], cobblestone_wall: ['block/cobblestone.png'],
+      heavy_weighted_pressure_plate: ['block/iron_block.png'], light_weighted_pressure_plate: ['block/gold_block.png'], oak_fence: ['block/oak_planks.png'], oak_fence_gate: ['block/oak_planks.png'], oak_pressure_plate: ['block/oak_planks.png'],
+      white_bed: ['block/white_wool.png'], white_carpet: ['block/white_wool.png'], white_banner: ['block/white_wool.png'], crossbow: ['item/crossbow_standby.png'], magma_block: ['block/magma.png'], ender_chest: ['block/obsidian.png'], shield: ['item/iron_chestplate.png'],
+      chest: ['block/barrel_side.png'], compass: ['item/compass_00.png'], snow_block: ['block/snow.png'], oak_slab: ['block/oak_planks.png'], pale_oak_slab: ['block/pale_oak_planks.png'],
       bamboo_slab: ['block/bamboo_planks.png'], purpur_slab: ['block/purpur_block.png'], stone_pressure_plate: ['block/stone.png'], stone_slab: ['block/stone.png'], stripped_warped_hyphae: ['block/stripped_warped_stem.png'], chain: ['item/iron_nugget.png'], cut_copper_slab: ['block/cut_copper.png'], oak_wood: ['block/oak_log.png'], quartz_slab: ['block/quartz_block_side.png'], sandstone_slab: ['block/sandstone.png'], stone_brick_slab: ['block/stone_bricks.png'] };
     // abgeleitete Stellvertreter: Stufen/Holz/Betten/Teppiche/Kupfer-Varianten zeigen die Textur ihres Grundblocks
     const D = [];
@@ -210,6 +213,14 @@ async function main() {
     for (const c of cands) { rel = await ensureTexture(c); if (rel) break; }
     ingredients[k] = { icon: rel || 'item/barrier.png', de: de['item.minecraft.' + k] || de['block.minecraft.' + k] || k, real: !!rel };
   }
+  // Ergebnis-Icons der Crafting-Raetsel: Platzhalter (Werkbank/Barriere) und fehlende Eintraege durch das Icon des Ergebnis-Items ersetzen
+  const PLACEHOLDER = /crafting_table_front|barrier/;
+  let fixedResults = 0;
+  q.filter(x => x.type === 'crafting' && x.resultKey && ingredients[x.resultKey] && ingredients[x.resultKey].real).forEach(x => {
+    const cur = icons[x.answer];
+    if (!cur || PLACEHOLDER.test(cur)) { icons[x.answer] = ingredients[x.resultKey].icon; fixedResults++; }
+  });
+  if (fixedResults) console.log('Ergebnis-Icons korrigiert:', fixedResults);
   const ingMissing = Object.keys(ingredients).filter(k => !ingredients[k].real);
   if (ingKeys.size) console.log('Zutaten-Icons:', ingKeys.size, 'ohne echte Textur:', ingMissing.join(',') || '-');
   const TINT = (() => { try { return require('./tint-icons.js'); } catch (e) { return null; } })();   // gefaerbte Icons (Leder, Traenke, Biomfarben) uebernehmen

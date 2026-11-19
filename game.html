@@ -940,62 +940,6 @@ main {
   opacity: 0.045;
 }
 #game-wrapper { position: relative; z-index: 1; }
-#splash-screen { z-index: 9999; }
-
-/* ── SPLASH SCREEN ── */
-#splash-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 24px;
-  animation: splashFadeOut 0.3s ease 0.9s forwards;
-}
-@keyframes splashFadeOut {
-  to { opacity: 0; pointer-events: none; visibility: hidden; }
-}
-.splash-blocks {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  pointer-events: none;
-}
-.sb {
-  background: var(--bg1);
-  border: 1px solid var(--border);
-  opacity: 0;
-  transform: scale(0.6);
-  animation: blockIn 0.35s cubic-bezier(.34,1.56,.64,1) forwards;
-}
-.sb1{animation-delay:0.0s}.sb2{animation-delay:0.06s}.sb3{animation-delay:0.12s}
-.sb4{animation-delay:0.08s}.sb5{animation-delay:0.16s;background:rgba(108,191,60,0.07);border-color:rgba(108,191,60,0.2)}.sb6{animation-delay:0.1s}
-.sb7{animation-delay:0.14s}.sb8{animation-delay:0.2s}.sb9{animation-delay:0.18s}
-@keyframes blockIn {
-  to { opacity: 1; transform: scale(1); }
-}
-.splash-logo {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  animation: splashLogoIn 0.5s cubic-bezier(.34,1.56,.64,1) 0.4s both;
-}
-@keyframes splashLogoIn {
-  from { opacity: 0; transform: scale(0.7) translateY(10px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-.splash-icon {
-  width: 72px; height: 72px; background: var(--green); border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-}
-.splash-icon svg { width: 44px; height: 44px; }
-.splash-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); }
-.splash-title span { color: var(--green); }
-
 /* ── Countdown Overlay ──────────────────────────────────────────────────── */
 #countdown-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;align-items:center;justify-content:center;flex-direction:column;gap:14px}
 #countdown-overlay.active{display:flex}
@@ -1340,6 +1284,7 @@ header h1 { flex-shrink:0; }
 <script src="mg-report.js"></script>
 <script src="mg-rounds.js"></script>
 <script src="mg-social.js"></script>
+<script src="mg-social2.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-audio.js"></script>
   <script src="spotify-config.js"></script>
@@ -1347,22 +1292,8 @@ header h1 { flex-shrink:0; }
   <script src="firebase-config.js" onerror="window.FIREBASE_ENABLED=false;window.FIREBASE_CONFIG=null;"></script>
 </head>
 <body>
-
-
-<!-- ── Splash Screen ─────────────────────────────────────────────────────── -->
-<div id="splash-screen">
-  <div class="splash-blocks">
-    <div class="sb sb1"></div><div class="sb sb2"></div><div class="sb sb3"></div>
-    <div class="sb sb4"></div><div class="sb sb5"></div><div class="sb sb6"></div>
-    <div class="sb sb7"></div><div class="sb sb8"></div><div class="sb sb9"></div>
-  </div>
-  <div class="splash-logo">
-    <div class="splash-icon" style="background:none;box-shadow:none;width:120px;height:120px;">
-      <img src="logo-128.png" alt="MineGuess" style="width:120px;height:120px;object-fit:contain;" onerror="this.style.display='none'"/>
-    </div>
-    <div class="splash-title px">Mine<span>Guess</span></div>
-  </div>
-</div>
+<div id="mg-loader" class="mgl" role="status" aria-live="polite" aria-label="MineGuess lädt" hidden></div>
+<script src="mg-loader.js"></script>
 
 
 <!-- ── Auth Modal ─────────────────────────────────────────────────────────── -->
@@ -3049,13 +2980,15 @@ function startDailyCountdown() {
   tick(); setInterval(tick, 1000);
 }
 
-async function playChallenge(seedText) {
-  if (!allQuestions.length) { (window.questionsReady || Promise.resolve()).then(() => { if (allQuestions.length) playChallenge(seedText); }); return; }
+window.startDuel = function (d) { if (d && d.seed) playChallenge(d.seed, { duelId: d.id }); };
+async function playChallenge(seedText, opts) {
+  if (!allQuestions.length) { (window.questionsReady || Promise.resolve()).then(() => { if (allQuestions.length) playChallenge(seedText, opts); }); return; }
   try { const j = await fetch('challenge-pool.json').then(x => x.json()); MGChallenge.setSnapshot(j); } catch (e) {}
   const p = seedText ? MGChallenge.parse(seedText) : { ok: true, seed: MGChallenge.newSeed() };
   const s = p.ok ? MGChallenge.select(allQuestions, p.seed) : { ok: false };
   if (!s.ok) { showToast('Dieser Herausforderungs-Link ist ungültig oder abgelaufen. Du kannst im Menü eine neue Herausforderung starten.', 6000); try { history.replaceState(null, '', location.pathname); } catch (e) {} return; }
-  chState = { seed: s.seed, qs: s.questions, i: 0, results: [], qStart: 0 };
+  chState = { seed: s.seed, qs: s.questions, i: 0, results: [], qStart: 0, duelId: (opts && opts.duelId) || null };
+  try { if (window.MGSocial) MGSocial.close(); } catch (e) {}
   document.getElementById('mode-screen').classList.add('hidden');
   { const e = document.getElementById('ch-seed'); if (e) e.textContent = s.seed; }
   actualStartMode('challenge');
@@ -3073,6 +3006,14 @@ function showChallengeEnd() {
     '<div class="hc-end-btns"><button type="button" class="btn" id="ch-rounds">Rundenübersicht</button><button type="button" class="btn" id="ch-new">Neue Herausforderung</button><button type="button" class="btn btn-ghost" id="ch-menu">Zum Menü</button></div><p class="hc-end-meta" id="ch-msg" role="status" aria-live="polite"></p></div>';
   document.body.appendChild(d);
   const say = t => { document.getElementById('ch-msg').textContent = t; };
+  if (chState.duelId) {
+    const tk = (() => { try { return localStorage.getItem('mg_pt'); } catch (e) { return null; } })();
+    const rs = chState.results.map(x => ({ correct: !!x.correct, attempts: Math.min(3, Math.max(1, x.attempts || 1)), ms: Math.max(450, Math.min(600000, x.ms || 450)) }));
+    fetch('api/duels/result', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ id: chState.duelId, results: rs, points: sessionPoints }) })
+      .then(x => x.json()).then(j => say(j && j.ok !== false ? 'Duell-Ergebnis gesendet. Den Vergleich siehst du im Profil unter Duelle, sobald beide fertig sind.' : 'Duell-Ergebnis konnte nicht gesendet werden.')).catch(() => say('Duell-Ergebnis konnte nicht gesendet werden.'));
+    const dn = document.createElement('button'); dn.type = 'button'; dn.className = 'btn btn-primary'; dn.textContent = 'Zu den Duellen'; dn.addEventListener('click', () => { location.href = location.pathname + '#duelle'; location.reload(); });
+    d.querySelector('.hc-end-btns').prepend(dn);
+  }
   const copy = (t, ok) => { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => say(ok), () => say('Kopieren nicht möglich. Bitte den Text markieren.')); };
   const sh = document.getElementById('ch-share');
   if (!navigator.share) sh.hidden = true; else sh.addEventListener('click', () => { navigator.share({ text }).catch(() => {}); });

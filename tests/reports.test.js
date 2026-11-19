@@ -142,3 +142,21 @@ test('Mailer-Einheiten: Header-Bereinigung, Betreff/Text, Standard-Empfaenger', 
   assert.strictEqual(m.configured(), false); assert.strictEqual(m.enqueue({ category: 'bug' }), false);
   assert.ok(Reports.coarseUA('Mozilla/5.0 (Linux; Android 13) Chrome/120 Mobile Safari/537.36').device === 'mobil');
 });
+
+test('Moderations-Skript: Uebersicht nach Kategorie/Modus/Spieler, Filter, JSON, ohne Rueckfrage-Adressen', () => {
+  const { execFileSync } = require('child_process');
+  const os = require('os'), path = require('path');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mg-rs-')), file = path.join(dir, 'reports.json'), now = Date.now();
+  fs.writeFileSync(file, JSON.stringify([
+    { category: 'cheat', mode: 'ranked', player: 'Bot1', text: 'zu schnell', ts: now, count: 3 },
+    { category: 'name', mode: 'profile', player: 'bot1', text: 'Name', ts: now - 1000, contact: 'geheim@example.org' },
+    { category: 'frage', reason: 'falsch', questionId: qs[0].id, text: 'x', ts: now - 5000 },
+    { category: 'bug', mode: 'hl', text: 'haengt', ts: now - 86400000 * 40 }]));
+  const run = (...a) => execFileSync(process.execPath, [path.join(__dirname, '..', 'tools', 'report-summary.js'), file, ...a], { encoding: 'utf8' });
+  const all = run();
+  assert.match(all, /6 Meldungen/); assert.match(all, /cheat 3/); assert.match(all, /bot1 \(4x\)/); assert.ok(!all.includes('geheim@example.org') && /Rueckfrage-Adresse vorhanden/.test(all));
+  const j = JSON.parse(run('--json', '--category', 'cheat')); assert.deepStrictEqual([j.total, j.reports], [3, 1]);
+  assert.match(run('--since', '7', '--player', 'BOT1'), /4 Meldungen \(2 Eintraege von 4\)/);
+  assert.match(run('--mode', 'hl'), /1 Meldungen/);
+  assert.match(run('--purge', String(qs[0].id)), /1 Meldungen geloescht/);
+});
