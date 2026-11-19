@@ -56,7 +56,7 @@ app.get('/health', (req, res) => {
   const st = store.info();
   res.json({ ok: true, version: PKG.version || null, uptimeSec: Math.round((Date.now() - BOOT) / 1000), rooms: Object.keys(rooms).length,
     players: Object.values(rooms).reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0),
-    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, mail: mailer.kind(), counters });
+    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, mail: mailer.kind(), idCheck: require('./lib/idtoken.js').available() ? 'on' : 'off', counters });
 });
 
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────

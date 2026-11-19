@@ -238,12 +238,13 @@
     var b = document.createElement('button');
     b.type = 'button';
     b.className = 'mg-chip' + (opts.className ? ' ' + opts.className : '');
-    b.setAttribute('aria-label', 'Mein Spielerkopf: Profil öffnen');
+    b.setAttribute('aria-label', 'Profil öffnen');
     function render() {
       var n = getName();
-      b.innerHTML = imgHTML(get(), 'sm') + '<span class="mg-chip-label">' + esc(n || 'Mein Spielerkopf') + '</span>';
+      b.innerHTML = imgHTML(get(), 'sm') + '<span class="mg-chip-label">' + esc(opts.label || n || 'Mein Spielerkopf') + '</span>';
+      if (opts.label) b.title = n ? 'Profil von ' + n : 'Profil';
     }
-    b.addEventListener('click', function () { openProfile(); });
+    b.addEventListener('click', function () { if (typeof opts.onClick === 'function') opts.onClick(); else openProfile(); });
     window.addEventListener('mg-skin-change', render);
     render();
     container.appendChild(b);

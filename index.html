@@ -310,7 +310,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
 <script src="mg-report.js"></script>
 <script>
   try { var cn = navigator.connection; if (cn && cn.saveData) document.documentElement.classList.add('no-blur'); } catch (e) {}
-  MGSkin.mountChip(document.getElementById('nav-chip'), { className: 'compact' });
+  MGSkin.mountChip(document.getElementById('nav-chip'), { className: 'compact', label: 'Profil', onClick: function () { location.href = 'game.html#profil'; } });
   (function () {
     var el = document.getElementById('pano');
     function pano() { if (window.MGPanorama) MGPanorama.mount(el); }

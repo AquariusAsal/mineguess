@@ -1217,7 +1217,7 @@ body.menu-hidden #menu-pano { display:none; }
 .mini-rank-empty { color:var(--muted); padding:8px 0; }
 .rk-top-title { font-family:var(--font-px); font-size:1rem; margin:24px 0 10px; }
 /* Schlanker Header: Logo, Zahnrad, Profil-Chip (Details im Einstellungs-Panel) */
-.header-stats .stat, #theme-toggle, #sound-toggle, #btn-leaderboard, #spotify-slot { display:none !important; }
+.header-stats .stat, #theme-toggle, #sound-toggle, #btn-leaderboard { display:none !important; }
 .menu-status .ms-rank { display:flex; align-items:center; gap:8px; font-weight:700; }
 .menu-status .ms-bar { flex:1; min-width:120px; height:8px; background:var(--bg); border:2px solid var(--border); border-radius:2px; overflow:hidden; }
 .menu-status .ms-bar i { display:block; height:100%; background:var(--gold); }
@@ -1380,12 +1380,8 @@ header h1 { flex-shrink:0; }
     </button>
   </div>
   <div class="mode-actions">
-    <button class="btn-lb-header" onclick="showLeaderboard()">Rankliste</button>
-    <button class="btn-lb-header" onclick="showBadges()">Abzeichen</button>
-    <button class="btn-lb-header" onclick="MGSocial.open()">Freunde</button>
-    <button class="btn-lb-header" onclick="MGProfile.open()">Profil</button>
+    <button class="btn-lb-header" id="btn-profile" onclick="MGSocial.open()">Profil</button>
     <button class="btn-lb-header" onclick="showCatStats()">Kategorien</button>
-    <button class="btn-lb-header" id="btn-profile" onclick="MGSkin.openProfile()">Mein Spielerkopf</button>
     <button class="btn-lb-header" id="btn-mode-signout" onclick="doSignOut()" style="display:none">Abmelden</button>
   </div>
 </div>
@@ -3247,7 +3243,7 @@ function rankedPostApi(force) {
   if (currentUser && currentUser.displayName) name = currentUser.displayName;
   const body = { name: name || 'Gast', gid: rankedGid(), mmr: rankedProfile.mmr,
                  lastPlayedDay: rankedProfile.lastPlayedDay || '', mmrToday: rankedProfile.mmrToday || 0 };
-  if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
+  if (currentUser && currentUser.uid && !isGuest) { body.uid = currentUser.uid; try { body.idToken = await currentUser.getIdToken(); } catch (e) {} }
   fetch('api/ranked', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
     .then(r => r.ok ? r.json() : null)
     .then(j => { if (j && j.key) { try { localStorage.setItem('mg_ranked_key', j.key); } catch (e) {} } })
@@ -3329,7 +3325,8 @@ async function rankedSrvStart() {
   const body = { name: name || 'Gast', gid: rankedGid(), profile: p, history: p.history, token: token, seen: seenLoad().slice(-1500) };
   if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
   if (window.MGCraftBuild && window.CraftCheck && typeof craftModePref === 'function' && craftModePref() !== 'guess') body.build = true;   // Server darf Bau-Aufgaben liefern (ohne Loesung im Payload)
-  const j = await srvPost('start', body);
+  let j = await srvPost('start', body);
+  if ((!j || !j.ok) && body.uid && currentUser) { try { body.idToken = await currentUser.getIdToken(true); j = await srvPost('start', body); } catch (e) {} }
   if (!j || !j.ok || !j.runId) return false;
   rankedSrv = { runId: j.runId, active: true, final: null };
   rankedProfile = MGRanked.normalizeProfile(j.profile);       // Server ist massgeblich
@@ -4095,11 +4092,12 @@ if ('serviceWorker' in navigator) {
   setTimeout(window.renderMenuStatus, 600);
   document.addEventListener('mg:ranked', function () { setTimeout(window.renderMenuStatus, 50); });
 })();
-MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact' });
+MGSkin.mountChip(document.getElementById('hdr-chip'), { className: 'compact', onClick: function () { MGSocial.open(); } });
 if (window.MGSpotify) MGSpotify.mount(document.getElementById('spotify-slot'));
 if (window.MGSettings) MGSettings.mount(document.getElementById('settings-slot'));
 if (window.MGRanklist) MGRanklist.mount(document.getElementById('mini-rank'));
-MGSkin.mountChip(document.getElementById('mode-profile'));
+MGSkin.mountChip(document.getElementById('mode-profile'), { onClick: function () { MGSocial.open(); } });
+if (window.MGSpotify) MGSpotify.mount(document.getElementById('mode-profile'));
 if (window.MGSettings) MGSettings.mount(document.getElementById('mode-profile'));</script>
 <script>document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = document.getElementById('lb-modal'); if (m && !m.classList.contains('hidden')) m.classList.add('hidden'); } });</script>
 </body>

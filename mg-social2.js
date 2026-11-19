@@ -101,10 +101,26 @@
   });
 
   // ═══ Freunde-Rangliste ═══
-  var lbPeriod = 'week';
+  var lbPeriod = 'week', lbScope = 'global';
+  function globalList(p, c) {
+    p.innerHTML += '<div id="sc-lb"><p class="sc-muted">Lade …</p></div>';
+    fetch('/api/ranked', { cache: 'no-store' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).catch(function () { return null; }).then(function (list) {
+      var l = p.querySelector('#sc-lb'); if (!l) return; if (!Array.isArray(list)) { l.innerHTML = '<p class="sc-muted">Die Rangliste ist gerade nicht erreichbar.</p>'; return; }
+      list = list.slice().sort(function (a, b) { return (b.mmr || 0) - (a.mmr || 0); }).slice(0, 50);
+      l.innerHTML = '<table class="sc-lbt"><thead><tr><th>#</th><th>Spieler</th><th>Rang</th><th>MMR</th></tr></thead><tbody>' + list.map(function (x, i) { return '<tr><td>' + (i + 1) + '</td><td>' + E(x.name || 'Spieler') + '</td><td>' + E(tierLabel(x.mmr || 0)) + '</td><td>' + E(x.mmr || 0) + '</td></tr>'; }).join('') + '</tbody></table>' + (list.length ? '' : '<p class="sc-muted">Noch keine Einträge.</p>') + '<p class="sc-note">Detaillierte Rangliste mit Tagesfilter: <button type="button" class="btn btn-ghost" id="sc-lb-open">Öffnen</button></p>';
+      var o = l.querySelector('#sc-lb-open'); if (o) o.addEventListener('click', function () { if (global.showLeaderboard) { c.close(); global.showLeaderboard(); } });
+    });
+  }
   MGSocial.addTab('rangliste', 'Rangliste', function (p, c) {
-    p.innerHTML = '<div class="sc-seg" role="group" aria-label="Zeitraum"><button type="button" class="chip' + (lbPeriod === 'week' ? ' on' : '') + '" data-p="week" aria-pressed="' + (lbPeriod === 'week') + '">Diese Woche</button><button type="button" class="chip' + (lbPeriod === 'all' ? ' on' : '') + '" data-p="all" aria-pressed="' + (lbPeriod === 'all') + '">Gesamt</button></div><div id="sc-lb"><p class="sc-muted">Lade …</p></div>';
-    p.querySelector('.sc-seg').addEventListener('click', function (e) { var b = e.target.closest('button[data-p]'); if (b) { lbPeriod = b.getAttribute('data-p'); c.rerender(); } });
+    var scopeBar = '<div class="sc-seg" role="group" aria-label="Bereich"><button type="button" class="chip' + (lbScope === 'global' ? ' on' : '') + '" data-s="global" aria-pressed="' + (lbScope === 'global') + '">Global</button><button type="button" class="chip' + (lbScope === 'friends' ? ' on' : '') + '" data-s="friends" aria-pressed="' + (lbScope === 'friends') + '">Freunde</button></div>';
+    if (lbScope === 'global' || !c.me()) {
+      p.innerHTML = scopeBar; p.querySelector('.sc-seg').addEventListener('click', function (e) { var b = e.target.closest('button[data-s]'); if (b) { lbScope = b.getAttribute('data-s'); c.rerender(); } });
+      if (lbScope === 'friends') { p.innerHTML += '<p>Für die Freunde-Rangliste brauchst du ein Profil.</p>'; return; }
+      globalList(p, c); return;
+    }
+    p.innerHTML = scopeBar + '<div class="sc-seg" role="group" aria-label="Zeitraum"><button type="button" class="chip' + (lbPeriod === 'week' ? ' on' : '') + '" data-p="week" aria-pressed="' + (lbPeriod === 'week') + '">Diese Woche</button><button type="button" class="chip' + (lbPeriod === 'all' ? ' on' : '') + '" data-p="all" aria-pressed="' + (lbPeriod === 'all') + '">Gesamt</button></div><div id="sc-lb"><p class="sc-muted">Lade …</p></div>';
+    p.querySelector('.sc-seg').addEventListener('click', function (e) { var b = e.target.closest('button[data-s]'); if (b) { lbScope = b.getAttribute('data-s'); c.rerender(); } });
+    p.querySelectorAll('.sc-seg')[1].addEventListener('click', function (e) { var b = e.target.closest('button[data-p]'); if (b) { lbPeriod = b.getAttribute('data-p'); c.rerender(); } });
     c.api('friends/leaderboard?period=' + lbPeriod).then(function (r) {
       var l = p.querySelector('#sc-lb'); if (!l) return; if (!r.ok) { l.innerHTML = '<p class="sc-muted">Die Rangliste ist gerade nicht erreichbar.</p>'; return; }
       var rows = r.j.rows || [];
@@ -225,7 +241,7 @@
   });
 
   // Direktlink #duelle (nach einem Duell)
-  if (location.hash === '#duelle') {
-    var tries = 0, iv = setInterval(function () { tries++; var ms = document.getElementById('mode-screen'), au = document.getElementById('auth-modal'); if (ms && !ms.classList.contains('hidden') && (!au || au.classList.contains('hidden'))) { clearInterval(iv); MGSocial.open('duelle'); } else if (tries > 60) clearInterval(iv); }, 400);
+  if (location.hash === '#duelle' || location.hash === '#profil') {
+    var tries = 0, iv = setInterval(function () { tries++; var ms = document.getElementById('mode-screen'), au = document.getElementById('auth-modal'); if (ms && !ms.classList.contains('hidden') && (!au || au.classList.contains('hidden'))) { clearInterval(iv); MGSocial.open(location.hash === '#profil' ? 'profil' : 'duelle'); } else if (tries > 60) clearInterval(iv); }, 400);
   }
 })(window);

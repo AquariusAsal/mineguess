@@ -52,8 +52,9 @@
   function rankedToken() {
     var t = ls('mg_ranked_token'); if (t) return Promise.resolve(t);
     if (typeof global.rankedEnsure !== 'function' || typeof global.rankedGid !== 'function') return Promise.resolve('');
-    var p = global.rankedEnsure(), body = { name: ls('mg_player_name') || 'Gast', gid: global.rankedGid(), profile: p, history: p.history, token: '', seen: [] };
-    return fetch('api/ranked/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(function (r) { return r.json(); })
+    var p = global.rankedEnsure(), body = { name: ls('mg_player_name') || 'Gast', gid: global.rankedGid(), profile: p, history: p.history, token: '', seen: [] }, gu = googleUser();
+    var tok = gu && gu.getIdToken ? gu.getIdToken().catch(function () { return ''; }) : Promise.resolve('');
+    return tok.then(function (idt) { if (gu && gu.uid) { body.uid = gu.uid; if (idt) body.idToken = idt; } return fetch('api/ranked/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }); }).then(function (r) { return r.json(); })
       .then(function (j) { if (j && j.token) { ls('mg_ranked_token', j.token); return j.token; } return ''; }).catch(function () { return ''; });
   }
 
@@ -64,7 +65,10 @@
     document.body.appendChild(dlg);
     dlg.querySelector('#sc-x').addEventListener('click', close);
     dlg.addEventListener('click', function (e) { if (e.target === dlg) close(); });
-    global.addEventListener('mg-skin-change', function () { if (me && pt) syncSkin(false); });
+    global.addEventListener('mg-skin-change', function () {
+      if (me && pt) syncSkin(false);
+      if (preview && tab === 'profil' && global.MGSkin) { try { var sk = MGSkin.get(), ch = MGSkin.getCharacter() || 'steve'; preview.update({ skin: (sk && checkSkin(sk, null)) ? sk : (sk ? null : null), character: ch }); if (sk && !checkSkin(sk, null)) setTimeout(function () { if (preview) preview.update({ skin: checkSkin(sk, null) ? sk : null, character: ch }); }, 400); } catch (e) {} }
+    });
     document.addEventListener('keydown', function (e) {
       if (!dlg.classList.contains('open')) return;
       var rep = document.getElementById('mg-report'); if (rep && rep.classList.contains('open')) return;
@@ -84,10 +88,13 @@
     if (!dlg) build();
     last = document.activeElement; pt = ls(KEY_PT); me = null; say('');
     dlg.classList.add('open'); document.body.classList.add('sc-open');
-    if (!pt) { renderCreate(); return; }
+    if (!pt) {
+      tryLogin().then(function (ok) { if (ok) { open(startTab); } else { tab = startTab || 'profil'; render(); } });
+      return;
+    }
     body().innerHTML = '<p class="sc-muted">Lade …</p>';
     api('profile/me').then(function (r) {
-      if (!r.ok || !r.j.me) { if (r.st === 401 || r.st === 403 || (r.j && (r.j.error === 'auth' || r.j.error === 'kein_profil'))) { ls(KEY_PT, null); pt = null; renderCreate(); } else { body().innerHTML = '<p class="sc-muted">Das Profil ist gerade nicht erreichbar.</p>'; } return; }
+      if (!r.ok || !r.j.me) { if (r.st === 401 || r.st === 403 || (r.j && (r.j.error === 'auth' || r.j.error === 'kein_profil'))) { ls(KEY_PT, null); pt = null; tab = startTab || 'profil'; render(); } else { body().innerHTML = '<p class="sc-muted">Das Profil ist gerade nicht erreichbar.</p>'; } return; }
       me = r.j.me; tab = startTab || 'profil'; restoreSkin(); syncStats(); syncSkin(false); loadCatalog().then(function () { render(); }); render();
     });
   }
@@ -95,23 +102,61 @@
     if (catalog) return Promise.resolve(catalog);
     return api('profile/catalog').then(function (r) { if (r.ok) { catalog = r.j; (r.j.titles || []).forEach(function (t) { TITLES[t.id] = t.label; }); } return catalog; });
   }
-  function ctx() { return { api: api, esc: esc, say: say, me: function () { return me; }, catalog: function () { return catalog; }, headOf: headOf, skinURL: skinURL, charOf: charOf, stat: stat, rerender: render, reloadMe: function () { return api('profile/me').then(function (m) { if (m.ok) { me = m.j.me; } return me; }); }, close: close, open: open, TITLES: TITLES }; }
+  function ctx() { return { rankedList: true, api: api, esc: esc, say: say, me: function () { return me; }, catalog: function () { return catalog; }, headOf: headOf, skinURL: skinURL, charOf: charOf, stat: stat, rerender: render, reloadMe: function () { return api('profile/me').then(function (m) { if (m.ok) { me = m.j.me; } return me; }); }, close: close, open: open, TITLES: TITLES }; }
   function close() { if (!dlg) return; killPreview(); dlg.classList.remove('open'); document.body.classList.remove('sc-open'); if (last && last.focus) try { last.focus(); } catch (e) {} }
 
+  // Bereich "Skin und Spielerkopf" (frueher separater Menuepunkt "Mein Spielerkopf"): Figur, Upload, Zuruecksetzen
+  function skinSection(box) {
+    if (!global.MGSkin) return;
+    var ch = MGSkin.getCharacter() || 'steve';
+    box.innerHTML = '<h3 class="sc-h">Skin und Spielerkopf</h3><div class="sc-row"><span id="sc-ch-l">Figur</span><span class="sc-chars" role="group" aria-labelledby="sc-ch-l" id="sc-chars2">' + ['steve', 'alex'].map(function (c) { return '<button type="button" class="chip' + (c === ch ? ' on' : '') + '" data-c="' + c + '" aria-pressed="' + (c === ch) + '">' + (c === 'steve' ? 'Steve' : 'Alex') + '</button>'; }).join('') + '</span></div><div id="sc-skin-up"></div>';
+    box.querySelector('#sc-chars2').addEventListener('click', function (e) { var b = e.target.closest('button[data-c]'); if (!b) return; MGSkin.setCharacter(b.getAttribute('data-c')); [].forEach.call(this.children, function (x) { var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); });
+    MGSkin.mountUploader(box.querySelector('#sc-skin-up'), {});
+  }
+  // ── Google-Hinweis (Gast-Profile gehoeren sonst nur zu diesem Geraet) ──
+  function googleUser() { try { return (typeof currentUser !== 'undefined' && currentUser && typeof isGuest !== 'undefined' && !isGuest) ? currentUser : null; } catch (e) { return null; } }
+  function googleCanLogin() { try { return typeof signInGoogle === 'function' && typeof fbAuth !== 'undefined' && !!fbAuth; } catch (e) { return false; } }
+  function googleNotice() {
+    var kind = me && me.accountKind;
+    if (kind === 'verified') return '<div class="sc-google ok" role="status"><b>Mit Google verbunden:</b> dein Profil ist auf allen Geräten verfügbar.</div>';
+    if (kind === 'unverified' || (!kind && googleUser())) return '<div class="sc-google ok" role="status"><b>Mit Google angemeldet:</b> dein Profil ist auf allen Geräten, auf denen du mit Google angemeldet bist.</div>';
+    if (kind === 'device' && googleUser()) return '<div class="sc-google" role="note"><p>Dieses Profil gehört nur zu diesem Gerät. Du bist zwar mit Google angemeldet, das Profil wurde aber ohne Google-Konto angelegt.</p></div>';
+    var later = ''; try { later = sessionStorage.getItem('mg_google_later'); } catch (e) {}
+    if (later === '1') return '';
+    return '<div class="sc-google" role="note"><p><b>Hinweis:</b> Ohne Google-Konto gehört dein Profil nur zu diesem Gerät. Gehen deine Browserdaten verloren, ist das Profil weg. Melde dich mit Google an, damit es auf allen Geräten bleibt.</p>' +
+      '<div class="sc-btns">' + (googleCanLogin() ? '<button type="button" class="btn btn-primary" data-g="login">Mit Google anmelden</button>' : '') + '<button type="button" class="btn btn-ghost" data-g="later">Später</button></div>' +
+      '<p class="sc-note">Bei der Google-Anmeldung speichert Google dein Konto (Name, E-Mail-Adresse, Konto-ID); siehe <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p></div>';
+  }
+  function bindGoogle(root) {
+    var box = root.querySelector('.sc-google'); if (!box) return;
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-g]'); if (!b) return;
+      if (b.getAttribute('data-g') === 'later') { try { sessionStorage.setItem('mg_google_later', '1'); } catch (x) {} box.remove(); return; }
+      b.disabled = true;
+      Promise.resolve(global.signInGoogle()).then(function () { if (googleUser()) { say('Mit Google verbunden.'); open(tab); } else b.disabled = false; }, function () { b.disabled = false; });
+    });
+  }
+  // Mit Google angemeldet, aber noch kein Profil-Token auf diesem Geraet: bestehendes Profil wiederherstellen
+  function tryLogin() {
+    if (!googleUser()) return Promise.resolve(false);
+    return rankedToken().then(function (t) { if (!t) return false; return api('profile/login', { token: t }).then(function (r) { if (r.ok && r.j.pt) { pt = r.j.pt; ls(KEY_PT, pt); return true; } return false; }); }).catch(function () { return false; });
+  }
   // ── Konto erstellen ──
-  function renderCreate() {
+  function renderCreate(target) {
     killPreview();
+    var T = target || body();
     var ch = (global.MGSkin && MGSkin.getCharacter && MGSkin.getCharacter()) || 'steve', nm = (ls('mg_player_name') || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 16);
-    body().innerHTML = '<div class="sc-create"><p>Mit einem Profil kannst du Freunde per Code hinzufügen und deinen Skin auf anderen Geräten wiederfinden. Standard: Dein Profil ist <b>privat</b>. Es gibt keinen Chat, keine Fotos und keinen Freitext.</p>' +
+    T.innerHTML = '<div class="sc-create">' + googleNotice() + '<p>Mit einem Profil kannst du Freunde per Code hinzufügen und deinen Skin auf anderen Geräten wiederfinden. Standard: Dein Profil ist <b>privat</b>. Es gibt keinen Chat, keine Fotos und keinen Freitext.</p>' +
       '<div class="sc-row"><label for="sc-name">Profilname (3 bis 16 Zeichen: a-z, 0-9, _ und -)</label><input id="sc-name" class="form-input" maxlength="16" autocomplete="off" autocapitalize="off" value="' + esc(nm) + '"></div>' +
       '<div class="sc-row"><span>Figur</span><span class="sc-chars" id="sc-chars">' + ['steve', 'alex'].map(function (c) { return '<button type="button" class="chip' + (c === ch ? ' on' : '') + '" data-c="' + c + '" aria-pressed="' + (c === ch) + '">' + (c === 'steve' ? 'Steve' : 'Alex') + '</button>'; }).join('') + '</span></div>' +
       '<label class="sc-check"><input type="checkbox" id="sc-age"> Ich bin 14 Jahre oder älter, oder meine Eltern erlauben es.</label>' +
       '<p class="sc-note">Gespeichert werden Profilname, Figur, dein Skin (falls du einen eigenen nutzt) und Einstellungen (siehe <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>). Du kannst dein Profil jederzeit exportieren oder löschen.</p>' +
-      '<div class="sc-btns"><button type="button" class="btn btn-primary" id="sc-create">Profil erstellen</button></div></div>';
+      '<div class="sc-btns"><button type="button" class="btn btn-primary" id="sc-create">Profil erstellen</button></div></div><div id="sc-skinbox" class="sc-skinbox"></div>';
+    skinSection(T.querySelector('#sc-skinbox')); bindGoogle(T);
     var chosen = ch;
-    body().querySelector('#sc-chars').addEventListener('click', function (e) { var b = e.target.closest('button[data-c]'); if (!b) return; chosen = b.getAttribute('data-c'); [].forEach.call(this.children, function (x) { var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); });
-    body().querySelector('#sc-create').addEventListener('click', function () {
-      if (busy) return; var name = body().querySelector('#sc-name').value.trim().toLowerCase(), age = body().querySelector('#sc-age').checked;
+    T.querySelector('#sc-chars').addEventListener('click', function (e) { var b = e.target.closest('button[data-c]'); if (!b) return; chosen = b.getAttribute('data-c'); [].forEach.call(this.children, function (x) { var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); }); });
+    T.querySelector('#sc-create').addEventListener('click', function () {
+      if (busy) return; var name = T.querySelector('#sc-name').value.trim().toLowerCase(), age = T.querySelector('#sc-age').checked;
       if (!age) { say(ERR.einwilligung, true); return; }
       busy = true; say('Einen Moment …');
       rankedToken().then(function (t) {
@@ -124,7 +169,7 @@
         });
       });
     });
-    var f = body().querySelector('#sc-name'); if (f) f.focus();
+    var f = T.querySelector('#sc-name'); if (f && !target) f.focus();
   }
 
   // Statistik (selbstberichtet, nur zur Anzeige): Zaehler duerfen nicht sinken, daher Maximum aus lokal und Server senden
@@ -179,15 +224,18 @@
   // ── Rahmen mit Tabs ──
   function render() {
     killPreview();
-    var tabs = [['profil', 'Profil'], ['abzeichen', 'Abzeichen'], ['statistik', 'Statistik'], ['freunde', 'Freunde']].concat(exts.tabs.map(function (t) { return [t.id, t.label]; })).concat([['privat', 'Privatsphäre']]);
-    body().innerHTML = '<div role="tablist" aria-label="Bereiche" class="sc-tabs">' + tabs.map(function (t) { return '<button type="button" role="tab" id="sc-t-' + t[0] + '" aria-selected="' + (tab === t[0]) + '" aria-controls="sc-p" data-t="' + t[0] + '" tabindex="' + (tab === t[0] ? 0 : -1) + '" class="sc-tab' + (tab === t[0] ? ' on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div><div id="sc-p" role="tabpanel" aria-labelledby="sc-t-' + tab + '"></div>';
+    var SUB = [['freunde', 'Freunde'], ['duelle', 'Duelle'], ['gruppe', 'Gruppe'], ['feed', 'Feed'], ['ziele', 'Ziele']], inSub = SUB.some(function (x) { return x[0] === tab; }), main = inSub ? 'freunde' : tab;
+    var tabs = [['profil', 'Profil'], ['rangliste', 'Rangliste'], ['abzeichen', 'Abzeichen'], ['statistik', 'Statistik'], ['freunde', 'Freunde'], ['privat', 'Privatsphäre']];
+    body().innerHTML = '<div role="tablist" aria-label="Bereiche" class="sc-tabs">' + tabs.map(function (t) { return '<button type="button" role="tab" id="sc-t-' + t[0] + '" aria-selected="' + (main === t[0]) + '" aria-controls="sc-p" data-t="' + t[0] + '" tabindex="' + (main === t[0] ? 0 : -1) + '" class="sc-tab' + (main === t[0] ? ' on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' + (inSub ? '<div class="sc-sub" role="group" aria-label="Freunde-Bereiche">' + SUB.map(function (x) { return '<button type="button" class="chip' + (tab === x[0] ? ' on' : '') + '" data-sub="' + x[0] + '" aria-pressed="' + (tab === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div>' : '') + '<div id="sc-p" role="tabpanel" aria-labelledby="sc-t-' + main + '"></div>';
+    var sb = body().querySelector('.sc-sub'); if (sb) sb.addEventListener('click', function (e) { var b = e.target.closest('button[data-sub]'); if (b) { tab = b.getAttribute('data-sub'); render(); var n = body().querySelector('.sc-sub .chip.on'); if (n) n.focus(); } });
     var tl = body().querySelector('.sc-tabs');
     tl.addEventListener('click', function (e) { var b = e.target.closest('.sc-tab'); if (b) { tab = b.getAttribute('data-t'); render(); var n = body().querySelector('.sc-tab.on'); if (n) n.focus(); } });
     tl.addEventListener('keydown', function (e) {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; var ids = tabs.map(function (t) { return t[0]; }), i = ids.indexOf(tab); i = (i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length; tab = ids[i]; render(); body().querySelector('.sc-tab.on').focus();
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; var ids = tabs.map(function (t) { return t[0]; }), i = ids.indexOf(main); i = (i + (e.key === 'ArrowRight' ? 1 : ids.length - 1)) % ids.length; tab = ids[i]; render(); body().querySelector('.sc-tab.on').focus();
     });
-    var ex = exts.tabs.filter(function (t) { return t.id === tab; })[0];
-    if (ex) ex.fn(body().querySelector('#sc-p'), ctx()); else ({ profil: renderProfile, abzeichen: renderBadges, statistik: renderStats, freunde: renderFriends, privat: renderPrivacy })[tab]();
+    var ex = exts.tabs.filter(function (t) { return t.id === tab; })[0], pnl = body().querySelector('#sc-p');
+    if (!me && ['profil', 'freunde', 'duelle', 'feed', 'gruppe', 'ziele', 'privat'].indexOf(tab) >= 0) { if (tab === 'profil') renderCreate(pnl); else { pnl.innerHTML = '<p>Dafür brauchst du ein Profil. Es ist kostenlos und standardmäßig privat.</p><div class="sc-btns"><button type="button" class="btn btn-primary" id="sc-gate">Profil erstellen</button></div>'; pnl.querySelector('#sc-gate').addEventListener('click', function () { tab = 'profil'; render(); }); } return; }
+    if (ex) ex.fn(pnl, ctx()); else ({ profil: renderProfile, abzeichen: renderBadges, statistik: renderStats, freunde: renderFriends, privat: renderPrivacy })[tab]();
   }
   function stat(l, v) { return '<div class="sc-stat"><b>' + esc(v == null ? '–' : v) + '</b><span>' + esc(l) + '</span></div>'; }
   function mountFigure(box, skin, ch) {
@@ -201,16 +249,17 @@
     var p = body().querySelector('#sc-p'), st = me.stats || {}, bd = me.badges || [], sum = global.MGBadges ? MGBadges.summary() : {}, rk = me.rank;
     var sk = (global.MGSkin && MGSkin.get && MGSkin.get()) || null, ch = (global.MGSkin && MGSkin.getCharacter && MGSkin.getCharacter()) || charOf(me);
     var info = ''; try { if (global.MGRanked && global.rankedEnsure) { var ri = MGRanked.rankInfo(rankedEnsure().mmr); info = ri.label + ' · ' + ri.mmr + ' MMR'; } } catch (e) {}
-    p.innerHTML = '<div class="sc-hero"><div class="sc-fig" id="sc-fig" role="img" aria-label="Deine Figur"></div>' +
+    p.innerHTML = googleNotice() + '<div class="sc-hero"><div class="sc-fig" id="sc-fig" role="img" aria-label="Deine Figur"></div>' +
       '<div class="sc-id"><h3>' + esc(me.name) + '</h3><span class="sc-title">' + esc(TITLES[me.title || ''] || '') + '</span>' + (info || rk ? '<span class="sc-rank">' + esc(info || (rk && (rk.label || ''))) + '</span>' : '') +
       '<div class="sc-nums"><span><b>' + (sum.answered != null ? sum.answered : (st.answered || 0)) + '</b> Antworten</span><span><b>' + ((me.counts && me.counts.friends) || 0) + '</b> Freunde</span><span><b>' + (sum.badgesEarned != null ? sum.badgesEarned : bd.length) + '</b> Abzeichen</span></div>' +
-      '<div class="sc-btns"><button type="button" class="btn" id="sc-skin">Skin und Figur ändern</button><button type="button" class="btn btn-ghost" id="sc-share">Karte teilen</button></div></div></div>' +
+      '<div class="sc-btns"><button type="button" class="btn btn-ghost" id="sc-share">Karte teilen</button></div></div></div>' +
+      '<div id="sc-skinbox" class="sc-skinbox"></div>' +
       '<div class="sc-row"><label for="sc-title-sel">Titel</label><select id="sc-title-sel" class="form-input" style="max-width:260px">' + Object.keys(TITLES).map(function (k) { return '<option value="' + k + '"' + ((me.title || '') === k ? ' selected' : '') + '>' + esc(TITLES[k]) + '</option>'; }).join('') + '</select></div>' +
       '<div class="sc-grid">' + stat('Gespielt', sum.played) + stat('Trefferquote', sum.rate != null ? Math.round(sum.rate * 100) + ' %' : '–') + stat('Beste Serie', sum.bestStreak) + stat('Tages-Serie', sum.dailyStreak) + stat('Höher/Tiefer', parseInt(ls('mg_hl_best'), 10) || 0) + stat('Hardcore', parseInt(ls('mg_hc_best'), 10) || 0) + '</div>' +
       '<div class="sc-code"><span class="sc-muted">Dein Freundescode</span><b id="sc-code">' + esc(me.friendCode || 'noch keiner') + '</b><span class="sc-btns"><button type="button" class="btn" id="sc-code-new">' + (me.friendCode ? 'Neuer Code' : 'Code erzeugen') + '</button>' + (me.friendCode ? '<button type="button" class="btn" id="sc-code-copy">Kopieren</button>' : '') + '</span>' +
       '<span class="sc-note">Der Code ist 30 Tage gültig. Nur wer ihn kennt, kann dir eine Anfrage senden.</span></div>';
     mountFigure(p.querySelector('#sc-fig'), sk, ch);
-    p.querySelector('#sc-skin').addEventListener('click', function () { if (global.MGSkin) { close(); MGSkin.openProfile(); } });
+    skinSection(p.querySelector('#sc-skinbox')); bindGoogle(p);
     p.querySelector('#sc-share').addEventListener('click', function () {
       var t = 'MineGuess: ' + (sum.answered || 0) + ' Antworten, ' + Math.round((sum.rate || 0) * 100) + ' % richtig, beste Serie ' + (sum.bestStreak || 0) + ', ' + (sum.badgesEarned || 0) + '/' + (sum.badgesTotal || 0) + ' Abzeichen.';
       if (navigator.share) navigator.share({ text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { say('Karte kopiert (nur Zahlen, keine Fragen).'); });
@@ -338,10 +387,10 @@
     p.querySelector('#sc-export').addEventListener('click', function () {
       api('profile/export').then(function (r) { if (!r.ok) { say(errText(r.j, r.st), true); return; } var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(r.j, null, 2)], { type: 'application/json' })); a.download = 'mineguess-profil.json'; a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000); say('Download gestartet.'); });
     });
-    p.querySelector('#sc-logout').addEventListener('click', function () { ls(KEY_PT, null); pt = null; me = null; say('Abgemeldet. Dein Profil bleibt auf dem Server, bis du es löschst.'); renderCreate(); });
+    p.querySelector('#sc-logout').addEventListener('click', function () { ls(KEY_PT, null); pt = null; me = null; tab = 'profil'; render(); say('Abgemeldet. Dein Profil bleibt auf dem Server, bis du es löschst.'); });
     p.querySelector('#sc-del-go').addEventListener('click', function () {
       if (p.querySelector('#sc-del').value.trim() !== 'LOESCHEN') { say('Bitte LOESCHEN eintippen.', true); return; }
-      api('profile/delete', { confirm: 'LOESCHEN' }).then(function (r) { if (r.ok) { ls(KEY_PT, null); pt = null; me = null; renderCreate(); say('Profil gelöscht.'); } else say(errText(r.j, r.st), true); });
+      api('profile/delete', { confirm: 'LOESCHEN' }).then(function (r) { if (r.ok) { ls(KEY_PT, null); pt = null; me = null; tab = 'profil'; render(); say('Profil gelöscht.'); } else say(errText(r.j, r.st), true); });
     });
   }
   global.MGSocial = { open: open, close: close, headOf: headOf, checkSkin: checkSkin, addTab: function (id, label, fn) { exts.tabs.push({ id: id, label: label, fn: fn }); }, onProfile: function (f) { exts.profile.push(f); }, onFriendView: function (f) { exts.friendView.push(f); }, onPrivacy: function (f) { exts.privacy.push(f); } };

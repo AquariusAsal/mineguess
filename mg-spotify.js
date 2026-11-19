@@ -30,9 +30,17 @@
       '<div class="mg-island-head"><span>Musik</span>' +
       '<button type="button" class="mg-close" aria-label="Schließen"></button></div>' +
       '<div class="mg-island-body"></div>' +
+      '<div class="mg-island-vol"><label for="mg-sp-vol">Lautstärke Spiel-Töne</label><div class="mg-sp-volrow"><input type="range" id="mg-sp-vol" min="0" max="100" step="5" aria-describedby="mg-sp-volnote"><label class="mg-sp-mute"><input type="checkbox" id="mg-sp-mute"> Ton aus</label></div>' +
+      '<p class="mg-island-note" id="mg-sp-volnote">Die Lautstärke der Spotify-Musik regelst du im Player selbst (Lautsprecher-Symbol) oder mit der Geräte-Lautstärke. Der Spotify-Player lässt sich von außen nicht leiser stellen.</p></div>' +
       '<p class="mg-island-note">Lädt Inhalte von Spotify. Dabei werden Daten (z. B. IP-Adresse) an Spotify übertragen.</p>';
     document.body.appendChild(island);
     island.querySelector('.mg-close').addEventListener('click', close);
+    var vol = island.querySelector('#mg-sp-vol'), mute = island.querySelector('#mg-sp-mute');
+    function syncVol() { try { vol.value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100); mute.checked = !!(global.MGAudio && MGAudio.isOn && !MGAudio.isOn()); } catch (e) {} }
+    syncVol(); island.__sync = syncVol;
+    vol.addEventListener('input', function () { if (global.MGAudio) MGAudio.setVolume(vol.value / 100); });
+    vol.addEventListener('change', function () { if (global.MGAudio && !mute.checked) MGAudio.play('correct'); });
+    mute.addEventListener('change', function () { if (global.MGAudio) MGAudio.setOn(!mute.checked); var sb = document.getElementById('sound-toggle'); if (sb) sb.className = 'sound-btn' + (!mute.checked ? ' on' : ''); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) close(); });
     document.addEventListener('pointerdown', function (e) {
       if (isOpen() && !island.contains(e.target) && !(btn && btn.contains(e.target))) close();
@@ -76,19 +84,19 @@
     sc.onerror = function () { body.innerHTML = '<p>Der Spotify-Player konnte nicht geladen werden.</p>'; };
     document.body.appendChild(sc);
   }
-  function open() { if (!island) build(); fill(); island.classList.remove('closed'); if (btn) btn.setAttribute('aria-expanded', 'true'); }
+  function open() { if (!island) build(); if (island.__sync) island.__sync(); fill(); island.classList.remove('closed'); if (btn) btn.setAttribute('aria-expanded', 'true'); }
   function close() { if (island) island.classList.add('closed'); if (btn) { btn.setAttribute('aria-expanded', 'false'); btn.focus(); } }
   function toggle() { if (isOpen()) close(); else open(); }
 
   function mount(container) {
-    btn = document.createElement('button');
+    var b0 = document.createElement('button'); btn = b0;
     btn.type = 'button';
     btn.className = 'mg-chip mg-music compact';
     btn.setAttribute('aria-label', 'Musik öffnen (Spotify)');
     btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = (global.MGIcon ? global.MGIcon.html('ui.sound', 24, '') : '') + '<span class="mg-chip-label">Musik</span>';
-    btn.addEventListener('click', toggle);
-    container.appendChild(btn);
+    b0.addEventListener('click', function () { btn = b0; toggle(); });
+    container.appendChild(b0);
   }
   global.MGSpotify = { mount: mount, open: open, close: close, toEmbed: toEmbed };
 })(window);
