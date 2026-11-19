@@ -52,3 +52,20 @@ test('Icons: PNG-Codec Rundlauf (Encode/Decode, Tint, Over)', () => {
   const o = PNG.over({ w: 1, h: 1, px: new Uint8Array([0, 0, 255, 255]) }, { w: 1, h: 1, px: new Uint8Array([255, 0, 0, 255]) });
   assert.deepStrictEqual(Array.from(o.px), [255, 0, 0, 255]);
 });
+
+test('Crafting: jedes Raetsel (auch jedes baubare) hat fuer sein Ergebnis ein vorhandenes, passendes Icon (kein Werkbank-/Barriere-Platzhalter)', () => {
+  const qs = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'questions.json'), 'utf8')).filter(q => q.type === 'crafting');
+  const norm = (p) => p.replace(/^.*\//, '').replace(/[.]png$/, '').replace(/_(dyed|side|top|front|00)$/, '');
+  assert.ok(qs.length >= 200);
+  qs.forEach(q => {
+    const g = icons[q.answer];
+    assert.ok(g, 'kein Icon: ' + q.answer);
+    assert.ok(fs.existsSync(path.join(MC, png(g))), 'Datei fehlt: ' + q.answer + ' -> ' + g);
+    if (q.resultKey !== 'crafting_table') assert.ok(!/crafting_table_front|barrier/.test(g), 'Platzhalter: ' + q.answer + ' -> ' + g);
+    assert.ok(q.resultKey, 'resultKey fehlt: ' + q.answer);
+    const e = ing[q.resultKey] && ing[q.resultKey].icon, b = norm(g);
+    // passend: gleiche Datei wie das Ergebnis-Item oder Dateiname und Schluessel gehoeren zusammen (z. B. oak_planks fuer oak_fence nur als bewusster Stellvertreter)
+    assert.ok(g === e || b === q.resultKey || q.resultKey.includes(b) || b.includes(q.resultKey), 'passt nicht zum Ergebnis ' + q.resultKey + ': ' + q.answer + ' -> ' + g);
+    assert.ok(e && fs.existsSync(path.join(MC, e)), 'Ergebnis-Item ohne Zutaten-Icon: ' + q.resultKey);
+  });
+});

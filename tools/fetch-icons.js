@@ -192,7 +192,7 @@ async function main() {
   try { catalog = JSON.parse(fs.readFileSync(path.join(MC, 'craft-items.json'), 'utf8')); catalog.forEach(it => ingKeys.add(it.key)); } catch (e) {}   // Item-Katalog des Bau-Modus (tools/gen-crafting.js)
   const ingredients = {};
   for (const k of [...ingKeys].sort()) {
-    const ING_ALIAS = { clock: ['item/clock_00.png'], recovery_compass: ['item/recovery_compass_00.png', 'item/compass_00.png'], sticky_piston: ['block/piston_top_sticky.png'], cobblestone_stairs: ['block/cobblestone.png'], cobblestone_wall: ['block/cobblestone.png'],
+    const ING_ALIAS = { decorated_pot: ['block/bricks.png', 'block/terracotta.png'], clock: ['item/clock_00.png'], recovery_compass: ['item/recovery_compass_00.png', 'item/compass_00.png'], sticky_piston: ['block/piston_top_sticky.png'], cobblestone_stairs: ['block/cobblestone.png'], cobblestone_wall: ['block/cobblestone.png'],
       heavy_weighted_pressure_plate: ['block/iron_block.png'], light_weighted_pressure_plate: ['block/gold_block.png'], oak_fence: ['block/oak_planks.png'], oak_fence_gate: ['block/oak_planks.png'], oak_pressure_plate: ['block/oak_planks.png'],
       white_bed: ['block/white_wool.png'], white_carpet: ['block/white_wool.png'], white_banner: ['block/white_wool.png'], crossbow: ['item/crossbow_standby.png'], magma_block: ['block/magma.png'], ender_chest: ['block/obsidian.png'], shield: ['item/iron_chestplate.png'],
       chest: ['block/barrel_side.png'], compass: ['item/compass_00.png'], snow_block: ['block/snow.png'], oak_slab: ['block/oak_planks.png'], pale_oak_slab: ['block/pale_oak_planks.png'],
