@@ -33,7 +33,9 @@ test('Datenschutz: reports.json und qstats.json enthalten nur erlaubte Felder; T
     await new Promise(r => setTimeout(r, 2600));
     const reports = JSON.parse(fs.readFileSync(S.dataDir + '/reports.json', 'utf8'));
     assert.strictEqual(reports.length, 1);
-    assert.deepStrictEqual(Object.keys(reports[0]).sort(), ['questionId', 'reason', 'text', 'ts']);
+    const allowed = new Set(['category', 'reason', 'mode', 'format', 'questionId', 'round', 'text', 'ts', 'count', 'ctx', 'errors', 'room', 'player', 'contact']);
+    Object.keys(reports[0]).forEach(k => assert.ok(allowed.has(k), 'unerwartetes Feld ' + k));   // keine IP, keine ID, kein Name
+    assert.strictEqual(reports[0].category, 'frage'); assert.strictEqual(reports[0].questionId, qs[0].id);
     assert.ok(reports[0].text.length <= 300);
     assert.ok(!/@/.test(JSON.stringify(reports)));
     const stats = JSON.parse(fs.readFileSync(S.dataDir + '/qstats.json', 'utf8'));

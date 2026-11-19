@@ -1329,11 +1329,17 @@ header h1 { flex-shrink:0; }
   <script src="craft-check.js"></script>
   <script src="mg-craft-build.js"></script>
   <script src="mg-hand.js"></script>
+  <script src="pairs.js"></script>
+  <script src="mg-hl.js"></script>
   <script src="mg-profile.js"></script>
 <script src="mg-panorama.js"></script>
   <script src="mg-video.js"></script>
   <script src="mg-ranklist.js"></script>
   <script src="mg-settings.js"></script>
+<script src="mg-tutorial.js"></script>
+<script src="mg-report.js"></script>
+<script src="mg-rounds.js"></script>
+<script src="mg-social.js"></script>
   <script src="mg-icons.js"></script>
   <script src="mg-audio.js"></script>
   <script src="spotify-config.js"></script>
@@ -1421,6 +1427,21 @@ header h1 { flex-shrink:0; }
       <span class="mode-desc">5 Fragen täglich, gleiche Fragen für alle. Baue deine Serie auf.</span>
       <span class="mode-tag" id="daily-mode-tag">Täglich</span>
     </button>
+    <button type="button" class="mode-card" onclick="MGHL.open()">
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/gui/heart_full.png" width="24" height="24" alt="">Höher oder Tiefer</span>
+      <span class="mode-desc">Zwei Dinge, ein Wert: Ist das zweite höher oder tiefer? Drei Herzen, wie lange hältst du durch?</span>
+      <span class="mode-tag green-tag">Neu</span>
+    </button>
+    <button type="button" class="mode-card" onclick="playChallenge()">
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/item/spyglass.png" width="24" height="24" alt="">Herausforderung</span>
+      <span class="mode-desc">10 Fragen, die für alle mit demselben Link gleich sind. Teile dein Ergebnis ohne Spoiler.</span>
+      <span class="mode-tag green-tag">Neu</span>
+    </button>
+    <button type="button" class="mode-card" onclick="selectMode('hardcore')">
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/gui/heart_hardcore_full.png" width="24" height="24" alt="">Hardcore</span>
+      <span class="mode-desc">Ein Leben, alle Fragearten, steigende Schwierigkeit. Beim ersten Fehler ist Schluss.</span>
+      <span class="mode-tag green-tag">Neu</span>
+    </button>
     <button type="button" class="mode-card" onclick="selectMode('crafting')">
       <span class="mode-name"><img class="mc-icon" src="assets/mc/block/crafting_table_front.png" width="24" height="24" alt="">Crafting-Rätsel</span>
       <span class="mode-desc">Erkenne, was aus dem Raster entsteht, oder baue das Rezept selbst.</span>
@@ -1430,6 +1451,7 @@ header h1 { flex-shrink:0; }
   <div class="mode-actions">
     <button class="btn-lb-header" onclick="showLeaderboard()">Rankliste</button>
     <button class="btn-lb-header" onclick="showBadges()">Abzeichen</button>
+    <button class="btn-lb-header" onclick="MGSocial.open()">Freunde</button>
     <button class="btn-lb-header" onclick="MGProfile.open()">Profil</button>
     <button class="btn-lb-header" onclick="showCatStats()">Kategorien</button>
     <button class="btn-lb-header" id="btn-profile" onclick="MGSkin.openProfile()">Mein Spielerkopf</button>
@@ -1494,6 +1516,7 @@ header h1 { flex-shrink:0; }
     <div id="ce-lb-note" style="font-size:0.8rem;color:var(--muted)">Punkte werden ins Rankliste eingetragen…</div>
     <div class="ce-btns">
       <button class="btn-ce-lb" onclick="showLeaderboard()">Rankliste</button>
+      <button class="btn-ce-home" onclick="MGRounds.open()" style="background:var(--bg2);color:var(--text)">Rundenübersicht</button>
       <button class="btn-ce-home" onclick="location.reload()">Neu starten</button>
     </div>
   </div>
@@ -1514,6 +1537,7 @@ header h1 { flex-shrink:0; }
     </div>
     <div style="display:flex;gap:10px;margin-top:4px;width:100%">
       <button class="btn-ce-lb" onclick="showLeaderboard()" style="flex:1">Rankliste</button>
+      <button class="btn-ce-home" onclick="MGRounds.open()" style="flex:1;background:var(--bg2);color:var(--text)">Rundenübersicht</button>
       <button class="btn-ce-home" onclick="location.reload()" style="flex:1">Nochmal</button>
     </div>
   </div>
@@ -1535,6 +1559,7 @@ header h1 { flex-shrink:0; }
     </div>
     <div class="daily-calendar" id="daily-calendar"></div>
     <div class="daily-next">Nächste Challenge in: <span id="daily-countdown-txt">--:--:--</span></div>
+    <button class="btn-ce-home" onclick="MGRounds.open()" style="width:100%;margin-top:4px;background:var(--bg2);color:var(--text)">Rundenübersicht</button>
     <button class="btn-ce-home" onclick="location.reload()" style="width:100%;margin-top:4px">Zurück</button>
   </div>
 </div>
@@ -1620,6 +1645,15 @@ header h1 { flex-shrink:0; }
     <div class="cb-item cb-pts"><span id="comp-pts">0</span><span>PUNKTE</span></div>
   </div>
 
+  <div id="ch-bar" class="hc-bar" hidden>
+    <span class="hc-label ch-label">Herausforderung</span><span>Frage <b id="ch-n">1</b> / 10</span><span>Code <b id="ch-seed"></b></span>
+  </div>
+  <div id="hc-bar" class="hc-bar" hidden>
+    <span class="hc-label">Hardcore</span>
+    <span class="hc-life" role="img" aria-label="Ein Leben"><img src="assets/mc/gui/heart_container_hardcore.png" alt="" width="27" height="27"><img id="hc-heart" src="assets/mc/gui/heart_hardcore_full.png" alt="" width="27" height="27"></span>
+    <span>Serie <b id="hc-streak">0</b></span><span>Stufe <b id="hc-tier">1</b></span><span>Best <b id="hc-best">0</b></span>
+  </div>
+  <button type="button" id="rounds-btn" class="btn btn-ghost rounds-btn" hidden onclick="MGRounds.open()">Rundenübersicht</button>
   <div class="session-score">
     <div class="sc"><span id="sess-correct">0</span><span>RICHTIG</span></div>
     <div class="sc"><span id="sess-total">0</span><span>GESPIELT</span></div>
@@ -1728,6 +1762,8 @@ header h1 { flex-shrink:0; }
 </script>
 <script src="answer-check.js"></script>
 <script src="ranked.js"></script>
+<script src="modes.js"></script>
+<script src="challenge.js"></script>
 <script src="mg-badges.js"></script>
 <script>
 // ── Entity list for autocomplete ─────────────────────────────────────────────
@@ -1771,7 +1807,7 @@ function setIconWithFallback(imgEl, name) {
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
-const MAX_ATTEMPTS = 3;   // 3 Versuche pro Frage (Runde 7)
+let MAX_ATTEMPTS = 3;   // 3 Versuche pro Frage (Runde 7)
 const TIMER_SECONDS_NUMBER = 15;  // 15 s pro Versuch
 const TIMER_SECONDS_ENTITY = 15;
 let   TIMER_SECONDS        = 40; // set dynamically per question type
@@ -1898,6 +1934,7 @@ function getFeedback(q, userAnswer) {
 
 // ── Add guess row ─────────────────────────────────────────────────────────────
 function addGuessRow(value, unit, fb) {
+  try { (window.__roundGuesses = window.__roundGuesses || []).push(String(unit ? value + ' ' + unit : value) + (value === 'Raster' && fb && fb.text ? ' (' + fb.text + ')' : '')); } catch (e) {}
   const list = document.getElementById('guesses-list');
   const row = document.createElement('div');
   const clsMap = {'fb-correct':'correct','fb-wrong':'wrong','fb-close':'close','fb-high':'wrong','fb-low':'wrong'};
@@ -1909,9 +1946,24 @@ function addGuessRow(value, unit, fb) {
 }
 
 // ── Show result panel ─────────────────────────────────────────────────────────
-let _buildActive = false, _buildFb = null;
+let chState = null, _buildSrvDiff = null, _buildSubmit = false, _srvHint = null;
+let _buildActive = false, _buildFb = null, hcState = null, hcVariant = 'guess', hcLast = null;
+function matrixModeName() { return gameMode === 'competition' ? 'ranked' : (gameMode === 'endless' && typeof soloSelectedCats !== 'undefined' && soloSelectedCats.size > 0 ? 'categories' : gameMode); }
+function decideBuild(pm) {
+  if (gameMode === 'hardcore') return hcVariant === 'build';
+  if (gameMode === 'competition') return !!(question && question.mode === 'build');   // Ranked: nur wenn der Server eine Bau-Aufgabe liefert
+  if (gameMode === 'blitz') return false;                                              // Blitz baut nie
+  try { return window.MGModes ? MGModes.craftVariant(question, matrixModeName(), pm, Math.random) === 'build' : false; } catch (e) { return false; }
+}
 async function submitBuild(grid) {
   if (finished || _srvBusy || !window._build) return;
+  if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
+    const ctl0 = window._build; _buildSrvDiff = null; _buildFb = null; _buildSubmit = true;
+    await submitGuess();
+    _buildSubmit = false;
+    if (!finished && ctl0 && _buildSrvDiff) ctl0.setMarks({ ok: false, correct: _buildSrvDiff.correct, total: _buildSrvDiff.total, cells: _buildSrvDiff.cells });
+    return;
+  }
   const d = CraftCheck.diff(question, grid);
   _buildFb = d.ok ? { correct: true, text: 'Richtig!', arrow: MGIcon.html('px.check', 16), cls: 'fb-correct' }
     : { correct: false, text: d.correct + ' von ' + d.total + ' Slots richtig', arrow: MGIcon.html('px.cross', 16), cls: 'fb-wrong' };
@@ -1921,6 +1973,12 @@ async function submitBuild(grid) {
 }
 function showResult(won, ptsThisQuestion, speedBonus) {
   sessTotal++;
+  try {
+    const _c = (window.MGReportContext && MGReportContext()) || {};
+    const _ans = question.type === 'number' ? (question.answer + (question.unit ? ' ' + question.unit : '')) : String(question.answer);
+    MGRounds.add({ n: sessTotal, id: Number(question.id) || 0, q: question.question, format: _c.format || '', mode: _c.mode || 'other', answer: _ans, guesses: (window.__roundGuesses || []).slice(), correct: !!won,
+      pts: Math.round(ptsThisQuestion || 0), mmr: (gameMode === 'competition' && window.lastRanked && typeof lastRanked.delta === 'number') ? lastRanked.delta : undefined });
+  } catch (e) {}
   if (won) sessCorrect++;
   document.getElementById('sess-correct').textContent = sessCorrect;
   document.getElementById('sess-total').textContent   = sessTotal;
@@ -2010,6 +2068,15 @@ function showResult(won, ptsThisQuestion, speedBonus) {
     }
   }
 
+  if (gameMode === 'challenge' && chState) {
+    chState.results.push({ correct: !!won, attempts: attempts, ms: Date.now() - (chState.qStart || Date.now()) });
+    if (chState.i >= chState.qs.length) { document.getElementById('next-countdown').textContent = 'Herausforderung geschafft!'; setTimeout(showChallengeEnd, 2400); return; }
+  }
+  if (gameMode === 'hardcore') {
+    MGModes.hardcore.record(hcState, question, won, hcVariant);
+    updateHcBar();
+    if (!won) { document.getElementById('next-countdown').textContent = ''; setTimeout(showHardcoreEnd, 2200); return; }
+  }
   // Auto-advance
   let secs = 4;
   const cd = document.getElementById('next-countdown');
@@ -2028,7 +2095,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 function startTimer() {
   if (finished) return;
   clearInterval(timerInterval);
-  TIMER_SECONDS = _buildActive ? 90 : (question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER);
+  TIMER_SECONDS = _buildActive ? ((window.MGModes && MGModes.BUILD && MGModes.BUILD.seconds) || 75) : (question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER);
   timerLeft = TIMER_SECONDS;
 
   const wrap = document.getElementById('timer-wrap');
@@ -2102,9 +2169,9 @@ function buildInput() {
   // Crafting-Raetsel: Werkbank-Raster ueber der Eingabe (Antwort wie bei Entity-Fragen per Dropdown)
   if (window._build) { try { window._build.destroy(); } catch (e) {} window._build = null; }
   _buildActive = false;
-  if (question && question.type === 'crafting' && gameMode === 'crafting' && question.buildable && question.solution && window.MGCraftBuild && window.CraftCheck) {
+  if (question && question.type === 'crafting' && ((question.buildable && question.solution) || question.mode === 'build') && window.MGCraftBuild && window.CraftCheck) {
     const pm = craftModePref();
-    if (question.__bm === undefined) question.__bm = (pm === 'build' || (pm === 'mix' && Math.random() < 0.5));
+    if (question.__bm === undefined) question.__bm = decideBuild(pm);
     _buildActive = !!question.__bm;
   }
   if (_buildActive) {
@@ -2117,7 +2184,7 @@ function buildInput() {
     return;
   }
   if (window.MGCraft) { const ch = document.getElementById('craft-host'); if (question && question.type === 'crafting') MGCraft.render(ch, question); else MGCraft.clear(ch); }
-  if (window.MGHand) { if (question && question.type === 'crafting' && gameMode === 'crafting') { MGHand.show(document.querySelector('#craft-host .craft-panel')); MGHand.hold(null); } else MGHand.hide(); }
+  if (window.MGHand) { if (question && question.type === 'crafting') { MGHand.show(document.querySelector('#craft-host .craft-panel')); MGHand.hold(null); } else MGHand.hide(); }
 
   if (Array.isArray(question.choices) && question.choices.length === 2 && window.MGIcon && MGIcon.choiceButtons) {
     // ODER-Frage: nur diese zwei Buttons (zufaellige Reihenfolge je Frage), Versuche/Timer/Ranked unveraendert
@@ -2271,17 +2338,17 @@ async function submitGuess() {
   if (finished || _srvBusy) return;
 
   const inp = document.getElementById('answer-input') || { value: '' };
-  const val = _buildFb ? 'Raster' : inp.value.trim();
+  const val = (_buildFb || _buildSubmit) ? 'Raster' : inp.value.trim();
   // Leere/ungueltige Eingabe: nur Hinweis, Timer laeuft unveraendert weiter (kein Zeitgewinn)
   if (!val) { showToast('Bitte eine Antwort eingeben!'); return; }
 
   let fb;
   if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
     _srvBusy = true;
-    const sr = await rankedSrvAnswer(val, false);
+    const sr = (_buildActive && window._build) ? await rankedSrvAnswer(null, false, window._build.getGrid()) : await rankedSrvAnswer(val, false);
     _srvBusy = false;
     if (!sr) { showToast('Verbindung zum Ranked-Server verloren. Lauf wird beendet.', 3000); setTimeout(() => location.reload(), 2500); return; }
-    fb = srvFeedback(sr);
+    fb = (_buildActive && window._build) ? srvBuildFeedback(sr) : srvFeedback(sr);
   } else fb = _buildFb || getFeedback(question, val);
   _buildFb = null;
   if (fb.invalid) { showToast(fb.text); return; }
@@ -2473,6 +2540,15 @@ async function loadNextQuestion() {
     updateCompBar();
     if (compIndex === COMP_TOTAL) setTimeout(() => showToast('Letzte Frage! Alles geben!', 2500), 300);
     startCompSpeedTimer();
+  } else if (gameMode === 'challenge') {
+    if (chState.i >= chState.qs.length) { showChallengeEnd(); return; }
+    question = chState.qs[chState.i]; chState.i++; chState.qStart = Date.now();
+    { const e = document.getElementById('ch-n'); if (e) e.textContent = chState.i; }
+  } else if (gameMode === 'hardcore') {
+    const hn = MGModes.hardcore.next(allQuestions, hcState, Math.random, seenLoad(), { craftPref: craftModePref() });
+    question = hn.question; hcVariant = hn.variant; hcLast = hn;
+    MAX_ATTEMPTS = hn.variant === 'build' ? ((MGModes.BUILD && MGModes.BUILD.checks) || 3) : 1;
+    updateHcBar();
   } else if (gameMode === 'blitz') {
     if (!blitzIv) return; // timer ended
     question = allQuestions[questionOrder[currentIndex % questionOrder.length]];
@@ -2499,6 +2575,7 @@ async function loadNextQuestion() {
   attempts = 0;
   finished = false;
   question.__bm = undefined;
+  window.__roundGuesses = [];
   seenAdd(question.id);
 
   document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
@@ -2812,10 +2889,10 @@ async function useHint() {
   let srvText = null;
   if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
     _srvBusy = true;
-    const j = await srvPost('hint', { runId: rankedSrv.runId });
+    const j = await srvPost('hint', (_buildActive && window._build) ? { runId: rankedSrv.runId, grid: window._build.getGrid() } : { runId: rankedSrv.runId });
     _srvBusy = false;
     if (!j || !j.ok) { showToast('Tipp nicht verfügbar'); return; }
-    srvText = j.text;
+    srvText = j.text; _srvHint = j.hint || null;
   }
   questionHints++;
   if (jokersLeft > 0) {
@@ -2828,7 +2905,7 @@ async function useHint() {
     playSound('wrong');
   }
   if (_buildActive && window._build) {
-    const h = CraftCheck.hint(question, window._build.getGrid());
+    const h = (rankedSrv && rankedSrv.active && gameMode === 'competition') ? _srvHint : CraftCheck.hint(question, window._build.getGrid());
     document.getElementById('hint-box').textContent = h ? 'Tipp: ein Item wurde in Reihe ' + (h.r + 1) + ', Spalte ' + (h.c + 1) + ' gelegt.' : 'Das Raster ist schon vollständig richtig.';
     if (h) window._build.applyHint(h);
   } else {
@@ -2972,6 +3049,78 @@ function startDailyCountdown() {
   tick(); setInterval(tick, 1000);
 }
 
+async function playChallenge(seedText) {
+  if (!allQuestions.length) { (window.questionsReady || Promise.resolve()).then(() => { if (allQuestions.length) playChallenge(seedText); }); return; }
+  try { const j = await fetch('challenge-pool.json').then(x => x.json()); MGChallenge.setSnapshot(j); } catch (e) {}
+  const p = seedText ? MGChallenge.parse(seedText) : { ok: true, seed: MGChallenge.newSeed() };
+  const s = p.ok ? MGChallenge.select(allQuestions, p.seed) : { ok: false };
+  if (!s.ok) { showToast('Dieser Herausforderungs-Link ist ungültig oder abgelaufen. Du kannst im Menü eine neue Herausforderung starten.', 6000); try { history.replaceState(null, '', location.pathname); } catch (e) {} return; }
+  chState = { seed: s.seed, qs: s.questions, i: 0, results: [], qStart: 0 };
+  document.getElementById('mode-screen').classList.add('hidden');
+  { const e = document.getElementById('ch-seed'); if (e) e.textContent = s.seed; }
+  actualStartMode('challenge');
+}
+function showChallengeEnd() {
+  if (document.getElementById('ch-end') || !chState) return;
+  let rank; try { const ri = MGRanked.rankInfo(rankedEnsure().mmr); rank = { label: ri.label, mmr: ri.mmr }; } catch (e) {}
+  const sum = MGChallenge.summary({ seed: chState.seed, results: chState.results, points: sessionPoints, rank });
+  const url = MGChallenge.shareUrl(location.origin + location.pathname, chState.seed), text = MGChallenge.toText(sum, url);
+  const d = document.createElement('div'); d.id = 'ch-end'; d.className = 'hc-end'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'ch-end-t');
+  d.innerHTML = '<div class="hc-end-card"><h2 id="ch-end-t">Herausforderung</h2><div class="ch-squares" role="img" aria-label="' + sum.correct + ' von ' + sum.n + ' richtig">' + sum.squares + '</div>' +
+    '<div class="hc-end-n">' + sum.correct + '/' + sum.n + '</div><p class="hc-end-meta">' + sum.points.toLocaleString('de-DE') + ' Punkte · beste Serie ' + sum.bestStreak + (sum.seconds ? ' · ' + sum.seconds + ' s' : '') + (sum.rank ? ' · ' + sum.rank.label : '') + '</p>' +
+    '<p class="hc-end-meta">Code ' + sum.seed + '. Geteilt werden nur Zahlen und Quadrate, keine Fragen oder Antworten.</p>' +
+    '<div class="hc-end-btns"><button type="button" class="btn btn-primary" id="ch-share">Teilen</button><button type="button" class="btn" id="ch-copy">Text kopieren</button><button type="button" class="btn" id="ch-link">Link kopieren</button></div>' +
+    '<div class="hc-end-btns"><button type="button" class="btn" id="ch-rounds">Rundenübersicht</button><button type="button" class="btn" id="ch-new">Neue Herausforderung</button><button type="button" class="btn btn-ghost" id="ch-menu">Zum Menü</button></div><p class="hc-end-meta" id="ch-msg" role="status" aria-live="polite"></p></div>';
+  document.body.appendChild(d);
+  const say = t => { document.getElementById('ch-msg').textContent = t; };
+  const copy = (t, ok) => { (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => say(ok), () => say('Kopieren nicht möglich. Bitte den Text markieren.')); };
+  const sh = document.getElementById('ch-share');
+  if (!navigator.share) sh.hidden = true; else sh.addEventListener('click', () => { navigator.share({ text }).catch(() => {}); });
+  document.getElementById('ch-copy').addEventListener('click', () => copy(text, 'Text kopiert.'));
+  document.getElementById('ch-link').addEventListener('click', () => copy(url, 'Link kopiert.'));
+  document.getElementById('ch-new').addEventListener('click', () => { d.remove(); document.getElementById('result-panel').classList.remove('show'); playChallenge(); });
+  document.getElementById('ch-rounds').addEventListener('click', () => MGRounds.open());
+  document.getElementById('ch-menu').addEventListener('click', () => { location.href = location.pathname; });
+  (navigator.share ? sh : document.getElementById('ch-copy')).focus();
+}
+// Challenge-Link beim Laden: ?c=<seed> startet nach Anmeldung/Gast direkt die Herausforderung
+(function () {
+  const m = /[?&]c=([^&#]+)/.exec(location.search); if (!m) return;
+  const seed = decodeURIComponent(m[1]); let tries = 0;
+  const iv = setInterval(() => {
+    tries++;
+    const auth = document.getElementById('auth-modal'), ms = document.getElementById('mode-screen');
+    if ((!auth || auth.classList.contains('hidden')) && ms && !ms.classList.contains('hidden') && allQuestions.length) { clearInterval(iv); playChallenge(seed); }
+    else if (tries > 80) clearInterval(iv);
+  }, 400);
+})();
+function hcBest() { try { return parseInt(localStorage.getItem('mg_hc_best'), 10) || 0; } catch (e) { return 0; } }
+function updateHcBar() {
+  if (!hcState) return;
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set('hc-streak', hcState.streak); set('hc-tier', (hcLast && hcLast.tier) || 1); set('hc-best', Math.max(hcBest(), hcState.streak));
+  const h = document.getElementById('hc-heart'); if (h) h.hidden = !hcState.alive;
+}
+function showHardcoreEnd() {
+  if (document.getElementById('hc-end')) return;
+  const sm = MGModes.hardcore.summary(hcState), prev = hcBest(), nb = sm.streak > prev;
+  if (nb) { try { localStorage.setItem('mg_hc_best', String(sm.streak)); } catch (e) {} }
+  try { MGBadges.record && checkAchievements(); } catch (e) {}
+  const fm = {}; Object.keys(sm.formats || {}).forEach(k => { fm[k] = sm.formats[k]; });
+  const names = { number: 'Zahl', entity: 'Auswahl', choice: 'ODER', 'craft-guess': 'Crafting erraten', 'craft-build': 'Crafting bauen' };
+  const fmt = Object.keys(fm).map(k => (names[k] || k) + ' ' + fm[k]).join(' · ');
+  const d = document.createElement('div'); d.id = 'hc-end'; d.className = 'hc-end'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'hc-end-t');
+  d.innerHTML = '<div class="hc-end-card"><img class="hc-end-heart" src="assets/mc/gui/heart_container_hardcore.png" alt="" width="72" height="72">' +
+    '<h2 id="hc-end-t">Das war dein Lauf</h2><div class="hc-end-n">' + sm.streak + '</div><p>richtig in Folge</p>' +
+    '<p class="hc-end-best">' + (nb ? 'Neue Bestmarke!' : 'Bestmarke: ' + Math.max(prev, sm.streak)) + '</p>' +
+    '<p class="hc-end-meta">' + sm.answered + ' Fragen gespielt' + (fmt ? ' · ' + fmt : '') + '</p>' +
+    '<div class="hc-end-btns"><button type="button" class="btn" id="hc-rounds">Rundenübersicht</button><button type="button" class="btn btn-primary" id="hc-again">Nochmal</button><button type="button" class="btn" id="hc-menu">Zum Menü</button></div></div>';
+  document.body.appendChild(d);
+  document.getElementById('hc-again').addEventListener('click', () => { d.remove(); document.getElementById('result-panel').classList.remove('show'); actualStartMode('hardcore'); });
+  document.getElementById('hc-menu').addEventListener('click', () => location.reload());
+  document.getElementById('hc-rounds').addEventListener('click', () => MGRounds.open());
+  document.getElementById('hc-again').focus();
+}
 function showDailyEnd() {
   const _de = document.getElementById('daily-end');
   if (_de && _de.classList.contains('show')) return;
@@ -3238,6 +3387,7 @@ async function rankedSrvStart() {
   if (currentUser && currentUser.displayName) name = currentUser.displayName;
   const body = { name: name || 'Gast', gid: rankedGid(), profile: p, history: p.history, token: token, seen: seenLoad().slice(-1500) };
   if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
+  if (window.MGCraftBuild && window.CraftCheck && typeof craftModePref === 'function' && craftModePref() !== 'guess') body.build = true;   // Server darf Bau-Aufgaben liefern (ohne Loesung im Payload)
   const j = await srvPost('start', body);
   if (!j || !j.ok || !j.runId) return false;
   rankedSrv = { runId: j.runId, active: true, final: null };
@@ -3251,16 +3401,23 @@ async function rankedSrvNext() {
   return j && j.ok && j.question ? j.question : null;
 }
 // Antwort (oder Zeitablauf) melden. Rueckgabe: Server-Antwort oder null bei Verbindungsfehler.
-async function rankedSrvAnswer(val, timeout) {
-  const j = await srvPost('answer', timeout ? { runId: rankedSrv.runId, timeout: true } : { runId: rankedSrv.runId, answer: val });
+async function rankedSrvAnswer(val, timeout, grid) {
+  const j = await srvPost('answer', timeout ? { runId: rankedSrv.runId, timeout: true } : (grid ? { runId: rankedSrv.runId, grid: grid } : { runId: rankedSrv.runId, answer: val }));
   if (!j || !j.ok) return null;
   if (j.final) {
     rankedSrv.final = j;
     question.answer = j.answer;
     question.funFact = j.funFact || '';
     question.acceptedAnswers = j.acceptedAnswers || [];
+    if (j.solutionGrid) question.solution = { shapeless: false, grid: j.solutionGrid.map(row => row.map(k => k ? [k] : null)) };   // fuer die Aufloesungsanzeige
   }
   return j;
+}
+function srvBuildFeedback(r) {
+  if (r.valid === false) return { correct: false, invalid: true, arrow: MGIcon.html('px.ask', 16), cls: 'fb-wrong', text: 'Lege zuerst Zutaten ins Raster' };
+  _buildSrvDiff = r.diff || null;
+  if (r.final ? r.correct : false) return { correct: true, text: 'Richtig!', arrow: MGIcon.html('px.check', 16), cls: 'fb-correct' };
+  return { correct: false, text: r.diff ? r.diff.correct + ' von ' + r.diff.total + ' Slots richtig' : 'Falsch', arrow: MGIcon.html('px.cross', 16), cls: 'fb-wrong' };
 }
 function srvFeedback(r) {
   if (!r.valid) return { correct: false, invalid: true, arrow: MGIcon.html('px.ask', 16), cls: 'fb-wrong', text: question.type === 'number' ? 'Bitte eine Zahl eingeben' : 'Bitte eine Antwort eingeben' };
@@ -3546,6 +3703,10 @@ function actualStartMode(mode) {
   }
 
   gameMode       = mode;
+  if (window.MGRounds) MGRounds.reset();
+  MAX_ATTEMPTS   = 3;
+  { const _hb = document.getElementById('hc-bar'); if (_hb) _hb.hidden = (mode !== 'hardcore'); const _cb = document.getElementById('ch-bar'); if (_cb) _cb.hidden = (mode !== 'challenge'); }
+  if (mode === 'hardcore') { hcState = MGModes.hardcore.newState(); hcVariant = 'guess'; }
   sessionPoints  = 0;
   questionPoints = 0;
   compStreak     = 0;
@@ -3594,6 +3755,10 @@ function actualStartMode(mode) {
     const dailySeed = parseInt(getDailyKey().replace(/[^0-9]/g,''), 10);
     const pool = [...Array(allQuestions.length).keys()];
     dailyOrder = lcgShuffle(pool, dailySeed).slice(0, DAILY_TOTAL);
+  } else if (mode === 'challenge') {
+    document.getElementById('comp-bar').classList.remove('show');
+    questionOrder = freshOrder([...Array(allQuestions.length).keys()]);
+    currentIndex = 0;
   } else {
     document.getElementById('comp-bar').classList.remove('show');
   }
@@ -3786,11 +3951,20 @@ function showCatStats() {
 // ── Report system ─────────────────────────────────────────────────────────────
 let _reportedQs = new Set(JSON.parse(localStorage.getItem('mg_reported') || '[]'));
 
+function reportFormat() {
+  const q = question; if (!q) return '';
+  if (q.type === 'crafting') return (typeof _buildActive !== 'undefined' && _buildActive) ? 'craft-build' : 'craft-guess';
+  if (Array.isArray(q.choices)) return 'choice';
+  return q.type === 'number' ? 'number' : 'entity';
+}
+window.MGReportContext = function () {
+  const m = (typeof gameMode === 'string') ? (gameMode === 'competition' ? 'ranked' : (gameMode === 'endless' && typeof soloSelectedCats !== 'undefined' && soloSelectedCats.size > 0 ? 'categories' : gameMode)) : 'other';
+  const gs = document.getElementById('game-wrapper'), inGame = gs && gs.offsetParent !== null && question && !document.getElementById('mode-screen').offsetParent;
+  return inGame ? { mode: m, format: reportFormat(), questionId: Number(question.id) || 0, round: sessTotal + 1 } : { mode: 'menu' };
+};
 function openReport() {
   if (!question) return;
-  _reportReason = ''; document.getElementById('report-text').value = ''; document.getElementById('report-send').disabled = true;
-  document.querySelectorAll('#report-reasons .report-opt').forEach(x => { x.setAttribute('aria-checked', 'false'); x.classList.remove('picked'); });
-  document.getElementById('report-modal').classList.add('show');
+  MGReport.open();
 }
 
 let _reportReason = '';
@@ -3926,7 +4100,7 @@ if ('serviceWorker' in navigator) {
   window.loadNextQuestion = loadNextQuestion = function () {
     var r = _load.apply(this, arguments);
     var host0 = document.getElementById('solo-scene');
-    if (typeof gameMode !== 'undefined' && gameMode === 'crafting') {
+    if (typeof question !== 'undefined' && question && question.type === 'crafting') {
       // Crafting: keine Szene (kein Reporter, keine Figur, kein WebGL-Canvas); Platz gehoert dem Raster
       if (scene) { try { scene.destroy(); } catch (e) {} scene = null; if (host0) host0.innerHTML = ''; }
       if (host0) host0.style.display = 'none';

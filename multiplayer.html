@@ -13,6 +13,8 @@
   <script src="mg-audio.js"></script>
   <script src="mg-badges.js"></script>
   <script src="mg-settings.js"></script>
+<script src="mg-tutorial.js"></script>
+<script src="mg-report.js"></script>
   <script src="spotify-config.js"></script>
   <script src="mg-spotify.js"></script>
   <script src="mg-scene.js"></script>
@@ -530,6 +532,13 @@ function esc(s) {
 // Roster: Skins kommen nur einmalig (joined / player_joined / player_updated), später nur skinId + character
 const roster = {};
 let lastPlayers = [];
+// Melden-Dialog: Kontext (Raum, Mitspieler zur Auswahl bei Cheat/Name, aktuelle Frage)
+window.MGReportContext = function () {
+  const inRoom = typeof myRoomId !== 'undefined' && myRoomId;
+  const q = (typeof currentQ !== 'undefined' && currentQ) ? currentQ : null;
+  const fmt = q ? (q.type === 'crafting' ? 'craft-guess' : (Array.isArray(q.choices) ? 'choice' : (q.type === 'number' ? 'number' : 'entity'))) : '';
+  return { mode: inRoom ? 'multiplayer' : 'menu', room: inRoom ? myRoomId : '', players: (lastPlayers || []).filter(p => p.id !== myId).map(p => p.name), questionId: q && q.id ? q.id : 0, format: fmt };
+};
 const deltas = {};      // Punkte-Änderung in dieser Runde je Spieler
 const penaltyTotal = {}; // Strafpunkte im laufenden Spiel
 function syncRoster() { lastPlayers = Object.values(roster); }
@@ -779,6 +788,7 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
   players.forEach((p, i) => {
     const row = document.createElement('div');
     row.className = 'player-row' + (p.id === myId ? ' is-me' : '') + (p.connected === false ? ' gone' : '');
+    row.dataset.pid = p.id;
     row.style.animationDelay = Math.min(i, 6) * 40 + 'ms';
     row.innerHTML = `${head(p)}
       <span class="player-name">${esc(p.name)}${p.id === myId ? '<span class="you-tag">du</span>' : ''}</span>
@@ -874,8 +884,8 @@ socket.on('question', (q) => {
     if (rn) rn.textContent = q.roundNum;
 
     el('q-category').textContent    = q.category;
-    el('question-text').textContent = q.question;
-    if (window.MGCraft) { if (q.type === 'crafting') MGCraft.render(el('craft-host'), q); else MGCraft.clear(el('craft-host')); }
+    el('question-text').textContent = q.mode === 'build' ? 'Baue: ' + q.answer : q.question;
+    if (window.MGCraft && q.mode !== 'build') { if (q.type === 'crafting') MGCraft.render(el('craft-host'), q); else MGCraft.clear(el('craft-host')); }
 
     // Reset UI
     el('feedback-box').className   = 'feedback-box';
@@ -896,6 +906,8 @@ socket.on('question', (q) => {
     el('timer-bar').style.width   = '100%';
     el('timer-bar').className     = 'timer-bar buzzer';
     el('timer-label').textContent = 'zum Buzzern';
+    if (q.mode === 'build') { el('buzzer-area').classList.remove('show'); el('timer-label').textContent = 'zum Bauen'; if (window.mpBuildStart) mpBuildStart(q); }
+    else if (window.mpBuildReset) mpBuildReset();
   }
 
   if (isFirst) { showMpCountdown(displayQuestion); }
@@ -908,6 +920,7 @@ socket.on('timer', ({ left, max, phase }) => {
   timerMax = max;
   el('timer-num').textContent = left;
   el('timer-bar').style.width = (left / max * 100) + '%';
+  if (phase === 'building') { el('timer-num').className = 'timer-num answer-phase' + (left <= 8 ? ' danger' : ''); el('timer-bar').className = 'timer-bar' + (left <= 8 ? ' danger' : ' answer'); el('timer-label').textContent = 'zum Bauen'; return; }
 
   if (phase === 'buzzer') {
     el('timer-num').className   = 'timer-num buzzer-phase' + (left <= 5 ? ' danger' : '');
@@ -1389,7 +1402,8 @@ socket.on('answer_submitted', ({ playerId, delta }) => {
   if (playerId === myId) { myPhase = 'waiting'; renderTotem(); }
   sceneLive(nameOf(playerId) + ' hat geantwortet');
 });
-socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId, answers, correctAnswer, resultCount }) => {
+socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId, answers, correctAnswer, resultCount, solutionGrid }) => {
+  if (mode === 'build') { if (window.mpBuildReveal) mpBuildReveal(answers, solutionGrid, correctAnswer); myPhase = 'idle'; return; }
   if (window.MGCraft && currentQ && currentQ.type === 'crafting' && correctAnswer) MGCraft.reveal(el('craft-host'), Object.assign({}, currentQ, { answer: correctAnswer }, resultCount ? { resultCount: resultCount } : {}));
   const list = answers || [];
   const wins = {}; (winnerIds || (winnerId ? [winnerId] : [])).forEach(id => { wins[id] = 1; });
@@ -1575,5 +1589,7 @@ socket.on('disconnect',    () => showToast('Verbindung getrennt', 5000));
 
 requestPublicRooms();
 </script>
+<script src="mg-craft-build.js"></script>
+<script src="mg-mp2.js"></script>
 </body>
 </html>

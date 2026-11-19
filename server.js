@@ -17,6 +17,8 @@ const MGAnswer   = require('./answer-check.js');
 const MGRanked   = require('./ranked.js');
 const store      = require('./lib/store.js');
 const { clientIp } = require('./lib/clientip.js');
+const CraftCheck = require('./craft-check.js');
+const { badText } = require('./lib/profiles.js');
 const { redactText, purgeReports } = require('./lib/privacy.js');
 const PKG        = (() => { try { return require('./package.json'); } catch (e) { return {}; } })();
 
@@ -54,7 +56,7 @@ app.get('/health', (req, res) => {
   const st = store.info();
   res.json({ ok: true, version: PKG.version || null, uptimeSec: Math.round((Date.now() - BOOT) / 1000), rooms: Object.keys(rooms).length,
     players: Object.values(rooms).reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0),
-    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, counters });
+    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, mail: mailer.kind(), counters });
 });
 
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
@@ -153,20 +155,18 @@ function apiAllowed(kind, ip, burst, refillMs) {
   b.tokens -= 1;
   return true;
 }
-app.post('/api/report', express.json({ limit: '2kb' }), (req, res) => {
+// Meldungen aus allen Modi (lib/reports.js): Validierung, Honeypot, Duplikate, Speicherung (12 Monate) und Mail an REPORT_MAIL_TO (nur ENV, nie im Client)
+const REPORT_BURST = Number(process.env.REPORT_RATE_BURST) > 0 ? Number(process.env.REPORT_RATE_BURST) : 10;   // Burst je IP (Tests erhoehen ihn)
+const mailer = require('./lib/mailer.js').create({ log });
+const reportsApi = require('./lib/reports.js').create({
+  store, cleanText, redactText, mailer, log,
+  knownQuestion: (id) => { const q = Array.isArray(allQuestions) ? allQuestions.find(x => x.id === id) : null; return q ? String(q.question || 'Frage') : ''; },
+});
+app.post('/api/report', express.json({ limit: '6kb' }), (req, res) => {
   try {
-    if (!apiAllowed('report', req.ip, 10, 10000)) return res.status(429).json({ ok: false });
-    const b = req.body || {};
-    if (!knownQuestionId(b.questionId)) return res.status(400).json({ ok: false });
-    if (typeof b.reason !== 'string' || !REPORT_REASONS.has(b.reason)) return res.status(400).json({ ok: false });
-    if (b.text != null && typeof b.text !== 'string') return res.status(400).json({ ok: false });
-    const text = cleanText(b.text || '', 300);          // hart auf 300 Zeichen begrenzt (laengerer Text wird gekuerzt)
-    let reports = store.get('reports');
-    if (!Array.isArray(reports)) reports = [];
-    if (reports.length >= 5000) reports.shift();
-    reports.push({ questionId: b.questionId, reason: b.reason, text: redactText(text), ts: Date.now() });   // nur diese Felder: keine IP, keine ID, kein Name
-    store.set('reports', reports);
-    res.json({ ok: true });
+    if (!apiAllowed('report', req.ip, REPORT_BURST, 12000) || !apiAllowed('report-h', req.ip, 40, 90000)) return res.status(429).json({ ok: false });
+    const r = reportsApi.process(req.body, req.headers);
+    res.status(r.status).json(r.body);
   } catch (e) { res.status(400).json({ ok: false }); }
 });
 
@@ -187,7 +187,7 @@ app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
   } catch (e) { res.status(400).json({ ok: false }); }
 });
 
-require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log, keyHash });
+const rankedApi = require('./lib/ranked-api.js').create({ app, express, getQuestions: () => allQuestions, rankedStore, saveRankedSoon, cleanText, apiAllowed, log, keyHash });
 
 // Premium wurde abgeschafft: alte Links auf die Startseite
 app.get('/premium.html', (req, res) => res.redirect(301, '/'));
@@ -263,11 +263,22 @@ function shuffle(arr) {
 // ── Konstanten ────────────────────────────────────────────────────────────────
 const BUZZER_TIME  = 30;
 const ANSWER_TIME  = 10;          // Antwortphase fuer ALLE nach dem Laeuten (GeoGuessr-Stil)
-const RESULT_TIME  = 6;
+const FAST_TEST = process.env.MP_TEST_FAST === '1';          // nur Tests: kurze Pausen und 2-Runden-Spiele
+const RESULT_TIME  = FAST_TEST ? 1 : 6;
 const MAX_PLAYERS  = 8;
 const DEFAULT_ROUNDS = 10;
-const ROUND_CHOICES  = [10, 25, 50, 100];
+const ROUND_CHOICES  = FAST_TEST ? [2, 10, 25, 50, 100] : [10, 25, 50, 100];
 const ANSWER_CHOICES = [8, 10, 15];
+const BUILD_CHOICES = ['off', 'mix', 'only'];
+const BUILD_SECONDS = [45, 60];
+const BUILD_FACTORS = [1, 0.8, 0.65, 0.5, 0.4, 0.3, 0.25, 0.2];     // Punkte nach Zeitrang der richtigen Loesung
+const BUILD_CHECKS = 3;
+const TEAM_SYMBOLS = ['schwert', 'spitzhacke', 'schild', 'bogen', 'apfel', 'diamant', 'smaragd', 'totem', 'creeper', 'tnt', 'fackel', 'herz'];
+const TEAM_COLORS = ['rot', 'blau', 'gruen', 'gelb', 'lila', 'orange', 'tuerkis', 'pink'];
+const TEAM_DEFAULTS = [
+  { id: 't1', name: 'Team Rot', symbol: 'schwert', color: 'rot' }, { id: 't2', name: 'Team Blau', symbol: 'schild', color: 'blau' },
+  { id: 't3', name: 'Team Gruen', symbol: 'bogen', color: 'gruen' }, { id: 't4', name: 'Team Gelb', symbol: 'fackel', color: 'gelb' },
+];
 const DIFFICULTIES   = { mixed: null, easy: [1, 2], medium: [2, 3], hard: [3, 4] };
 const MIN_PLAYERS_SETTING = 2;
 const atime = (room) => room.answerTime || ANSWER_TIME;
@@ -279,7 +290,7 @@ const PTS_BELL_WRONG = 100;       // Laeutender komplett daneben / ohne Antwort
 const TOTEM_STREAK   = 3;         // Runden in Folge mit Punkten bis zum Totem
 const TOTEM_DECISION_MS = 5000;   // Bedenkzeit 'Abzug oder Totem einloesen?'
 const APPROACH_LIMIT = 0.35;       // relative Abweichung, bis zu der eine Zahl als 'Annaeherung' zaehlt
-const REVEAL_DELAY = 2500;         // ms zwischen answers_revealed und result           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
+const REVEAL_DELAY = FAST_TEST ? 200 : 2500;         // ms zwischen answers_revealed und result           // Abzug bei falscher Antwort / Timeout nach Buzz (Score faellt nicht unter 0)
 const BUZZ_WINDOW  = 120;          // ms: gleichzeitige Buzzes werden latenzbereinigt verglichen
 const GRACE_MS     = 30000;        // Reconnect-Fenster
 const MAX_NAME_LEN = 16;
@@ -331,12 +342,16 @@ function makeLimiter(cap, perSec) {
 // ── Raum-Verwaltung ───────────────────────────────────────────────────────────
 const rooms = {};
 
-function buildPool(categories, difficulty) {
+function buildPool(categories, difficulty, build) {
   let pool = allQuestions.map((q, i) => i);
   if (categories && categories.length) {
     const set = new Set(categories);
     const filtered = allQuestions.map((q, i) => set.has(q.category) ? i : -1).filter(i => i !== -1);
     if (filtered.length >= 5) pool = filtered;
+  }
+  if (build === 'only') {                      // Raumtyp "Bauen": nur baubare Crafting-Raetsel
+    const b = pool.filter(i => allQuestions[i].type === 'crafting' && allQuestions[i].buildable && allQuestions[i].solution);
+    if (b.length >= 20) return b;
   }
   const tiers = DIFFICULTIES[difficulty];
   if (tiers) {
@@ -352,6 +367,15 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent, 
     answerTime:    ANSWER_CHOICES.includes(answerTime) ? answerTime : ANSWER_TIME,
     difficulty:    Object.prototype.hasOwnProperty.call(DIFFICULTIES, difficulty) ? difficulty : 'mixed',
     maxPlayers:    Number.isInteger(maxPlayers) && maxPlayers >= 2 && maxPlayers <= MAX_PLAYERS ? maxPlayers : MAX_PLAYERS,
+    history:       [],          // Rundenuebersicht (Verlaufseintraege)
+    teams:         null,        // { list:[{id,name,symbol,color}] } wenn Teams aktiv
+    teamCarry:     {},          // Punkte ausgeschiedener Spieler je Team
+    build:         'off',       // Bau-Runden: off | mix | only
+    buildSeconds:  60,
+    buildRound:    false,
+    builds:        null,        // Map playerId -> { attempts, done, ms, order, timeLeft }
+    buildSeq:      0,
+    qStart:        0,
     vote:          null,        // laufende Votekick-Abstimmung
     voteCooldown:  new Map(),   // Initiator-Token/ID -> frueheste naechste Abstimmung
     targetCooldown: new Map(),  // Zielname -> frueheste naechste Abstimmung
@@ -447,11 +471,11 @@ function uniqueName(room, base) {
 }
 
 function publicPlayer(p, room) {
-  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0, ready: room ? room.ready.has(p.id) : false };
+  return { id: p.id, name: p.name, score: p.score, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0, ready: room ? room.ready.has(p.id) : false, teamId: p.teamId || null };
 }
 // Voller Datensatz inkl. Skin: nur einmalig (joined-Roster, player_joined, player_updated)
 function fullPlayer(p) {
-  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0 };
+  return { id: p.id, name: p.name, score: p.score, skin: p.skin || null, skinId: p.skinId || null, character: p.character, connected: p.connected, totem: !!p.hasTotem, streak: p.streak || 0, teamId: p.teamId || null };
 }
 function scoreList(room) {
   return Object.values(room.players)
@@ -473,7 +497,32 @@ function broadcastPublicRooms() {
 
 function settingsOf(room) {
   return { rounds: room.rounds, answerTime: room.answerTime, categories: room.categories, difficulty: room.difficulty,
-           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password };
+           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password, teams: teamsOf(room), build: room.build, buildSeconds: room.buildSeconds };
+}
+
+// ── Teams ─────────────────────────────────────────────────────────────────────
+function teamsOf(room) { return room.teams ? { enabled: true, list: room.teams.list.map(t => ({ id: t.id, name: t.name, symbol: t.symbol, color: t.color })) } : null; }
+function teamScoresOf(room) {
+  if (!room.teams) return null;
+  const rows = room.teams.list.map(t => {
+    const members = Object.values(room.players).filter(p => p.teamId === t.id);
+    return { id: t.id, name: t.name, symbol: t.symbol, color: t.color, score: members.reduce((n, p) => n + p.score, 0) + (room.teamCarry[t.id] || 0), members: members.map(p => p.id) };
+  }).sort((a, b) => b.score - a.score);
+  rows.forEach((r, i) => { r.rank = i > 0 && rows[i - 1].score === r.score ? rows[i - 1].rank : i + 1; });
+  return rows;
+}
+function smallestTeam(room) {
+  const counts = {}; room.teams.list.forEach(t => { counts[t.id] = 0; });
+  Object.values(room.players).forEach(p => { if (counts[p.teamId] !== undefined) counts[p.teamId]++; });
+  return room.teams.list.slice().sort((a, b) => counts[a.id] - counts[b.id])[0].id;
+}
+function assignTeam(room, p) {
+  if (!room.teams) { p.teamId = null; return; }
+  if (!p.teamId || !room.teams.list.some(t => t.id === p.teamId)) p.teamId = smallestTeam(room);
+}
+function balanceTeams(room) {
+  const ids = shuffle(Object.values(room.players).map(p => p.id));
+  ids.forEach((id, i) => { room.players[id].teamId = room.teams.list[i % room.teams.list.length].id; });
 }
 
 // Host-Uebergabe: naechster verbundener Spieler (nach Beitrittsreihenfolge)
@@ -496,7 +545,8 @@ function broadcastLobby(room) {
     maxRounds: room.rounds,
     hostId: room.hostId,
     settings: settingsOf(room),
-    answered: [...room.answers.keys()],
+    answered: room.buildRound && room.builds ? [...room.builds.entries()].filter(([, b]) => b.done || b.attempts >= BUILD_CHECKS).map(([id]) => id) : [...room.answers.keys()],
+    teams: teamsOf(room), teamScores: teamScoresOf(room),
     readyCount: room.ready.size,
     totalCount: connectedIds(room).length,
   });
@@ -547,6 +597,10 @@ function buildOptions(q) {
 
 function questionPayload(room) {
   const q = room.question;
+  if (room.buildRound) {                      // Bau-Runde: Ergebnisname ja, Raster/Loesung nie
+    return { id: q.id, type: 'crafting', mode: 'build', question: q.question, category: q.category, answer: q.answer, resultKey: q.resultKey, resultCount: q.resultCount || 1,
+             buildSeconds: room.buildSeconds, checks: BUILD_CHECKS, roundNum: room.roundNum, maxRounds: room.rounds };
+  }
   return {
     id: q.id, type: q.type, question: q.question, category: q.category,
     unit: q.unit || null, options: room.options || null,
@@ -577,7 +631,7 @@ function nextQuestion(room) {
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
     const lastIdx = room.questionOrder.length ? room.questionOrder[room.questionOrder.length - 1] : -1;
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build));
     if (room.questionOrder.length > 1 && room.questionOrder[0] === lastIdx) {
       const t = room.questionOrder[0]; room.questionOrder[0] = room.questionOrder[1]; room.questionOrder[1] = t;
     }
@@ -586,6 +640,17 @@ function nextQuestion(room) {
   room.question = allQuestions[room.questionOrder[room.currentIndex++]];
   room.options  = (room.question.type === 'entity' || room.question.type === 'crafting') ? buildOptions(room.question) : null;
   room.roundNum++;
+  const bq = room.question;
+  room.buildRound = !!(bq.type === 'crafting' && bq.buildable && bq.solution && (room.build === 'only' || (room.build === 'mix' && Math.random() < 0.5)));
+  if (room.buildRound) {                      // alle bauen gleichzeitig, keine Glocke
+    room.options = null; room.builds = new Map(); room.buildSeq = 0; room.qStart = Date.now();
+    room.phase = 'building'; room.timerLeft = room.buildSeconds;
+    io.to(room.id).emit('question', questionPayload(room));
+    startBuildCountdown(room);
+    broadcastLobby(room);
+    return;
+  }
+  room.builds = null;
   room.phase     = 'buzzer';
   room.timerLeft = BUZZER_TIME;
 
@@ -718,6 +783,7 @@ function resolveAnswers(room) {
     answers.push({
       playerId: e.playerId, playerName: e.playerName, text: (e.text || '').slice(0, 40), correct: !!e.correct,
       deviationPct: e.rel == null ? null : Math.round(e.rel * 1000) / 10,
+      ms: e.skipped ? null : Math.max(0, Math.round((atime(room) - e.timeLeft) * 1000)),
       points, delta: points + penalty, winner: points > 0, skipped: !!e.skipped,
       firstBuzzer: e.playerId === room.firstBuzzer,
     });
@@ -731,7 +797,7 @@ function resolveAnswers(room) {
     outcome.set(p.id, { points: 0, penalty, skipped: false });
     answers.push({
       playerId: p.id, playerName: p.name, text: '', correct: false, deviationPct: null,
-      points: 0, delta: penalty, winner: false, skipped: false, firstBuzzer: isBell, noAnswer: true,
+      points: 0, delta: penalty, winner: false, skipped: false, firstBuzzer: isBell, noAnswer: true, ms: null,
     });
     if (isBell) io.to(room.id).emit('answer_timeout', { playerId: p.id, playerName: p.name, delta: penalty, penalty: PTS_BELL_WRONG, score: p.score });
   }
@@ -774,6 +840,114 @@ function resolveAnswers(room) {
   later(room, () => revealResult(room, winnerId), REVEAL_DELAY);
 }
 
+// ── Rundenuebersicht und Host-Report ─────────────────────────────────────────
+function formatOfQ(q, build) { return q.type === 'crafting' ? (build ? 'craft-build' : 'craft-guess') : (Array.isArray(q.choices) && q.choices.length === 2 ? 'choice' : (q.type === 'number' ? 'number' : 'entity')); }
+function pushHistory(room) {
+  const q = room.question, rv = room.lastReveal;
+  if (!q) return;
+  const entry = {
+    n: room.roundNum, qid: q.id, format: formatOfQ(q, room.buildRound), question: String(q.question).slice(0, 160),
+    answer: room.lastResult ? room.lastResult.answer : '', mode: room.skippedRound ? 'skipped' : (rv ? rv.mode : 'none'), skipped: !!room.skippedRound,
+    winnerId: room.lastResult ? room.lastResult.winnerId : null, firstBuzzerId: room.firstBuzzer || null,
+    answers: (rv ? rv.answers : []).map(a => ({ playerId: a.playerId, name: a.playerName, text: a.text || '', correct: !!a.correct, points: a.points || 0, delta: a.delta || 0,
+      ms: a.ms == null ? null : a.ms, noAnswer: !!a.noAnswer, skipped: !!a.skipped, ...(a.rank ? { rank: a.rank } : {}) })),
+  };
+  room.history.push(entry);
+  if (room.history.length > 100) room.history.shift();
+}
+function hostReport(room) {
+  const per = new Map(), questions = [];
+  let hitSum = 0, hitN = 0, msSum = 0, msN = 0, fastest = null;
+  for (const h of room.history) {
+    const played = h.answers.filter(a => !a.skipped && !a.noAnswer);
+    const correct = played.filter(a => a.correct);
+    const msList = correct.map(a => a.ms).filter(m => m != null);
+    let fq = null;
+    correct.forEach(a => { if (a.ms != null && (!fq || a.ms < fq.ms)) fq = { name: a.name, ms: a.ms }; });
+    const everyone = h.answers.filter(a => !a.skipped);
+    questions.push({ n: h.n, qid: h.qid, question: h.question, answer: h.answer, format: h.format, answered: played.length, correct: correct.length,
+      hitRate: everyone.length ? Math.round(correct.length / everyone.length * 1000) / 1000 : 0, avgMs: msList.length ? Math.round(msList.reduce((a, b) => a + b, 0) / msList.length) : null, fastest: fq });
+    if (everyone.length) { hitSum += correct.length / everyone.length; hitN++; }
+    if (fq && (!fastest || fq.ms < fastest.ms)) fastest = { name: fq.name, ms: fq.ms, n: h.n };
+    for (const a of h.answers) {
+      const p = per.get(a.name) || { name: a.name, answered: 0, correct: 0, points: 0, msSum: 0, msN: 0, fastestMs: null, noAnswers: 0 };
+      if (a.noAnswer) p.noAnswers++; else if (!a.skipped) { p.answered++; if (a.correct) { p.correct++; if (a.ms != null) { p.msSum += a.ms; p.msN++; msSum += a.ms; msN++; p.fastestMs = p.fastestMs == null ? a.ms : Math.min(p.fastestMs, a.ms); } } }
+      p.points += a.delta || 0;
+      per.set(a.name, p);
+    }
+  }
+  const rated = questions.filter(x => x.answered + 0 >= 0);
+  const hardest = rated.length ? rated.slice().sort((a, b) => a.hitRate - b.hitRate)[0] : null;
+  const easiest = rated.length ? rated.slice().sort((a, b) => b.hitRate - a.hitRate)[0] : null;
+  return { rounds: room.history.length, totals: { avgHitRate: hitN ? Math.round(hitSum / hitN * 1000) / 1000 : 0, avgMs: msN ? Math.round(msSum / msN) : null },
+    players: [...per.values()].map(p => ({ name: p.name, answered: p.answered, correct: p.correct, points: p.points, avgMs: p.msN ? Math.round(p.msSum / p.msN) : null, fastestMs: p.fastestMs, noAnswers: p.noAnswers })).sort((a, b) => b.points - a.points),
+    questions, hardest: hardest ? { n: hardest.n, qid: hardest.qid, hitRate: hardest.hitRate } : null, easiest: easiest ? { n: easiest.n, qid: easiest.qid, hitRate: easiest.hitRate } : null, fastest };
+}
+function sendHostReport(room) { if (room.hostId && room.players[room.hostId]) io.to(room.hostId).emit('host_report', hostReport(room)); }
+
+// ── Bau-Runde (alle bauen gleichzeitig) ──────────────────────────────────────
+function startBuildCountdown(room) {
+  clearInterval(room.timerIv);
+  room.timerLeft = room.buildSeconds;
+  room.timerIv = setInterval(() => {
+    if (room.dead) return clearInterval(room.timerIv);
+    room.timerLeft--;
+    io.to(room.id).emit('timer', { left: room.timerLeft, max: room.buildSeconds, phase: 'building' });
+    if (room.timerLeft <= 0) { clearInterval(room.timerIv); resolveBuild(room); }
+  }, 1000);
+}
+function checkBuildDone(room) {
+  if (!room || room.dead || room.phase !== 'building' || room.resolving || !room.builds) return;
+  const ids = connectedIds(room);
+  if (ids.length && ids.every(id => { const b = room.builds.get(id); return b && (b.done || b.attempts >= BUILD_CHECKS); })) resolveBuild(room);
+}
+function cleanBuildGrid(g) {
+  if (!Array.isArray(g) || g.length !== 3) return null;
+  const out = [];
+  for (const row of g) {
+    if (!Array.isArray(row) || row.length !== 3) return null;
+    const cells = [];
+    for (const k of row) {
+      if (k == null || k === '') cells.push(null);
+      else if (typeof k === 'string' && /^[a-z0-9_]{1,60}$/.test(k)) cells.push(k);
+      else return null;
+    }
+    out.push(cells);
+  }
+  return out;
+}
+function resolveBuild(room) {
+  if (room.dead || room.phase !== 'building' || room.resolving || !room.question) return;
+  room.resolving = true; room.answered = true;
+  clearInterval(room.timerIv); room.timerIv = null;
+  const q = room.question, bt = room.buildSeconds;
+  const solved = [...room.builds.entries()].filter(([id, b]) => b.done && room.players[id]).sort((a, b) => a[1].order - b[1].order);
+  const answers = [], points = new Map();
+  solved.forEach(([id, b], i) => {
+    const p = room.players[id];
+    const base = PTS_CORRECT + Math.round(Math.max(0, b.timeLeft) / bt * PTS_SPEED);
+    const pts = Math.round(base * BUILD_FACTORS[Math.min(i, BUILD_FACTORS.length - 1)]);
+    p.score += pts; points.set(id, pts);
+    answers.push({ playerId: id, playerName: p.name, text: '', correct: true, deviationPct: null, ms: b.ms, points: pts, delta: pts, winner: true, skipped: false, firstBuzzer: false, rank: i + 1 });
+  });
+  for (const p of Object.values(room.players)) {
+    if (points.has(p.id) || !p.connected) continue;
+    answers.push({ playerId: p.id, playerName: p.name, text: '', correct: false, deviationPct: null, ms: null, points: 0, delta: 0, winner: false, skipped: false, firstBuzzer: false, noAnswer: true });
+  }
+  for (const p of Object.values(room.players)) {
+    if (!p.connected) continue;
+    if ((points.get(p.id) || 0) > 0) {
+      p.streak = Math.min(TOTEM_STREAK, (p.streak || 0) + 1);
+      if (p.streak >= TOTEM_STREAK && !p.hasTotem) { p.hasTotem = true; p.streak = 0; io.to(room.id).emit('totem_earned', { playerId: p.id, playerName: p.name }); }
+    } else p.streak = 0;
+  }
+  const winnerId = solved.length ? solved[0][0] : null;
+  room.lastReveal = { mode: 'build', winnerId, winnerIds: solved.map(([id]) => id), firstBuzzerId: null, answers, resultCount: q.resultCount || 1, correctAnswer: q.answer, solutionGrid: q.grid };
+  io.to(room.id).emit('answers_revealed', room.lastReveal);
+  broadcastLobby(room);
+  later(room, () => revealResult(room, winnerId), REVEAL_DELAY);
+}
+
 // ── Aufloesung ────────────────────────────────────────────────────────────────
 function revealResult(room, winnerId) {
   if (room.dead || room.phase === 'result' || room.phase === 'game_over' || !room.question) return;
@@ -785,14 +959,18 @@ function revealResult(room, winnerId) {
   room.lastResult = { answer, ...(q.type === 'crafting' ? { resultCount: q.resultCount || 1, grid: q.grid, shapeless: !!q.shapeless } : {}), funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
     mode: room.skippedRound ? 'skipped' : (room.lastReveal ? room.lastReveal.mode : 'none'), skipped: !!room.skippedRound,
     answers: room.lastReveal ? room.lastReveal.answers : [] };
+  room.lastResult.teamScores = teamScoresOf(room);
+  pushHistory(room);
   io.to(room.id).emit('result', room.lastResult);
   broadcastLobby(room);
 
   if (room.roundNum >= room.rounds) {
     later(room, () => {
       room.phase = 'game_over';
-      room.lastGameOver = { scores: scoreList(room), rounds: room.roundNum };
+      const ts = teamScoresOf(room);
+      room.lastGameOver = { scores: scoreList(room), rounds: room.roundNum, history: room.history, ...(ts ? { teamScores: ts, winnerTeamId: ts[0] ? ts[0].id : null } : {}) };
       io.to(room.id).emit('game_over', room.lastGameOver);
+      sendHostReport(room);
       broadcastLobby(room);
     }, RESULT_TIME * 1000);
   } else {
@@ -803,6 +981,7 @@ function revealResult(room, winnerId) {
 // Raum zurueck in die Lobby (z. B. wenn alle weg sind)
 function resetRoom(room) {
   stopTimers(room);
+  room.history = []; room.teamCarry = {}; room.buildRound = false; room.builds = null;
   room.phase = 'waiting'; room.roundNum = 0; room.question = null; room.options = null;
   room.lockedOut = new Set(); room.currentBuzzer = null; room.answered = false;
   room.ready.clear(); room.lastResult = null; room.lastGameOver = null;
@@ -877,7 +1056,12 @@ function sceneState(room) {
 
 function sendSnapshot(socket, room) {
   broadcastLobby(room);
-  if (room.phase === 'buzzer' || room.phase === 'answering') {
+  if (room.phase === 'building') {
+    socket.emit('question', questionPayload(room));
+    socket.emit('timer', { left: room.timerLeft, max: room.buildSeconds, phase: 'building' });
+    const mine = room.builds && room.builds.get(socket.id);
+    socket.emit('build_state', { done: [...(room.builds || new Map()).entries()].filter(([, b]) => b.done).map(([id]) => id), attemptsLeft: BUILD_CHECKS - (mine ? mine.attempts : 0), finished: !!(mine && (mine.done || mine.attempts >= BUILD_CHECKS)) });
+  } else if (room.phase === 'buzzer' || room.phase === 'answering') {
     socket.emit('question', questionPayload(room));
     socket.emit('timer', { left: room.timerLeft, max: room.phase === 'buzzer' ? BUZZER_TIME : atime(room), phase: room.phase === 'buzzer' ? 'buzzer' : 'answering' });
     if (room.phase === 'answering' && room.currentBuzzer && room.players[room.currentBuzzer]) {
@@ -885,9 +1069,9 @@ function sendSnapshot(socket, room) {
     }
     if (room.phase === 'answering') socket.emit('answer_phase', { firstBuzzerId: room.firstBuzzer, endsIn: room.timerLeft, answered: [...room.answers.keys()] });
   } else if (room.phase === 'result' && room.lastResult) {
-    socket.emit('result', { ...room.lastResult, scores: scoreList(room) });
+    socket.emit('result', { ...room.lastResult, scores: scoreList(room), teamScores: teamScoresOf(room) });
   } else if (room.phase === 'game_over' && room.lastGameOver) {
-    socket.emit('game_over', { ...room.lastGameOver, scores: scoreList(room) });
+    socket.emit('game_over', { ...room.lastGameOver, scores: scoreList(room), ...(room.teams ? { teamScores: teamScoresOf(room) } : {}) });
   }
   socket.emit('scene', sceneState(room));
 }
@@ -997,6 +1181,7 @@ io.on('connection', (socket) => {
             token: crypto.randomBytes(16).toString('hex'), connected: true, dcTimer: null };
       room.players[socket.id] = p;
     }
+    assignTeam(room, p);
     currentRoom = room.id;
     socket.join(room.id);
     socket.emit('joined', {
@@ -1005,6 +1190,7 @@ io.on('connection', (socket) => {
       hostId: room.hostId, settings: settingsOf(room),
       token: p.token, rejoined: !!rejoinPlayer,
       character: p.character,
+      teams: teamsOf(room),
       players: Object.values(room.players).map(fullPlayer),
     });
     if (!rejoinPlayer) socket.to(room.id).emit('player_joined', { player: fullPlayer(p) });
@@ -1025,7 +1211,9 @@ io.on('connection', (socket) => {
 
     const finalize = () => {
       clearTimeout(p.dcTimer);
+      if (room.teams && p.teamId) room.teamCarry[p.teamId] = (room.teamCarry[p.teamId] || 0) + p.score;
       delete room.players[p.id];
+      if (room.builds) room.builds.delete(p.id);
       io.to(room.id).emit('player_left', { id: p.id });
       room.lockedOut.delete(p.id);
       room.ready.delete(p.id);
@@ -1039,7 +1227,7 @@ io.on('connection', (socket) => {
         return;
       }
       if (connectedIds(room).length === 0) resetRoom(room);
-      else { broadcastLobby(room); checkBuzzerDeadlock(room); maybeAutoStart(room); checkAnswerPhaseDone(room); }
+      else { broadcastLobby(room); checkBuzzerDeadlock(room); maybeAutoStart(room); checkAnswerPhaseDone(room); checkBuildDone(room); }
     };
 
     if (immediate) { finalize(); return; }
@@ -1052,6 +1240,7 @@ io.on('connection', (socket) => {
     checkBuzzerDeadlock(room);
     maybeAutoStart(room);
     checkAnswerPhaseDone(room);
+    checkBuildDone(room);
   }
 
   // Raum erstellen ─────────────────────────────────────────────────────────────
@@ -1079,7 +1268,7 @@ io.on('connection', (socket) => {
       answerTime: d.answerTime, difficulty: d.difficulty, maxPlayers: d.maxPlayers,
       hostId: socket.id,
     });
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build));
     rooms[rid] = room;
     joinRoomAs(room, cleanText(d.playerName, MAX_NAME_LEN) || 'Host', validSkin(d.skin), null, d.character);
     log('info', 'room_created', { rooms: Object.keys(rooms).length });
@@ -1260,17 +1449,21 @@ io.on('connection', (socket) => {
     if (d.maxPlayers !== undefined && (!Number.isInteger(d.maxPlayers) || d.maxPlayers < MIN_PLAYERS_SETTING || d.maxPlayers > MAX_PLAYERS || d.maxPlayers < playerCount(room))) return deny('maxPlayers');
     if (d.categories !== undefined && !Array.isArray(d.categories)) return deny('categories');
     if (d.password !== undefined && (typeof d.password !== 'string' || d.password.length > 40)) return deny('password');
+    if (d.build !== undefined && !BUILD_CHOICES.includes(d.build)) return deny('build');
+    if (d.buildSeconds !== undefined && !BUILD_SECONDS.includes(d.buildSeconds)) return deny('buildSeconds');
     if (d.rounds !== undefined) room.rounds = d.rounds;
     if (d.answerTime !== undefined) room.answerTime = d.answerTime;
     if (d.difficulty !== undefined) room.difficulty = d.difficulty;
     if (d.maxPlayers !== undefined) room.maxPlayers = d.maxPlayers;
+    if (d.build !== undefined) room.build = d.build;
+    if (d.buildSeconds !== undefined) room.buildSeconds = d.buildSeconds;
     if (d.categories !== undefined) {
       const cats = d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30);
       room.categories = cats.length ? cats : null;
     }
     if (d.isPublic !== undefined) room.isPublic = !!d.isPublic;
     if (d.password !== undefined) room.password = d.password.slice(0, 40) || null;
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty)); room.currentIndex = 0;
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build)); room.currentIndex = 0;
     io.to(room.id).emit('settings_updated', settingsOf(room));
     broadcastLobby(room);
   });
@@ -1324,6 +1517,88 @@ io.on('connection', (socket) => {
     rematchCheck(room);
   });
 
+  // Bau-Runde: Raster pruefen (3 Pruefungen je Spieler, Loesung nie ausgeliefert) ──────────
+  on('build_check', (d) => {
+    const room = getRoom();
+    if (!room || room.phase !== 'building' || room.resolving || !room.question || !room.builds) return;
+    const p = room.players[socket.id];
+    if (!p || !p.connected) return;
+    const st = room.builds.get(socket.id) || { attempts: 0, done: false, ms: null, order: 0, timeLeft: 0 };
+    if (st.done || st.attempts >= BUILD_CHECKS) return socket.emit('build_result', { valid: true, correct: !!st.done, final: true, attemptsLeft: 0 });
+    const grid = cleanBuildGrid(d && d.grid);
+    if (!grid || !grid.flat().some(Boolean)) return socket.emit('build_result', { valid: false, correct: false, final: false, attemptsLeft: BUILD_CHECKS - st.attempts });
+    const diff = CraftCheck.diff(room.question, grid);
+    st.attempts++;
+    if (diff.ok) {
+      st.done = true; st.ms = Date.now() - room.qStart; st.order = ++room.buildSeq; st.timeLeft = room.timerLeft;
+      room.builds.set(socket.id, st);
+      socket.emit('build_result', { valid: true, correct: true, final: true, attemptsLeft: BUILD_CHECKS - st.attempts });
+      io.to(room.id).emit('player_built', { playerId: p.id, playerName: p.name, order: st.order });
+    } else {
+      room.builds.set(socket.id, st);
+      socket.emit('build_result', { valid: true, correct: false, final: st.attempts >= BUILD_CHECKS, attemptsLeft: BUILD_CHECKS - st.attempts, diff: { correct: diff.correct, total: diff.total, cells: diff.cells } });
+    }
+    broadcastLobby(room);
+    checkBuildDone(room);
+  });
+
+  // Rundenuebersicht und Host-Report ────────────────────────────────────────────
+  on('get_round_overview', () => {
+    const room = getRoom(); if (!room) return;
+    socket.emit('round_overview', { history: room.history, players: scoreList(room).map(x => ({ name: x.name, score: x.score })) });
+  });
+  on('get_host_report', () => {
+    const room = getRoom();
+    if (!room || room.hostId !== socket.id || !['game_over', 'result'].includes(room.phase)) return;
+    socket.emit('host_report', hostReport(room));
+  });
+
+  // Teams (nur Host, nur Lobby) ────────────────────────────────────────────────
+  const teamsDeny = (reason) => socket.emit('teams_denied', { reason });
+  on('update_teams', (d) => {
+    const room = getRoom(); if (!room || !d || typeof d !== 'object') return;
+    if (room.permanent || room.hostId !== socket.id) return teamsDeny('host');
+    if (room.phase !== 'waiting' || room.starting) return teamsDeny('phase');
+    if (d.enabled === false) { room.teams = null; room.teamCarry = {}; Object.values(room.players).forEach(p => { p.teamId = null; }); broadcastLobby(room); io.to(room.id).emit('teams_updated', null); return; }
+    if (d.enabled !== true && !room.teams) return teamsDeny('phase');
+    const count = d.count === undefined ? (room.teams ? room.teams.list.length : 2) : d.count;
+    if (!Number.isInteger(count) || count < 2 || count > 4) return teamsDeny('count');
+    let list = (room.teams ? room.teams.list : TEAM_DEFAULTS).slice(0, count).map(t => Object.assign({}, t));
+    while (list.length < count) list.push(Object.assign({}, TEAM_DEFAULTS[list.length]));
+    if (d.teams !== undefined) {
+      if (!Array.isArray(d.teams) || d.teams.length > 4) return teamsDeny('count');
+      for (const u of d.teams) {
+        const t = u && list.find(x => x.id === u.id);
+        if (!t) return teamsDeny('count');
+        if (u.name !== undefined) { const n = typeof u.name === 'string' ? cleanText(u.name, 16) : ''; if (!n || badText(n)) return teamsDeny('name'); t.name = n; }
+        if (u.symbol !== undefined) { if (!TEAM_SYMBOLS.includes(u.symbol)) return teamsDeny('symbol'); t.symbol = u.symbol; }
+        if (u.color !== undefined) { if (!TEAM_COLORS.includes(u.color)) return teamsDeny('color'); t.color = u.color; }
+      }
+    }
+    const uniq = (k) => new Set(list.map(t => String(t[k]).toLowerCase())).size === list.length;
+    if (!uniq('name') || !uniq('symbol') || !uniq('color')) return teamsDeny('duplicate');
+    const wasOff = !room.teams;
+    room.teams = { list };
+    if (wasOff) { Object.values(room.players).forEach(p => { p.teamId = null; }); balanceTeams(room); }
+    else Object.values(room.players).forEach(p => assignTeam(room, p));
+    io.to(room.id).emit('teams_updated', teamsOf(room));
+    broadcastLobby(room);
+  });
+  on('balance_teams', () => {
+    const room = getRoom(); if (!room) return;
+    if (room.permanent || room.hostId !== socket.id) return teamsDeny('host');
+    if (!room.teams || room.phase !== 'waiting') return teamsDeny('phase');
+    balanceTeams(room); broadcastLobby(room);
+  });
+  on('move_player', (d) => {
+    const room = getRoom(); if (!room || !d || typeof d.id !== 'string' || typeof d.teamId !== 'string') return;
+    if (!room.teams || room.phase !== 'waiting' || room.starting) return teamsDeny('phase');
+    if (d.id !== socket.id && room.hostId !== socket.id) return teamsDeny('host');
+    const p = room.players[d.id];
+    if (!p || !room.teams.list.some(t => t.id === d.teamId)) return teamsDeny('count');
+    p.teamId = d.teamId; broadcastLobby(room);
+  });
+
   // Weiterspielen ──────────────────────────────────────────────────────────────
   on('continue_game', () => {
     const room = getRoom();
@@ -1353,8 +1628,10 @@ process.on('uncaughtException', (e) => log('error', 'uncaught_exception', { erro
 process.on('unhandledRejection', (e) => log('error', 'unhandled_rejection', { error: String(e && e.message).slice(0, 160) }));
 
 const PORT = process.env.PORT || 3000;
-store.init(['ranked', 'reports', 'qstats', 'runs'], { ranked: [], reports: [], qstats: {}, runs: {} }).then((kind) => {
+store.init(['ranked', 'reports', 'qstats', 'runs', 'profiles'], { ranked: [], reports: [], qstats: {}, runs: {}, profiles: {} }).then((kind) => {
   hydrateRanked();
+  // Profile und Freunde (lib/profiles.js): nach dem Laden des Speichers einhaengen; nutzt die signierten Ranked-Tokens zur Anmeldung
+  require('./lib/profiles.js').create({ app, express, store, rankedStore, saveRankedSoon, sign: rankedApi.sign, verify: rankedApi.verify, apiAllowed, log, categories: { has: (k) => KNOWN_CATEGORIES.has(k) } });
   // Datenschutz: Meldungen hoechstens 12 Monate speichern (beim Start und taeglich); Altbestand ohne Zeitstempel bekommt das Startdatum
   const purge = () => { const before = store.get('reports'); const after = purgeReports(before); if (!Array.isArray(before) || after.length !== before.length || before.some(r => !Number.isFinite(r && r.ts))) store.set('reports', after); };
   purge();

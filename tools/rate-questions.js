@@ -16,7 +16,6 @@ const fs = require('fs');
 const path = require('path');
 const P = path.join(__dirname, '..', 'questions.json');
 const q = JSON.parse(fs.readFileSync(P, 'utf8'));
-
 const CAT = { 'Hardcore-Wissen': 400, Redstone: 200, 'Verzauberungen': 100, 'Geschichte & Updates': 100, 'Essen & Nahrung': -100 };
 
 function raw(x) {

@@ -14,6 +14,15 @@
     if (on) document.documentElement.setAttribute('data-motion', 'reduce'); else document.documentElement.removeAttribute('data-motion');
     ls('mg_reduce_motion', on ? '1' : '0');
   }
+  // Barrierefreiheit: Hoher Kontrast, Textgroesse, Lesbare Schrift (gespeichert, sofort beim Laden)
+  var A11Y = { contrast: 'mg_contrast', font: 'mg_font', text: 'mg_text' };
+  function applyA11y() {
+    var h = document.documentElement;
+    if (ls(A11Y.contrast) === '1') h.setAttribute('data-contrast', 'high'); else h.removeAttribute('data-contrast');
+    if (ls(A11Y.font) === '1') h.setAttribute('data-font', 'read'); else h.removeAttribute('data-font');
+    var t = ls(A11Y.text); if (t === 'l' || t === 'xl') h.setAttribute('data-text', t); else h.removeAttribute('data-text');
+  }
+  applyA11y();
   // Gespeicherte Animationen-Einstellung beim Laden anwenden
   if (ls('mg_reduce_motion') === '1') document.documentElement.setAttribute('data-motion', 'reduce');
 
@@ -29,6 +38,15 @@
         '<div class="mg-set-row"><span>Musik</span><button type="button" class="btn" id="mg-set-music">Spotify öffnen</button></div>' +
         '<div class="mg-set-row"><label for="mg-set-theme">Helles Design</label><input type="checkbox" id="mg-set-theme" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-motion">Animationen reduzieren</label><input type="checkbox" id="mg-set-motion" class="mg-switch"></div>' +
+        '<div class="mg-set-sec" role="group" aria-labelledby="mg-set-a11y">' +
+          '<h3 id="mg-set-a11y">Barrierefreiheit</h3>' +
+          '<div class="mg-set-row"><label for="mg-set-contrast">Hoher Kontrast</label><input type="checkbox" id="mg-set-contrast" class="mg-switch"></div>' +
+          '<div class="mg-set-row"><label for="mg-set-font">Lesbare Schrift</label><input type="checkbox" id="mg-set-font" class="mg-switch"></div>' +
+          '<div class="mg-set-row"><span id="mg-set-text-l">Textgröße</span><div class="mg-seg" role="radiogroup" aria-labelledby="mg-set-text-l" id="mg-set-text">' +
+            '<button type="button" class="chip" role="radio" data-t="m">Normal</button><button type="button" class="chip" role="radio" data-t="l">Groß</button><button type="button" class="chip" role="radio" data-t="xl">Sehr groß</button></div></div>' +
+          '<div class="mg-set-row"><span>Einführung</span><button type="button" class="btn" id="mg-set-tutorial">Tutorial ansehen</button></div>' +
+        '</div>' +
+        '<div class="mg-set-row"><span>Hilfe</span><button type="button" class="btn" id="mg-set-report">Problem melden</button></div>' +
         '<div class="mg-set-row"><span>Spielerprofil</span><button type="button" class="btn" id="mg-set-profile">Profil, Skin, Figur</button></div>' +
         '<div class="mg-set-row"><span>Rankliste</span><button type="button" class="btn" id="mg-set-rank">Rankliste öffnen</button></div>' +
       '</div>';
@@ -38,6 +56,14 @@
     $('mg-set-vol').addEventListener('input', function (e) { if (global.MGAudio) MGAudio.setVolume(e.target.value / 100); });
     $('mg-set-vol').addEventListener('change', function () { if (global.MGAudio) MGAudio.play('correct'); });
     $('mg-set-music').addEventListener('click', function () { close(); if (global.MGSpotify) MGSpotify.open(); });
+    function bindFlag(id, key) { $(id).addEventListener('change', function (e) { ls(key, e.target.checked ? '1' : '0'); applyA11y(); }); }
+    bindFlag('mg-set-contrast', A11Y.contrast); bindFlag('mg-set-font', A11Y.font);
+    $('mg-set-text').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-t]'); if (!b) return;
+      ls(A11Y.text, b.getAttribute('data-t')); applyA11y(); syncText();
+    });
+    $('mg-set-tutorial').addEventListener('click', function () { close(); if (global.MGTutorial) MGTutorial.open(true); else location.href = 'game.html#tutorial'; });
+    $('mg-set-report').addEventListener('click', function () { close(); if (global.MGReport) MGReport.open(); });
     $('mg-set-theme').addEventListener('change', function (e) { applyTheme(e.target.checked ? 'light' : 'dark'); });
     $('mg-set-motion').addEventListener('change', function (e) { applyMotion(e.target.checked); });
     $('mg-set-profile').addEventListener('click', function () { close(); if (global.MGSkin) MGSkin.openProfile(); });
@@ -59,6 +85,10 @@
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
   }
+  function syncText() {
+    var cur = ls(A11Y.text); if (cur !== 'l' && cur !== 'xl') cur = 'm';
+    [].forEach.call(panel.querySelectorAll('#mg-set-text button'), function (b) { var on = b.getAttribute('data-t') === cur; b.setAttribute('aria-checked', on ? 'true' : 'false'); b.classList.toggle('on', on); });
+  }
   function syncSoundBtn() {
     var b = document.getElementById('sound-toggle');
     if (b) b.className = 'sound-btn' + (global.MGAudio && MGAudio.isOn() ? ' on' : '');
@@ -70,6 +100,9 @@
     panel.querySelector('#mg-set-vol').value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100);
     panel.querySelector('#mg-set-theme').checked = document.documentElement.getAttribute('data-theme') === 'light';
     panel.querySelector('#mg-set-motion').checked = document.documentElement.getAttribute('data-motion') === 'reduce';
+    panel.querySelector('#mg-set-contrast').checked = ls(A11Y.contrast) === '1';
+    panel.querySelector('#mg-set-font').checked = ls(A11Y.font) === '1';
+    syncText();
     panel.querySelector('#mg-set-music').style.display = global.MGSpotify ? '' : 'none';
     panel.classList.add('open');
     if (btn) btn.setAttribute('aria-expanded', 'true');

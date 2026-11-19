@@ -53,6 +53,8 @@
     s.cats = cats; s.totalCorrect = totalCorrect; s.answered = answered; s.catsPlayed = catsPlayed;
     s.blitzGames = parseInt((ls() && ls().getItem('mg_blitz_games')) || '0', 10) || 0;
     s.blitzBest = parseInt((ls() && ls().getItem('mg_blitz_best')) || '0', 10) || 0;
+    s.hcBest = parseInt((ls() && ls().getItem('mg_hc_best')) || '0', 10) || 0;
+    s.hlBest = parseInt((ls() && ls().getItem('mg_hl_best')) || '0', 10) || 0;
     s.dailyStreak = dailyStreak();
     s.rankedGames = Number(rk.games) || 0;
     s.peakMmr = Number(rk.peak) || Number(rk.mmr) || 0;
@@ -101,7 +103,9 @@
     { id: 'mp_game_win',    name: 'Tischkönig',       desc: 'Ein Multiplayer-Spiel gewonnen',  texture: 'block/gold_block',           rarity: 'rare',      check: function (s) { return s.mpGameWins >= 1; } },
     { id: 'mp_first_exact', name: 'Erster und exakt', desc: 'Als erster Läutender exakt richtig', texture: 'item/bow',                rarity: 'uncommon',  check: function (s) { return s.mpExactFirst >= 1; } },
     { id: 'mp_closest_win', name: 'Am nächsten dran', desc: 'Eine Runde durch die kleinste Abweichung gewonnen', texture: 'item/compass_00', rarity: 'uncommon', check: function (s) { return s.mpClosestWins >= 1; } },
-    { id: 'totem_used',     name: 'Unsterblich',      desc: 'Ein Totem im Multiplayer eingesetzt', texture: 'item/totem_of_undying',  rarity: 'common',    check: function (s) { return s.totems >= 1; } }
+    { id: 'totem_used',     name: 'Unsterblich',      desc: 'Ein Totem im Multiplayer eingesetzt', texture: 'item/totem_of_undying',  rarity: 'common',    check: function (s) { return s.totems >= 1; } },
+    { id: 'hardcore_hero', name: 'Hardcore-Held', desc: '10 richtig in Folge im Hardcore-Modus', texture: 'item/netherite_ingot', rarity: 'epic', check: function (s) { return s.hcBest >= 10; } },
+    { id: 'hl_streak_10', name: 'Höher-Tiefer-Profi', desc: '10er Serie bei Höher oder Tiefer', texture: 'item/spyglass', rarity: 'rare', check: function (s) { return s.hlBest >= 10; } }
   ];
 
   function earned() {
@@ -175,6 +179,7 @@
 
   // Fortschritt je Abzeichen fuer die Anzeige (0..1 fuer zaehlbare Bedingungen, sonst 0/1)
   var PROGRESS = {
+    hardcore_hero: ['hcBest', 10], hl_streak_10: ['hlBest', 10],
     streak_5: ['bestStreak', 5], streak_10: ['bestStreak', 10], streak_20: ['bestStreak', 20],
     daily_3: ['dailyStreak', 3], daily_7: ['dailyStreak', 7], daily_30: ['dailyStreak', 30],
     answered_100: ['answered', 100], answered_500: ['answered', 500], answered_1000: ['answered', 1000],
