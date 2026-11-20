@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>MineGuess Admin</title>
+<link rel="stylesheet" href="mg.css">
+<style>
+body { margin:0; padding:16px; max-width:1100px; margin-inline:auto; }
+h1 { font-family:var(--font-px); font-size:1.2rem; margin:0 0 12px; }
+h2 { font-family:var(--font-px); font-size:.95rem; margin:0 0 8px; }
+.ad-login { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+.ad-login input[type=password] { flex:1 1 220px; min-width:0; min-height:44px; padding:0 12px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font:inherit; }
+.ad-login .btn { min-height:44px; }
+.ad-msg { min-height:1.4em; font-weight:700; margin-bottom:8px; } .ad-msg.bad { color:var(--red); }
+.ad-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
+.ad-card { background:var(--bg1); border:2px solid var(--border); border-radius:var(--r); padding:14px; }
+.ad-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; }
+.ad-kpi { background:var(--bg2); border-radius:var(--r); padding:8px; text-align:center; } .ad-kpi b { display:block; font-family:var(--font-px); font-size:1.2rem; } .ad-kpi span { font-size:.72rem; color:var(--muted); }
+.ad-bar { display:grid; grid-template-columns:110px 1fr auto; gap:8px; align-items:center; font-size:.82rem; margin:3px 0; } .ad-bar i { display:block; height:10px; background:var(--green); } .ad-bar .t { background:var(--bg3); }
+.ad-list { list-style:none; margin:0; padding:0; font-size:.85rem; display:grid; gap:4px; } .ad-list li { display:flex; gap:8px; } .ad-list b { min-width:2.5ch; text-align:right; }
+.ad-days { display:flex; align-items:flex-end; gap:3px; height:80px; } .ad-days i { flex:1; background:var(--green); min-height:2px; }
+.ad-muted { color:var(--muted); font-size:.8rem; }
+pre { white-space:pre-wrap; font-size:.78rem; margin:0; }
+</style>
+</head>
+<body>
+<h1>MineGuess Admin</h1>
+<form class="ad-login" id="login" autocomplete="off">
+  <label for="tok" class="ad-muted">Admin-Token</label>
+  <input id="tok" type="password" autocomplete="off" spellcheck="false" placeholder="Token eingeben">
+  <label class="ad-muted"><input type="checkbox" id="keep"> in dieser Sitzung merken</label>
+  <button class="btn btn-primary" type="submit">Laden</button>
+  <button class="btn" type="button" id="clear">Token vergessen</button>
+</form>
+<div class="ad-msg" id="msg" role="status" aria-live="polite"></div>
+<div id="out"></div>
+<script>
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); }, KEY = 'mg_admin_tok';
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function say(t, bad) { var m = $('msg'); m.textContent = t || ''; m.className = 'ad-msg' + (bad ? ' bad' : ''); }
+  try { var saved = sessionStorage.getItem(KEY); if (saved) { $('tok').value = saved; $('keep').checked = true; } } catch (e) {}
+  function kpi(l, v) { return '<div class="ad-kpi"><b>' + esc(v == null ? '–' : v) + '</b><span>' + esc(l) + '</span></div>'; }
+  function bars(obj) {
+    var k = Object.keys(obj || {}), mx = Math.max.apply(null, k.map(function (x) { return obj[x]; }).concat([1]));
+    return k.sort(function (a, b) { return obj[b] - obj[a]; }).map(function (x) { return '<div class="ad-bar"><span>' + esc(x) + '</span><span class="t"><i style="width:' + Math.round(obj[x] / mx * 100) + '%"></i></span><b>' + esc(obj[x]) + '</b></div>'; }).join('') || '<p class="ad-muted">Keine Daten.</p>';
+  }
+  function render(j) {
+    var r = j.reports || {}, rm = j.rooms || {}, rk = j.ranked || {}, pf = j.profiles || {}, h = j.health || {};
+    var days = r.perDay || {}, dk = Object.keys(days).sort().slice(-30), mxd = Math.max.apply(null, dk.map(function (d) { return days[d]; }).concat([1]));
+    $('out').innerHTML = '<p class="ad-muted">Stand: ' + esc(j.generatedAt ? new Date(j.generatedAt).toLocaleString('de-DE') : '–') + '</p><div class="ad-grid">' +
+      '<section class="ad-card"><h2>Server</h2><div class="ad-kpis">' + kpi('Meldungen', r.total) + kpi('Räume', rm.total) + kpi('Spieler online', rm.playersConnected) + kpi('Ranked-Läufe aktiv', rk.activeRuns) + '</div><pre>' + esc(JSON.stringify(h, null, 1)) + '</pre></section>' +
+      '<section class="ad-card"><h2>Meldungen nach Kategorie</h2>' + bars(r.byCategory) + '</section>' +
+      '<section class="ad-card"><h2>Meldungen nach Modus</h2>' + bars(r.byMode) + '</section>' +
+      '<section class="ad-card"><h2>Meldungen nach Grund</h2>' + bars(r.byReason) + '</section>' +
+      '<section class="ad-card"><h2>Meistgemeldete Fragen</h2><ul class="ad-list">' + ((r.topQuestions || []).map(function (q) { return '<li><b>' + esc(q.n) + '×</b><span>#' + esc(q.id) + ' ' + esc(q.question) + '</span></li>'; }).join('') || '<li class="ad-muted">Keine.</li>') + '</ul></section>' +
+      '<section class="ad-card"><h2>Meldungen pro Tag (30 Tage)</h2><div class="ad-days" role="img" aria-label="Meldungen pro Tag">' + dk.map(function (d) { return '<i title="' + esc(d) + ': ' + days[d] + '" style="height:' + Math.max(3, Math.round(days[d] / mxd * 100)) + '%"></i>'; }).join('') + '</div></section>' +
+      '<section class="ad-card"><h2>Räume</h2><div class="ad-kpis">' + kpi('Öffentlich', rm.public) + kpi('Privat', rm.private) + '</div>' + bars(rm.byPhase) + '</section>' +
+      '<section class="ad-card"><h2>Ranked und Profile</h2><div class="ad-kpis">' + kpi('Ranked-Einträge', rk.entries) + kpi('Profile', pf.total) + kpi('Gruppen', pf.groups) + kpi('Duelle', pf.duels) + '</div></section>' +
+      '<section class="ad-card"><h2>Fehler</h2><pre>' + esc(JSON.stringify(j.errors == null ? {} : j.errors, null, 1)) + '</pre></section></div>';
+  }
+  function load() {
+    var t = $('tok').value.trim(); if (!t) { say('Bitte Token eingeben.', true); return; }
+    try { if ($('keep').checked) sessionStorage.setItem(KEY, t); else sessionStorage.removeItem(KEY); } catch (e) {}
+    say('Lade …');
+    fetch('api/admin/overview', { headers: { Authorization: 'Bearer ' + t }, cache: 'no-store' }).then(function (r) {
+      if (r.status === 404) { say('Admin-Bereich ist nicht eingerichtet (ADMIN_TOKEN fehlt).', true); return null; }
+      if (r.status === 429) { say('Zu viele Fehlversuche. Bitte 10 Minuten warten.', true); return null; }
+      if (r.status === 401 || r.status === 403) { say('Token falsch.', true); return null; }
+      if (!r.ok) { say('Fehler ' + r.status + '.', true); return null; }
+      return r.json();
+    }).then(function (j) { if (j) { say('Geladen.'); render(j); } }).catch(function () { say('Server nicht erreichbar.', true); });
+  }
+  $('login').addEventListener('submit', function (e) { e.preventDefault(); load(); });
+  $('clear').addEventListener('click', function () { try { sessionStorage.removeItem(KEY); } catch (e) {} $('tok').value = ''; $('keep').checked = false; $('out').innerHTML = ''; say('Token vergessen.'); });
+})();
+</script>
+</body>
+</html>

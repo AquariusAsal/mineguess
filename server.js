@@ -26,6 +26,8 @@ const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 96 * 1024 });
 
+// Admin-Seite (falls vorhanden): nie indexieren, nie im Service-Worker-Cache (tools/gen-sw-assets.js kennt sie nicht)
+app.use((req, res, next) => { if (req.path === '/admin.html') res.set('X-Robots-Tag', 'noindex, nofollow, noarchive'); next(); });
 // ── Statische Dateien: nur Whitelist (keine Server-, Config-, Daten- oder Doku-Dateien) ──────────
 // Der Pfad wird zuerst dekodiert und auf kanonische Form geprueft ('./', '//', '..', '%', Backslash, NUL werden abgelehnt),
 // erst danach gegen die Whitelist geprueft. So greifen Umgehungen wie /./server.js oder //server.js nicht.
@@ -51,13 +53,13 @@ function log(level, event, fields) {
   if (process.env.LOG_LEVEL === 'silent') return;
   console.log(JSON.stringify(Object.assign({ t: new Date().toISOString(), level, event }, fields || {})));
 }
-app.get('/health', (req, res) => {
-  res.set('Cache-Control', 'no-store');
+function healthData() {
   const st = store.info();
-  res.json({ ok: true, version: PKG.version || null, uptimeSec: Math.round((Date.now() - BOOT) / 1000), rooms: Object.keys(rooms).length,
+  return { ok: true, version: PKG.version || null, uptimeSec: Math.round((Date.now() - BOOT) / 1000), rooms: Object.keys(rooms).length,
     players: Object.values(rooms).reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0),
-    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, mail: mailer.kind(), idCheck: require('./lib/idtoken.js').available() ? 'on' : 'off', counters });
-});
+    questions: Array.isArray(allQuestions) ? allQuestions.length : 0, persist: st.backend, persistError: !!st.lastError, mail: mailer.kind(), mailErrors: mailer.stats().failed, mailSent: mailer.stats().sent, idCheck: require('./lib/idtoken.js').available() ? 'on' : 'off', counters };
+}
+app.get('/health', (req, res) => { res.set('Cache-Control', 'no-store'); res.json(healthData()); });
 
 // ── Rankliste: serverseitiger Fallback (oeffentlich lesbar, ohne Firestore-Regeln) ───────────
 // Speicher: RAM + data/ranked.json. Auf Hosts mit fluechtigem Dateisystem (z. B. Render) geht die Datei beim Neustart verloren.
@@ -168,6 +170,49 @@ app.post('/api/report', express.json({ limit: '6kb' }), (req, res) => {
     const r = reportsApi.process(req.body, req.headers);
     res.status(r.status).json(r.body);
   } catch (e) { res.status(400).json({ ok: false }); }
+});
+
+// ── Admin-Uebersicht (nur mit ENV ADMIN_TOKEN, sonst 404): Zahlen ohne personenbezogene Daten, nie in der Statik-Liste ─────────
+const ADMIN_TOKEN = String(process.env.ADMIN_TOKEN || '');
+const adminOn = ADMIN_TOKEN.length >= 12;
+if (process.env.ADMIN_TOKEN && !adminOn) log('warn', 'admin_token_short', { hint: 'ADMIN_TOKEN muss mindestens 12 Zeichen haben, die Admin-Uebersicht bleibt aus' });
+const adminHash = adminOn ? crypto.createHash('sha256').update(ADMIN_TOKEN).digest() : null;
+const adminFails = new Map();      // IP -> { n, until }
+function adminSummary() {
+  const reports = Array.isArray(store.get('reports')) ? store.get('reports') : [];
+  const tally = (fn) => { const m = {}; reports.forEach(r => { const k = fn(r); if (k != null) m[k] = (m[k] || 0) + (r.count || 1); }); return m; };
+  const byQ = tally(r => (r.questionId != null ? r.questionId : null));
+  const day = (t) => new Date(t).toISOString().slice(0, 10), now = Date.now(), perDay = {};
+  reports.forEach(r => { if (r.ts && now - r.ts < 14 * 86400000) perDay[day(r.ts)] = (perDay[day(r.ts)] || 0) + (r.count || 1); });
+  const rs = Object.values(rooms), byPhase = {};
+  rs.forEach(r => { byPhase[r.phase] = (byPhase[r.phase] || 0) + 1; });
+  const soc = profilesApi && profilesApi.social ? profilesApi.social.soc() : null;
+  return {
+    ok: true, generatedAt: new Date().toISOString(), health: healthData(),
+    reports: { total: reports.reduce((n, r) => n + (r.count || 1), 0), entries: reports.length, byCategory: tally(r => r.category || 'frage'), byMode: tally(r => r.mode || 'altes Format'), byReason: tally(r => (!r.category || r.category === 'frage' ? r.reason : null)),
+      topQuestions: Object.entries(byQ).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([id, n]) => { const q = allQuestions.find(x => x.id === Number(id)); return { id: Number(id), n, question: q ? String(q.question).slice(0, 100) : null }; }), perDay },
+    rooms: { total: rs.length, public: rs.filter(r => r.isPublic).length, private: rs.filter(r => !r.isPublic).length, byPhase, playersConnected: rs.reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0) },
+    ranked: { entries: rankedStore.size, activeRuns: rankedApi.runs.size },
+    profiles: profilesApi ? { total: Object.keys(profilesApi.profiles()).length, groups: soc ? Object.keys(soc.groups || {}).length : 0, duels: soc ? Object.keys(soc.duels || {}).length : 0 } : null,
+    errors: counters,
+  };
+}
+app.get('/api/admin/overview', (req, res) => {
+  res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow, noarchive' });
+  if (!adminOn) return res.status(404).end();                                   // ohne ENV nicht vorhanden
+  const ip = req.ip, f = adminFails.get(ip);
+  if (f && f.until > Date.now()) return res.status(429).json({ ok: false });
+  if (!apiAllowed('admin', ip, 30, 2000)) return res.status(429).json({ ok: false });
+  const h = String(req.headers.authorization || ''), given = h.startsWith('Bearer ') ? h.slice(7) : String(req.headers['x-admin-token'] || '');
+  const ok = crypto.timingSafeEqual(crypto.createHash('sha256').update(given).digest(), adminHash);          // zeitkonstanter Vergleich
+  if (!ok) {
+    const e = f && !(f.until > 0 && f.until <= Date.now()) ? f : { n: 0, until: 0 };
+    e.n++; if (e.n >= 5) { e.until = Date.now() + 10 * 60 * 1000; e.n = 0; }                               // 5 Fehlversuche: 10 min Sperre
+    adminFails.set(ip, e); if (adminFails.size > 5000) adminFails.clear();
+    return res.status(401).json({ ok: false });
+  }
+  adminFails.delete(ip);
+  res.json(adminSummary());
 });
 
 app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {

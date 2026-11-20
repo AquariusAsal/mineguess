@@ -160,3 +160,42 @@ test('Moderations-Skript: Uebersicht nach Kategorie/Modus/Spieler, Filter, JSON,
   assert.match(run('--mode', 'hl'), /1 Meldungen/);
   assert.match(run('--purge', String(qs[0].id)), /1 Meldungen geloescht/);
 });
+
+function statusMock(status) {
+  const hits = [];
+  const srv = http.createServer((req, res) => { let b = ''; req.on('data', d => { b += d; }); req.on('end', () => { hits.push(b); res.writeHead(status, { 'Content-Type': 'application/json' }); res.end('{}'); }); });
+  return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ hits, url: 'http://127.0.0.1:' + srv.address().port, close: () => srv.close() })));
+}
+
+test('Mail-Test-Skript: ohne Schluessel Fehler, mit Mock 200 ok, 403 mit Hinweis, Schluessel/Adressen erscheinen nie in der Ausgabe', async () => {
+  const { spawnSync } = require('child_process'), path = require('path');
+  const run = (env) => spawnSync(process.execPath, [path.join(__dirname, '..', 'tools', 'mail-test.js')], { env: Object.assign({}, process.env, { RESEND_API_KEY: '', BREVO_API_KEY: '', SMTP_URL: '' }, env), encoding: 'utf8' });
+  let r = run({});
+  assert.strictEqual(r.status, 1); assert.match(r.stdout, /kein RESEND_API_KEY/);
+  const ok = await statusMock(200);
+  const forbidden = await statusMock(403);
+  try {
+    r = await new Promise(res => require('child_process').execFile(process.execPath, [path.join(__dirname, '..', 'tools', 'mail-test.js')], { env: Object.assign({}, process.env, { RESEND_API_KEY: 'geheimer-key-123', RESEND_API_URL: ok.url, REPORT_MAIL_TO: TO }) }, (e, so) => res({ status: e ? e.code : 0, stdout: so })));
+    assert.strictEqual(r.status, 0); assert.match(r.stdout, /OK/); assert.ok(!r.stdout.includes('geheimer-key') && !r.stdout.includes(TO));
+    assert.ok(ok.hits.length === 1 && JSON.parse(ok.hits[0]).to[0] === TO);
+    r = await new Promise(res => require('child_process').execFile(process.execPath, [path.join(__dirname, '..', 'tools', 'mail-test.js')], { env: Object.assign({}, process.env, { RESEND_API_KEY: 'geheimer-key-123', RESEND_API_URL: forbidden.url, REPORT_MAIL_TO: TO }) }, (e, so) => res({ status: e ? e.code : 0, stdout: so })));
+    assert.strictEqual(r.status, 1); assert.match(r.stdout, /HTTP 403/); assert.match(r.stdout, /nicht verifiziert|Registrierung/); assert.ok(!r.stdout.includes('geheimer-key') && !r.stdout.includes(TO));
+  } finally { ok.close(); forbidden.close(); }
+});
+
+test('/health: mail, Zaehler mailErrors/mailSent (ohne Adressen) bei Sendefehlern und Erfolgen', async () => {
+  const bad = await statusMock(500), good = await statusMock(200);
+  const S = await startServer({ RESEND_API_KEY: 'k', RESEND_API_URL: bad.url, REPORT_MAIL_TO: TO });
+  try {
+    await post(S.url + '/api/report', rep({ category: 'bug', text: 'eins' }));
+    for (let i = 0; i < 30; i++) { const h = await (await fetch(S.url + '/health')).json(); if (h.mailErrors >= 1) break; await wait(100); }
+    const h = await (await fetch(S.url + '/health')).json();
+    assert.strictEqual(h.mail, 'resend'); assert.ok(h.mailErrors >= 1); assert.strictEqual(h.mailSent, 0); assert.ok(!JSON.stringify(h).includes('example.org'));
+  } finally { S.stop(); bad.close(); }
+  const S2 = await startServer({ RESEND_API_KEY: 'k', RESEND_API_URL: good.url, REPORT_MAIL_TO: TO });
+  try {
+    await post(S2.url + '/api/report', rep({ category: 'bug', text: 'zwei' }));
+    for (let i = 0; i < 30; i++) { const h = await (await fetch(S2.url + '/health')).json(); if (h.mailSent >= 1) break; await wait(100); }
+    const h = await (await fetch(S2.url + '/health')).json(); assert.ok(h.mailSent >= 1); assert.strictEqual(h.mailErrors, 0);
+  } finally { S2.stop(); good.close(); }
+});

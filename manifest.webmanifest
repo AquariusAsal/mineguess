@@ -1,0 +1,36 @@
+{
+  "name": "MineGuess",
+  "short_name": "MineGuess",
+  "description": "Inoffizielles Minecraft-Quiz: allein, ranked, täglich oder im Multiplayer.",
+  "lang": "de",
+  "start_url": "/game.html?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#15171a",
+  "theme_color": "#15171a",
+  "categories": [
+    "games",
+    "education"
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

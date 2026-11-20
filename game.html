@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8" />
 <link rel="icon" type="image/png" href="logo-64.png">
+<link rel="manifest" href="manifest.webmanifest">
+<script src="mg-i18n.js"></script>
+<meta name="theme-color" content="#15171a">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-400-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -2551,7 +2555,7 @@ document.getElementById('btn-share').addEventListener('click', () => {
     d.classList.contains('failed')  ? 'X' :
     d.classList.contains('used')    ? '-' : '_'
   ).join('');
-  const won = document.getElementById('result-title').textContent.includes('Richtig');
+  const won = document.getElementById('result-title').classList.contains('correct-title');
   const text = 'MineGuess\n' + (won ? attempts + '/' + MAX_ATTEMPTS : 'X/' + MAX_ATTEMPTS) + '\n' + emojis + '\n\nScore: ' + sessCorrect + '/' + sessTotal;
   navigator.clipboard.writeText(text).then(() => showToast('Kopiert!'));
 });
@@ -3232,7 +3236,7 @@ function rankedGid() {
   } catch (e) { return null; }
 }
 // Server-Fallback der Rankliste (funktioniert ohne Firestore-Regeln, auch fuer Gaeste)
-function rankedPostApi(force) {
+async function rankedPostApi(force) {
   if (rankedSrv && rankedSrv.active) return;   // Rangliste fuehrt der Server
   if (!rankedProfile || rankedProfile.answered < 1) return;
   const now = Date.now();
@@ -3323,7 +3327,7 @@ async function rankedSrvStart() {
   try { name = localStorage.getItem('mg_player_name') || ''; token = localStorage.getItem('mg_ranked_token') || ''; } catch (e) {}
   if (currentUser && currentUser.displayName) name = currentUser.displayName;
   const body = { name: name || 'Gast', gid: rankedGid(), profile: p, history: p.history, token: token, seen: seenLoad().slice(-1500) };
-  if (currentUser && currentUser.uid && !isGuest) body.uid = currentUser.uid;
+  if (currentUser && currentUser.uid && !isGuest) { body.uid = currentUser.uid; try { body.idToken = await currentUser.getIdToken(); } catch (e) {} }
   if (window.MGCraftBuild && window.CraftCheck && typeof craftModePref === 'function' && craftModePref() !== 'guess') body.build = true;   // Server darf Bau-Aufgaben liefern (ohne Loesung im Payload)
   let j = await srvPost('start', body);
   if ((!j || !j.ok) && body.uid && currentUser) { try { body.idToken = await currentUser.getIdToken(true); j = await srvPost('start', body); } catch (e) {} }

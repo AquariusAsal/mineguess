@@ -23,6 +23,21 @@
     var t = ls(A11Y.text); if (t === 'l' || t === 'xl') h.setAttribute('data-text', t); else h.removeAttribute('data-text');
   }
   applyA11y();
+  // App installieren (PWA) und Offline-Hinweis
+  var installEv = null;
+  global.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEv = e; var b = document.getElementById('mg-set-install-row'); if (b) b.hidden = false; });
+  global.addEventListener('appinstalled', function () { installEv = null; var b = document.getElementById('mg-set-install-row'); if (b) b.hidden = true; });
+  function standalone() { return (global.matchMedia && matchMedia('(display-mode: standalone)').matches) || global.navigator.standalone === true; }
+  function isIos() { return /iphone|ipad|ipod/i.test(navigator.userAgent || '') && !standalone(); }
+  function offlineBanner() {
+    var id = 'mg-offline', el = document.getElementById(id);
+    if (navigator.onLine) { if (el) el.remove(); return; }
+    if (el) return;
+    el = document.createElement('div'); el.id = id; el.className = 'mg-offline'; el.setAttribute('role', 'status'); el.textContent = 'Du bist offline. Gespeicherte Seiten und Fragen funktionieren, Multiplayer, Ranked und Freunde brauchen Internet.';
+    document.body.appendChild(el);
+  }
+  global.addEventListener('online', offlineBanner); global.addEventListener('offline', offlineBanner);
+  document.addEventListener('DOMContentLoaded', offlineBanner);
   // Gespeicherte Animationen-Einstellung beim Laden anwenden
   if (ls('mg_reduce_motion') === '1') document.documentElement.setAttribute('data-motion', 'reduce');
 
@@ -38,6 +53,7 @@
         '<div class="mg-set-row"><span>Musik</span><button type="button" class="btn" id="mg-set-music">Spotify öffnen</button></div>' +
         '<div class="mg-set-row"><label for="mg-set-theme">Helles Design</label><input type="checkbox" id="mg-set-theme" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-motion">Animationen reduzieren</label><input type="checkbox" id="mg-set-motion" class="mg-switch"></div>' +
+        '<div class="mg-set-row"><label for="mg-set-lang">Sprache / Language</label><select id="mg-set-lang" class="form-input" style="max-width:140px"><option value="de">Deutsch</option><option value="en">English</option></select></div>' +
         '<div class="mg-set-row"><label for="mg-set-loader">Lade-Bildschirm kurz halten</label><input type="checkbox" id="mg-set-loader" class="mg-switch"></div>' +
         '<div class="mg-set-sec" role="group" aria-labelledby="mg-set-a11y">' +
           '<h3 id="mg-set-a11y">Barrierefreiheit</h3>' +
@@ -47,6 +63,7 @@
             '<button type="button" class="chip" role="radio" data-t="m">Normal</button><button type="button" class="chip" role="radio" data-t="l">Groß</button><button type="button" class="chip" role="radio" data-t="xl">Sehr groß</button></div></div>' +
           '<div class="mg-set-row"><span>Einführung</span><button type="button" class="btn" id="mg-set-tutorial">Tutorial ansehen</button></div>' +
         '</div>' +
+        '<div class="mg-set-row" id="mg-set-install-row" hidden><span>App</span><button type="button" class="btn" id="mg-set-install">App installieren</button></div>' +
         '<div class="mg-set-row"><span>Hilfe</span><button type="button" class="btn" id="mg-set-report">Problem melden</button></div>' +
         '<div class="mg-set-row"><span>Spielerprofil</span><button type="button" class="btn" id="mg-set-profile">Profil, Skin, Figur</button></div>' +
         '<div class="mg-set-row"><span>Rankliste</span><button type="button" class="btn" id="mg-set-rank">Rankliste öffnen</button></div>' +
@@ -64,9 +81,14 @@
       ls(A11Y.text, b.getAttribute('data-t')); applyA11y(); syncText();
     });
     $('mg-set-tutorial').addEventListener('click', function () { close(); if (global.MGTutorial) MGTutorial.open(true); else location.href = 'game.html#tutorial'; });
+    $('mg-set-install').addEventListener('click', function () {
+      if (installEv) { installEv.prompt(); installEv.userChoice.then(function () { installEv = null; $('mg-set-install-row').hidden = true; }); }
+      else if (isIos()) alert('Zum Installieren: Teilen-Symbol tippen und "Zum Home-Bildschirm" wählen.');
+    });
     $('mg-set-report').addEventListener('click', function () { close(); if (global.MGReport) MGReport.open(); });
     $('mg-set-theme').addEventListener('change', function (e) { applyTheme(e.target.checked ? 'light' : 'dark'); });
     $('mg-set-motion').addEventListener('change', function (e) { applyMotion(e.target.checked); });
+    $('mg-set-lang').addEventListener('change', function (e) { if (global.MGI18n) MGI18n.set(e.target.value); });
     $('mg-set-loader').addEventListener('change', function (e) { ls('mg_loader_short', e.target.checked ? '1' : '0'); });
     $('mg-set-profile').addEventListener('click', function () { close(); if (global.MGSkin) MGSkin.openProfile(); });
     $('mg-set-rank').addEventListener('click', function () {
@@ -102,7 +124,9 @@
     panel.querySelector('#mg-set-vol').value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100);
     panel.querySelector('#mg-set-theme').checked = document.documentElement.getAttribute('data-theme') === 'light';
     panel.querySelector('#mg-set-motion').checked = document.documentElement.getAttribute('data-motion') === 'reduce';
+    panel.querySelector('#mg-set-lang').value = (global.MGI18n && MGI18n.lang) || 'de';
     panel.querySelector('#mg-set-loader').checked = ls('mg_loader_short') === '1';
+    panel.querySelector('#mg-set-install-row').hidden = standalone() || !(installEv || isIos());
     panel.querySelector('#mg-set-contrast').checked = ls(A11Y.contrast) === '1';
     panel.querySelector('#mg-set-font').checked = ls(A11Y.font) === '1';
     syncText();

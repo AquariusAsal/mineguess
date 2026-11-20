@@ -846,3 +846,5 @@ html[data-contrast="high"] .btn, html[data-contrast="high"] .card, html[data-con
 .sc-google { display:grid; gap:8px; padding:12px 14px; margin-bottom:12px; border:2px solid var(--gold); border-radius:var(--r); background:var(--bg); font-size:.92rem; }
 .sc-google.ok { border-color:var(--green); color:var(--text); }
 .sc-google .btn { min-height:44px; }
+.mg-offline { position:fixed; left:50%; bottom:calc(12px + var(--safe-b, 0px)); transform:translateX(-50%); z-index:1800; width:min(480px,calc(100vw - 24px)); padding:8px 12px; background:var(--bg1); border:2px solid var(--gold); border-radius:var(--r); font-size:.85rem; text-align:center; }
+.mg-i18n-note { margin:0; padding:8px 14px; background:#2b2f34; color:#f1efe8; font:600 .85rem system-ui,sans-serif; text-align:center; }
