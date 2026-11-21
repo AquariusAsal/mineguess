@@ -1,6 +1,8 @@
 {
   "name": "mineguess-multiplayer",
   "version": "1.0.0",
+  "license": "UNLICENSED",
+  "author": "Cuma Asal (Aquarius Asal)",
   "description": "MineGuess Multiplayer Beta",
   "main": "server.js",
   "scripts": {

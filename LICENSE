@@ -1,0 +1,78 @@
+Copyright (c) 2026 Cuma Asal (auch bekannt als "Aquarius Asal" / AquariusAsal)
+Alle Rechte vorbehalten. / All rights reserved.
+
+================================================================================
+DEUTSCH
+================================================================================
+
+Dieses Projekt "MineGuess" (Quellcode, Programmlogik, Gestaltung, Logo, Banner,
+Animationen, selbst verfasste Texte und Fragen sowie alle sonstigen von
+Cuma Asal geschaffenen Inhalte) ist urheberrechtlich geschuetzt.
+
+Ohne vorherige schriftliche Genehmigung des Rechteinhabers ist es NICHT erlaubt,
+dieses Projekt oder Teile davon
+
+  - zu kopieren, zu vervielfaeltigen oder zu veroeffentlichen,
+  - zu veraendern, zu bearbeiten oder darauf aufbauende Werke zu erstellen,
+  - weiterzugeben, zu verkaufen, zu vermieten oder zu hosten,
+  - unter eigenem Namen oder unter anderem Namen als eigenes Projekt
+    auszugeben oder zu betreiben.
+
+Erlaubt ist ausschliesslich die private, nicht kommerzielle Nutzung der
+oeffentlich betriebenen Webseite (https://mineguess.onrender.com) als Spieler.
+
+Anfragen zu Genehmigungen bitte ueber die im Impressum der Webseite genannte
+Kontaktadresse stellen.
+
+Fremde Inhalte, die NICHT unter diese Urheberrechtserklaerung fallen:
+
+  - Minecraft-Texturen, -Namen, -Skins, -Toene und weitere Spielinhalte:
+    (c) Mojang Studios / Microsoft. MineGuess ist ein inoffizielles Fan-Projekt
+    und weder von Mojang noch von Microsoft genehmigt oder mit ihnen verbunden.
+    Es gelten die Usage Guidelines von Mojang.
+  - Fragen und Fakten, die auf Inhalten des Minecraft Wikis beruhen, bleiben
+    unter deren Lizenz CC BY-NC-SA 3.0 (Namensnennung, nicht kommerziell,
+    Weitergabe unter gleichen Bedingungen).
+  - Schrift "Atkinson Hyperlegible": SIL Open Font License (siehe
+    fonts/AtkinsonHyperlegible-OFL.txt).
+  - Bibliotheken von Drittanbietern (z. B. Express, Socket.io, Firebase) unter
+    ihren jeweiligen Lizenzen.
+
+Die Software wird ohne jede Gewaehr bereitgestellt, soweit gesetzlich zulaessig.
+
+================================================================================
+ENGLISH
+================================================================================
+
+This project "MineGuess" (source code, program logic, design, logo, banner,
+animations, self-written texts and questions, and all other content created by
+Cuma Asal) is protected by copyright.
+
+Without the prior written permission of the copyright holder, you may NOT
+
+  - copy, reproduce or publish this project or any part of it,
+  - modify it, adapt it or create derivative works from it,
+  - distribute, sell, rent or host it,
+  - present or operate it as your own project, under any name.
+
+The only permitted use is private, non-commercial use of the publicly operated
+website (https://mineguess.onrender.com) as a player.
+
+Requests for permission: use the contact address given in the website's
+legal notice (Impressum).
+
+Third-party content NOT covered by this notice:
+
+  - Minecraft textures, names, skins, sounds and other game content:
+    (c) Mojang Studios / Microsoft. MineGuess is an unofficial fan project and is
+    not approved by or associated with Mojang or Microsoft. Mojang's Usage
+    Guidelines apply.
+  - Questions and facts based on Minecraft Wiki content remain under its license,
+    CC BY-NC-SA 3.0 (attribution, non-commercial, share alike).
+  - Font "Atkinson Hyperlegible": SIL Open Font License (see
+    fonts/AtkinsonHyperlegible-OFL.txt).
+  - Third-party libraries (e.g. Express, Socket.io, Firebase) under their
+    respective licenses.
+
+The software is provided "as is", without warranty of any kind, to the extent
+permitted by law.

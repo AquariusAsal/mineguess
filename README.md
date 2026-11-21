@@ -101,6 +101,10 @@ Ohne Anmeldung werden keine Personendaten gespeichert. Meldungen aus dem Spiel e
 - Fragen und Fakten basieren auf Inhalten des [Minecraft Wikis](https://de.minecraft.wiki), Lizenz CC BY-NC-SA 3.0, paraphrasiert.
 - Schrift Atkinson Hyperlegible (SIL OFL), selbst gehostet.
 
+## Urheberrecht
+
+© 2026 Cuma Asal (Aquarius Asal). **Alle Rechte vorbehalten.** Der Quellcode, die Gestaltung, das Logo und die selbst verfassten Inhalte dürfen ohne schriftliche Genehmigung weder kopiert noch weitergegeben, verändert oder unter anderem Namen betrieben werden. Fremde Inhalte (Minecraft-Material, Wiki-Inhalte, Schrift, Bibliotheken) stehen unter ihren eigenen Lizenzen. Alle Details stehen in der Datei [LICENSE](LICENSE).
+
 ## Mitwirken
 
-Fehler in einer Frage gefunden? Im Spiel auf **Melden** tippen, das geht in jedem Modus. Vorschläge und Pull Requests sind willkommen.
+Fehler in einer Frage gefunden? Im Spiel auf **Melden** tippen, das geht in jedem Modus. Vorschläge sind willkommen. Code-Beiträge bitte vorher absprechen, da das Projekt nicht unter einer offenen Lizenz steht.
