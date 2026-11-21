@@ -7,7 +7,7 @@
   function rect(x, y, w, h, c) { return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + c + '"/>'; }
   function svg(inner) { return '<svg class="tu-art" viewBox="0 0 96 56" shape-rendering="crispEdges" aria-hidden="true" focusable="false">' + inner + '</svg>'; }
   var ART = [
-    '<img class="tu-art tu-brand" src="banner-600.png" alt="MineGuess" width="260" height="109" style="width:100%;max-width:260px;height:auto;aspect-ratio:2532/1060;border-radius:10px;display:block;margin:0 auto">',
+    '<img class="tu-art tu-brand" src="assets/brand/banner-600.png" alt="MineGuess" width="260" height="109" style="width:100%;max-width:260px;height:auto;aspect-ratio:2532/1060;border-radius:10px;display:block;margin:0 auto">',
     svg(rect(8, 10, 12, 12, 'var(--green)') + rect(26, 10, 12, 12, 'var(--gold)') + rect(44, 10, 12, 12, 'var(--bg3)') + rect(8, 32, 80, 6, 'var(--bg3)') + rect(8, 32, 54, 6, 'var(--green)') + rect(8, 44, 40, 4, 'var(--muted2)')),
     svg(rect(40, 6, 16, 4, 'var(--gold)') + rect(34, 10, 28, 8, 'var(--gold)') + rect(30, 18, 36, 14, 'var(--gold)') + rect(26, 32, 44, 6, 'var(--gold)') + rect(42, 40, 12, 6, 'var(--muted)') + rect(20, 14, 4, 8, 'var(--muted2)') + rect(72, 14, 4, 8, 'var(--muted2)')),
     svg(rect(6, 38, 16, 10, 'var(--dirt)') + rect(26, 30, 16, 18, 'var(--muted)') + rect(46, 22, 16, 26, 'var(--gold)') + rect(66, 12, 16, 36, 'var(--blue)'))

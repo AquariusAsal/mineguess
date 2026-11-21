@@ -88,7 +88,7 @@
           '<div class="mg-set-row"><span>Einführung</span><button type="button" class="btn" id="mg-set-tutorial">Tutorial ansehen</button></div>' +
         '</div>' +
         '<div class="mg-set-row" id="mg-set-install-row" hidden><span>App</span><button type="button" class="btn" id="mg-set-install">App installieren</button></div>' +
-        '<div class="mg-set-row"><span><img src="brand-64.png" alt="" width="18" height="18" style="vertical-align:-4px;margin-right:6px;border-radius:4px">Version</span><span id="mg-set-version" class="mg-set-ver">–</span></div>' +
+        '<div class="mg-set-row"><span><img src="assets/brand/brand-64.png" alt="" width="18" height="18" style="vertical-align:-4px;margin-right:6px;border-radius:4px">Version</span><span id="mg-set-version" class="mg-set-ver">–</span></div>' +
         '<div class="mg-set-row"><span>Hilfe</span><button type="button" class="btn" id="mg-set-report">Problem melden</button></div>' +
         '<div class="mg-set-row"><span>Spielerprofil</span><button type="button" class="btn" id="mg-set-profile">Profil, Skin, Figur</button></div>' +
         '<div class="mg-set-row"><span>Rankliste</span><button type="button" class="btn" id="mg-set-rank">Rankliste öffnen</button></div>' +

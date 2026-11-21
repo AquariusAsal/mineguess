@@ -1,5 +1,5 @@
 /* Erzeugt die freigestellten Kopfzeilen-Banner aus assets/brand/banner.jpg (keine npm-Abhaengigkeit, Chrome headless + Canvas):
-   banner-dark-40/80.png (dunkles Design) und banner-light-40/80.png (helles Design, mit duenner dunkler Kontur).
+   assets/brand/banner-dark/light-44/60/88/120.png (dunkles bzw. helles Design) (helles Design, mit duenner dunkler Kontur).
    Hintergrund wird per "Farbe zu Alpha" entfernt (kein Halo, Funken bleiben), Zuschnitt auf den Inhalt.
    Aufruf: node tools/make-banner.js   (optional CHROME=<Pfad zu chrome.exe>) */
 'use strict';
@@ -37,7 +37,7 @@ function save(n,cv){return new Promise(r=>cv.toBlob(b=>fetch('/'+n,{method:'POST
  for(var h of [44,60,88,120]){await save('banner-dark-'+h+'.png',scaled(h,0));await save('banner-light-'+h+'.png',scaled(h,h>=88?2:1))}
  await fetch('/done',{method:'POST',body:'1'});
 })();</script>`;
-const out = ROOT;
+const out = path.join(ROOT, 'assets', 'brand');
 const srv = http.createServer((q, r) => {
   if (q.method === 'POST') { const c = []; q.on('data', d => c.push(d)); q.on('end', () => { const n = path.basename(q.url); const b = Buffer.concat(c); if (n === 'done') { r.end('ok'); finish(); return; } fs.writeFileSync(path.join(n === 'info.json' ? os.tmpdir() : out, n), b); r.end('ok'); }); return; }
   if (q.url === '/gen.html') { r.setHeader('content-type', 'text/html'); return r.end(PAGE); }
