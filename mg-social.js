@@ -244,6 +244,12 @@
     box.innerHTML = headOf(skin, ch, 'xl');
   }
 
+  // Fehlerjaeger (bestaetigte Meldungen, Stufen 1/5/10), ohne Namensveroeffentlichung
+  function hunterHtml(h) {
+    if (!h) return '';
+    var lv = h.level || 0, n = h.n || 0, next = lv >= 3 ? 0 : [1, 5, 10][lv] - n;
+    return '<div class="sc-hunter" role="note"><b>Fehlerjäger' + (lv ? ' Stufe ' + lv : '') + '</b> <span class="sc-muted">' + (lv ? n + ' bestätigte Meldungen' : 'Noch kein Abzeichen') + (next > 0 ? ' · noch ' + next + ' bis ' + (lv ? 'Stufe ' + (lv + 1) : 'Stufe 1') : '') + '</span></div>';
+  }
   // ── Profil ──
   function renderProfile() {
     var p = body().querySelector('#sc-p'), st = me.stats || {}, bd = me.badges || [], sum = global.MGBadges ? MGBadges.summary() : {}, rk = me.rank;
@@ -252,7 +258,7 @@
     p.innerHTML = googleNotice() + '<div class="sc-hero"><div class="sc-fig" id="sc-fig" role="img" aria-label="Deine Figur"></div>' +
       '<div class="sc-id"><h3>' + esc(me.name) + '</h3><span class="sc-title">' + esc(TITLES[me.title || ''] || '') + '</span>' + (info || rk ? '<span class="sc-rank">' + esc(info || (rk && (rk.label || ''))) + '</span>' : '') +
       '<div class="sc-nums"><span><b>' + (sum.answered != null ? sum.answered : (st.answered || 0)) + '</b> Antworten</span><span><b>' + ((me.counts && me.counts.friends) || 0) + '</b> Freunde</span><span><b>' + (sum.badgesEarned != null ? sum.badgesEarned : bd.length) + '</b> Abzeichen</span></div>' +
-      '<div class="sc-btns"><button type="button" class="btn btn-ghost" id="sc-share">Karte teilen</button></div></div></div>' +
+      hunterHtml(me.hunter) + '<div class="sc-btns"><button type="button" class="btn btn-ghost" id="sc-share">Karte teilen</button></div></div></div>' +
       '<div id="sc-skinbox" class="sc-skinbox"></div>' +
       '<div class="sc-row"><label for="sc-title-sel">Titel</label><select id="sc-title-sel" class="form-input" style="max-width:260px">' + Object.keys(TITLES).map(function (k) { return '<option value="' + k + '"' + ((me.title || '') === k ? ' selected' : '') + '>' + esc(TITLES[k]) + '</option>'; }).join('') + '</select></div>' +
       '<div class="sc-grid">' + stat('Gespielt', sum.played) + stat('Trefferquote', sum.rate != null ? Math.round(sum.rate * 100) + ' %' : '–') + stat('Beste Serie', sum.bestStreak) + stat('Tages-Serie', sum.dailyStreak) + stat('Höher/Tiefer', parseInt(ls('mg_hl_best'), 10) || 0) + stat('Hardcore', parseInt(ls('mg_hc_best'), 10) || 0) + '</div>' +

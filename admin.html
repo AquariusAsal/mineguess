@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive">
 <title>MineGuess Admin</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="stylesheet" href="mg.css">
 <style>
 body { margin:0; padding:16px; max-width:1100px; margin-inline:auto; }
@@ -22,11 +24,12 @@ h2 { font-family:var(--font-px); font-size:.95rem; margin:0 0 8px; }
 .ad-list { list-style:none; margin:0; padding:0; font-size:.85rem; display:grid; gap:4px; } .ad-list li { display:flex; gap:8px; } .ad-list b { min-width:2.5ch; text-align:right; }
 .ad-days { display:flex; align-items:flex-end; gap:3px; height:80px; } .ad-days i { flex:1; background:var(--green); min-height:2px; }
 .ad-muted { color:var(--muted); font-size:.8rem; }
+.ad-act { display:flex; gap:6px; margin-left:auto; } .ad-act .btn { min-height:40px; font-size:.8rem; padding:4px 10px; } .ad-list li { align-items:center; flex-wrap:wrap; }
 pre { white-space:pre-wrap; font-size:.78rem; margin:0; }
 </style>
 </head>
 <body>
-<h1>MineGuess Admin</h1>
+<h1><img src="brand-64.png" alt="" width="28" height="28" style="vertical-align:-7px;margin-right:8px;border-radius:6px">MineGuess Admin</h1>
 <form class="ad-login" id="login" autocomplete="off">
   <label for="tok" class="ad-muted">Admin-Token</label>
   <input id="tok" type="password" autocomplete="off" spellcheck="false" placeholder="Token eingeben">
@@ -60,6 +63,7 @@ pre { white-space:pre-wrap; font-size:.78rem; margin:0; }
       '<section class="ad-card"><h2>Meldungen pro Tag (30 Tage)</h2><div class="ad-days" role="img" aria-label="Meldungen pro Tag">' + dk.map(function (d) { return '<i title="' + esc(d) + ': ' + days[d] + '" style="height:' + Math.max(3, Math.round(days[d] / mxd * 100)) + '%"></i>'; }).join('') + '</div></section>' +
       '<section class="ad-card"><h2>Räume</h2><div class="ad-kpis">' + kpi('Öffentlich', rm.public) + kpi('Privat', rm.private) + '</div>' + bars(rm.byPhase) + '</section>' +
       '<section class="ad-card"><h2>Ranked und Profile</h2><div class="ad-kpis">' + kpi('Ranked-Einträge', rk.entries) + kpi('Profile', pf.total) + kpi('Gruppen', pf.groups) + kpi('Duelle', pf.duels) + '</div></section>' +
+      '<section class="ad-card" id="ad-rep"><h2>Offene Meldungen</h2><p class="ad-muted">Lade …</p></section>' +
       '<section class="ad-card"><h2>Fehler</h2><pre>' + esc(JSON.stringify(j.errors == null ? {} : j.errors, null, 1)) + '</pre></section></div>';
   }
   function load() {
@@ -72,7 +76,15 @@ pre { white-space:pre-wrap; font-size:.78rem; margin:0; }
       if (r.status === 401 || r.status === 403) { say('Token falsch.', true); return null; }
       if (!r.ok) { say('Fehler ' + r.status + '.', true); return null; }
       return r.json();
-    }).then(function (j) { if (j) { say('Geladen.'); render(j); } }).catch(function () { say('Server nicht erreichbar.', true); });
+    }).then(function (j) { if (j) { say('Geladen.'); render(j); loadReports(t); } }).catch(function () { say('Server nicht erreichbar.', true); });
+  }
+  function api(path, t, body) { return fetch('api/admin/' + path, { method: body ? 'POST' : 'GET', headers: Object.assign({ Authorization: 'Bearer ' + t }, body ? { 'Content-Type': 'application/json' } : {}), body: body ? JSON.stringify(body) : undefined, cache: 'no-store' }).then(function (r) { return r.json().catch(function () { return {}; }); }); }
+  function loadReports(t) {
+    api('reports?status=open&limit=30', t).then(function (j) {
+      var box = $('ad-rep'); if (!box) return; var l = (j && j.reports) || [];
+      box.innerHTML = '<h2>Offene Meldungen (' + l.length + ')</h2>' + (l.length ? '<ul class="ad-list">' + l.map(function (r) { return '<li data-id="' + esc(r.id) + '"><span>' + esc(r.category) + (r.reason ? '/' + esc(r.reason) : '') + ' · ' + esc(r.mode) + ' · #' + esc(r.questionId || '–') + ' ' + esc(r.question || '') + (r.count > 1 ? ' (' + r.count + '×)' : '') + (r.linked ? ' · mit Profil' : '') + '</span><span class="ad-act"><button class="btn" data-a="confirm" type="button">Bestätigen</button><button class="btn btn-ghost" data-a="reject" type="button">Ablehnen</button></span></li>'; }).join('') + '</ul>' : '<p class="ad-muted">Keine offenen Meldungen.</p>');
+      box.onclick = function (e) { var b = e.target.closest('button[data-a]'); if (!b) return; var id = b.closest('li').getAttribute('data-id'); api('report-action', t, { id: id, action: b.getAttribute('data-a') }).then(function (r2) { say(r2.ok ? (r2.rewarded ? 'Bestätigt, Fehlerjäger-Punkt vergeben.' : 'Gespeichert.') : 'Aktion fehlgeschlagen.', !r2.ok); loadReports(t); }); };
+    }).catch(function () {});
   }
   $('login').addEventListener('submit', function (e) { e.preventDefault(); load(); });
   $('clear').addEventListener('click', function () { try { sessionStorage.removeItem(KEY); } catch (e) {} $('tok').value = ''; $('keep').checked = false; $('out').innerHTML = ''; say('Token vergessen.'); });

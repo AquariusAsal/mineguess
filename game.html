@@ -2,10 +2,21 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-<link rel="icon" type="image/png" href="logo-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="mg-i18n.js"></script>
 <meta name="theme-color" content="#15171a">
+<meta name="description" content="MineGuess spielen: Endlos, Blitz, täglich, Hardcore, Höher oder Tiefer, Crafting-Rätsel und Ranked. Inoffizielles Minecraft-Quiz.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MineGuess">
+<meta property="og:title" content="MineGuess – Spielen">
+<meta property="og:description" content="Inoffizielles Minecraft-Quiz: Endlos, Blitz, täglich, Hardcore, Höher oder Tiefer, Crafting-Rätsel und Ranked.">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MineGuess – Spielen">
+<meta name="twitter:description" content="Inoffizielles Minecraft-Quiz: Endlos, Blitz, täglich, Hardcore, Höher oder Tiefer, Crafting-Rätsel und Ranked.">
+<script>(function(){var o=location.origin,u=o+"/game.html";function m(a,k,v){var e=document.createElement('meta');e.setAttribute(a,k);e.setAttribute('content',v);document.head.appendChild(e);}var l=document.createElement('link');l.rel='canonical';l.href=u;document.head.appendChild(l);m('property','og:url',u);m('property','og:image',o+'/og-image.png');m('property','og:image:width','1200');m('property','og:image:height','630');m('name','twitter:image',o+'/og-image.png');})();</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -1290,6 +1301,7 @@ header h1 { flex-shrink:0; }
 <script src="mg-social.js"></script>
 <script src="mg-social2.js"></script>
   <script src="mg-icons.js"></script>
+  <script src="mg-iso.js"></script>
   <script src="mg-audio.js"></script>
   <script src="spotify-config.js"></script>
   <script src="mg-spotify.js"></script>
@@ -1304,7 +1316,7 @@ header h1 { flex-shrink:0; }
 <div class="overlay hidden" id="auth-modal">
   <div class="modal-card">
     <button type="button" class="mg-close mg-close-abs" aria-label="Schließen" onclick="document.getElementById('btn-guest-play').click()" title="Schließen (als Gast spielen)"></button>
-    <div class="modal-logo">Mine<span>Guess</span></div>
+    <div class="modal-logo"><img src="brand-128.png" alt="" width="72" height="72" style="display:block;margin:0 auto 6px;border-radius:12px">Mine<span>Guess</span></div>
     <div class="modal-title">Melde dich an, um Statistiken zu speichern,<br>Punkte zu sammeln und im Rankliste aufzutauchen.</div>
     <button class="btn-social" id="btn-google-signin">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H24v7h11.1C33.5 32.4 29.3 35 24 35c-6.1 0-11-4.9-11-11s4.9-11 11-11c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5 12.7 5.5 3.5 14.7 3.5 26S12.7 46.5 24 46.5c10.9 0 20-7.9 20-20 0-1.3-.1-2.7-.4-3.9-.3-.7-.3-1.5 0-2.1z"/><path fill="#34A853" d="M6.3 15.6l6.3 4.6C14.2 16.5 18.8 13.5 24 13.5c2.8 0 5.3 1 7.2 2.7l5.2-5.2C33.2 7.5 28.9 5.5 24 5.5c-7.7 0-14.4 4.3-17.7 10.1z"/><path fill="#FBBC05" d="M24 46.5c4.8 0 9.1-1.6 12.4-4.4l-5.7-4.7C28.9 38.8 26.6 39.5 24 39.5c-5.2 0-9.5-2.8-11.7-6.8l-6.2 4.8C9.5 42.3 16.3 46.5 24 46.5z"/><path fill="#EA4335" d="M43.6 20.5H24v7h11.1c-.8 2.2-2.3 4-4.2 5.4l5.7 4.7c3.4-3.1 5.4-7.8 5.4-13.1 0-1.3-.1-2.7-.4-4z"/></svg>
@@ -1370,6 +1382,11 @@ header h1 { flex-shrink:0; }
     <button type="button" class="mode-card" onclick="playChallenge()">
       <span class="mode-name"><img class="mc-icon" src="assets/mc/item/spyglass.png" width="24" height="24" alt="">Herausforderung</span>
       <span class="mode-desc">10 Fragen, die für alle mit demselben Link gleich sind. Teile dein Ergebnis ohne Spoiler.</span>
+      <span class="mode-tag green-tag">Neu</span>
+    </button>
+    <button type="button" class="mode-card" onclick="selectMode('tf')">
+      <span class="mode-name"><img class="mc-icon" src="assets/mc/item/emerald.png" width="24" height="24" alt="">Wahr oder Mythos</span>
+      <span class="mode-desc">Stimmt die Aussage oder ist es ein Mythos? Mit Erklärung nach jeder Antwort.</span>
       <span class="mode-tag green-tag">Neu</span>
     </button>
     <button type="button" class="mode-card" onclick="selectMode('hardcore')">
@@ -1539,7 +1556,7 @@ header h1 { flex-shrink:0; }
   <h1>
     <a href="index.html" aria-label="MineGuess Startseite" style="display:flex;align-items:center;gap:8px;color:inherit;text-decoration:none;">
       <span class="logo-icon" style="background:none;box-shadow:none;padding:0;width:32px;height:32px;">
-        <img src="logo-64.png" alt="MineGuess" style="width:32px;height:32px;object-fit:contain;" onerror="this.style.display='none'"/>
+        <img src="brand-64.png" alt="MineGuess" style="width:32px;height:32px;object-fit:contain;border-radius:6px;" onerror="this.style.display='none'"/>
       </span>
       Mine<span style="color:var(--green)">Guess</span>
     </a>
@@ -1733,6 +1750,7 @@ function getMinecraftIcon(name) {
 // Lokale Texturen (assets/mc), keine externen Requests. Ohne passende Textur bleibt das Bild ausgeblendet.
 function setIconWithFallback(imgEl, name) {
   imgEl.loading = 'lazy';
+  try { imgEl.setAttribute('data-iso-label', String(name).trim()); } catch (e) {}
   imgEl.src = getMinecraftIcon(name);
   imgEl.onerror = function () { this.onerror = null; this.src = MGIcon.base + 'item/barrier.png'; };
 }
@@ -1878,6 +1896,31 @@ function addGuessRow(value, unit, fb) {
 
 // ── Show result panel ─────────────────────────────────────────────────────────
 let chState = null, _buildSrvDiff = null, _buildSubmit = false, _srvHint = null;
+function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+// Barrierefreiheit (nur Solo): "Mehr Zeit" (+50 % / +100 %), nie in Ranked, Herausforderung/Duell oder Multiplayer
+function moreTimeFactor() {
+  if (typeof gameMode !== 'undefined' && (gameMode === 'competition' || gameMode === 'challenge')) return 1;
+  const v = lsGet('mg_more_time'); return v === '100' ? 2 : (v === '50' ? 1.5 : 1);
+}
+function numHelpAllowed() { return lsGet('mg_num_help') === '1' && typeof gameMode !== 'undefined' && gameMode !== 'competition' && gameMode !== 'challenge'; }
+function niceNum(x) { if (!(x > 0)) return 0; const e = Math.pow(10, Math.floor(Math.log10(x))), m = x / e; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * e; }
+// Wertebereich-Hilfe: grobe Bereiche statt Loesung; der gesuchte Wert liegt in einem davon (Lage zufaellig verschoben)
+function addNumHelp(area, inp) {
+  if (!numHelpAllowed() || !question || !(Number(question.answer) > 0)) return;
+  const a = Number(question.answer), f = 0.55 + Math.random() * 1.4, base = niceNum(a) * f;
+  const edges = [0, niceNum(base * 0.3), niceNum(base * 0.7), niceNum(base * 1.5), niceNum(base * 3.5)].filter((v, i, arr) => i === 0 || v > arr[i - 1]);
+  const lab = (v) => v.toLocaleString('de-DE', { maximumFractionDigits: 2 });
+  const chips = edges.map((lo, i) => { const hi = edges[i + 1]; return { text: hi == null ? 'über ' + lab(lo) : (i === 0 ? 'bis ' + lab(hi) : lab(lo) + ' bis ' + lab(hi)), mid: hi == null ? lo * 1.5 : (i === 0 ? hi / 2 : Math.sqrt(lo * hi)) }; });
+  const box = document.createElement('div'); box.className = 'num-help'; box.setAttribute('role', 'group'); box.setAttribute('aria-label', 'Wertebereich-Hilfe');
+  box.innerHTML = '<span class="num-help-l">Wertebereich (kostet 50 Pkt.):</span>' + chips.map((c, i) => '<button type="button" class="chip" data-i="' + i + '">' + c.text + '</button>').join('');
+  let used = false;
+  box.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-i]'); if (!b || finished) return;
+    if (!used) { used = true; addPoints(-50); showToast('Wertebereich-Hilfe: -50 Pkt.', 1800); }
+    const mid = chips[+b.dataset.i].mid; inp.value = mid >= 100 ? Math.round(mid) : (Math.round(mid * 10) / 10); inp.focus();
+  });
+  area.appendChild(box);
+}
 let _buildActive = false, _buildFb = null, hcState = null, hcVariant = 'guess', hcLast = null;
 function matrixModeName() { return gameMode === 'competition' ? 'ranked' : (gameMode === 'endless' && typeof soloSelectedCats !== 'undefined' && soloSelectedCats.size > 0 ? 'categories' : gameMode); }
 function decideBuild(pm) {
@@ -2026,7 +2069,7 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 function startTimer() {
   if (finished) return;
   clearInterval(timerInterval);
-  TIMER_SECONDS = _buildActive ? ((window.MGModes && MGModes.BUILD && MGModes.BUILD.seconds) || 75) : (question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER);
+  TIMER_SECONDS = Math.round(moreTimeFactor() * (_buildActive ? ((window.MGModes && MGModes.BUILD && MGModes.BUILD.seconds) || 75) : (question?.type === 'entity' ? TIMER_SECONDS_ENTITY : TIMER_SECONDS_NUMBER)));
   timerLeft = TIMER_SECONDS;
 
   const wrap = document.getElementById('timer-wrap');
@@ -2125,13 +2168,14 @@ function buildInput() {
     const host = document.createElement('div');
     area.appendChild(host);
     const names = question.choices.slice(0, 2);
-    if (Math.random() < 0.5) names.reverse();
+    if (question.fmt !== 'tf' && Math.random() < 0.5) names.reverse();
     const btns = MGIcon.choiceButtons(host, names, (n, b) => {
       hid.value = n;
       submitGuess();
       if (!finished) { b.disabled = true; b.classList.add('tried'); }   // falsche Wahl: nur die andere Option bleibt waehlbar
-    });
-    area.onkeydown = (e) => { if ((e.key === '1' || e.key === '2') && btns[+e.key - 1] && !btns[+e.key - 1].disabled) btns[+e.key - 1].click(); };
+      else if (btns && btns.lock) btns.lock('Antwort abgegeben: ' + n);
+    }, { tf: question.fmt === 'tf' });
+    area.onkeydown = null;   // Tasten (W/M, 1/2) belegt MGIcon.choiceButtons
   } else if (question.type === 'number') {
     const inp = document.createElement('input');
     inp.type        = 'number';
@@ -2153,6 +2197,7 @@ function buildInput() {
     } else {
       area.appendChild(inp);
     }
+    addNumHelp(area, inp);
   } else {
     // Entity autocomplete with icons + DE/EN support
     const wrapper = document.createElement('div');
@@ -2300,7 +2345,7 @@ async function submitGuess() {
       compSpeedBonus += speedBonus;
       updateStreakBadge();
     } else if (gameMode === 'blitz') {
-      const bonus = Math.round(blitzTimeLeft / BLITZ_DURATION * 200);
+      const bonus = Math.round(blitzTimeLeft / blitzTotal * 200);
       base += bonus; speedBonus = bonus;
       blitzCorrect++;
       blitzScore += base;
@@ -2492,7 +2537,9 @@ async function loadNextQuestion() {
   } else {
     if (currentIndex >= questionOrder.length) {
       const _cmb = (typeof craftModePref === 'function') ? craftModePref() : 'guess';
-      const _pool = gameMode === 'crafting'
+      const _pool = gameMode === 'tf'
+        ? allQuestions.map((q, i) => q.fmt === 'tf' ? i : -1).filter(i => i !== -1)
+        : gameMode === 'crafting'
         ? allQuestions.map((q, i) => q.type === 'crafting' && (_cmb !== 'build' || (q.buildable && q.solution)) ? i : -1).filter(i => i !== -1)
         : [...Array(allQuestions.length).keys()];
       questionOrder = freshOrder(_pool);
@@ -2506,6 +2553,8 @@ async function loadNextQuestion() {
   attempts = 0;
   finished = false;
   question.__bm = undefined;
+  if (question.fmt === 'tf') MAX_ATTEMPTS = 1;   // Wahr oder Mythos: ein Versuch (sonst waere die zweite Option immer richtig)
+  else if (gameMode !== 'hardcore') MAX_ATTEMPTS = 3;
   window.__roundGuesses = [];
   seenAdd(question.id);
 
@@ -2853,6 +2902,7 @@ async function useHint() {
 
 // ── Blitz mode ───────────────────────────────────────────────────────────────
 const BLITZ_DURATION = 60;
+let blitzTotal = BLITZ_DURATION;
 let blitzTimeLeft = BLITZ_DURATION;
 let blitzIv       = null;
 let blitzCorrect  = 0;
@@ -2864,13 +2914,14 @@ function startBlitzTimer() {
   const fill = document.getElementById('blitz-timer-fill');
   const disp = document.getElementById('blitz-secs-display');
   if (wrap) wrap.style.display = 'block';
-  blitzTimeLeft = BLITZ_DURATION;
+  blitzTotal = Math.round(BLITZ_DURATION * moreTimeFactor());
+  blitzTimeLeft = blitzTotal;
   if (fill) { fill.style.transition='none'; fill.style.width='100%'; fill.style.background='var(--green)'; }
-  if (disp) { disp.textContent = BLITZ_DURATION; disp.className = ''; }
+  if (disp) { disp.textContent = blitzTotal; disp.className = ''; }
   clearInterval(blitzIv);
   blitzIv = setInterval(() => {
     blitzTimeLeft--;
-    const pct = blitzTimeLeft / BLITZ_DURATION * 100;
+    const pct = blitzTimeLeft / blitzTotal * 100;
     if (fill) {
       fill.style.transition = 'width 1s linear';
       fill.style.width = pct + '%';
@@ -2903,7 +2954,7 @@ function showBlitzEnd() {
   document.getElementById('blitz-answered').textContent = blitzAnswered;
   document.getElementById('blitz-pct').textContent     = pct + '%';
   const prev = parseInt(localStorage.getItem('mg_blitz_best') || '0');
-  if (blitzScore > prev) {
+  if (blitzScore > prev && blitzTotal === BLITZ_DURATION) {   // mit "Mehr Zeit" keine Bestwerte
     localStorage.setItem('mg_blitz_best', blitzScore);
     const pb = document.getElementById('blitz-pb');
     if (pb) pb.style.display = 'block';
@@ -3624,6 +3675,11 @@ function selectMode(mode, craftChosen) {
 }
 
 function actualStartMode(mode) {
+  if (mode === 'tf') {
+    const tp = allQuestions.map((q, i) => q.fmt === 'tf' ? i : -1).filter(i => i !== -1);
+    if (!tp.length) { showToast('Wahr-oder-Mythos-Fragen sind noch nicht geladen.', 3500); document.getElementById('mode-screen').classList.remove('hidden'); return; }
+    questionOrder = freshOrder(tp); currentIndex = 0;
+  }
   // Crafting-Modus: nur Fragen vom Typ crafting
   if (mode === 'crafting') {
     // Untermodus 'Selber bauen': nur baubare Raetsel (Loesung vorhanden und eindeutig); 'Mix'/'Erraten': alle
@@ -3896,6 +3952,7 @@ let _reportedQs = new Set(JSON.parse(localStorage.getItem('mg_reported') || '[]'
 function reportFormat() {
   const q = question; if (!q) return '';
   if (q.type === 'crafting') return (typeof _buildActive !== 'undefined' && _buildActive) ? 'craft-build' : 'craft-guess';
+  if (q.fmt === 'tf') return 'tf';
   if (Array.isArray(q.choices)) return 'choice';
   return q.type === 'number' ? 'number' : 'entity';
 }

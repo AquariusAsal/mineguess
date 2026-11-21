@@ -81,10 +81,11 @@ test('Ranked: drei Fehlversuche, Loesung erst am Ende', async () => {
   const q = qs.find(x => x.id === nx.body.question.id);
   const wrong = wrongFor(q);
   let r;
-  for (let i = 0; i < 3; i++) {
+  const maxAtt = q.choices && q.choices.length === 2 ? 1 : 3;          // Zweier-Auswahlfragen (ODER, Wahr/Mythos): nur ein Versuch
+  for (let i = 0; i < maxAtt; i++) {
     await wait(300);
     r = await post(S.url + '/api/ranked/answer', { runId: st.runId, answer: wrong });
-    if (i < 2) { assert.strictEqual(r.body.final, false); assert.strictEqual(r.body.answer, undefined); }
+    if (i < maxAtt - 1) { assert.strictEqual(r.body.final, false); assert.strictEqual(r.body.answer, undefined); }
   }
   assert.strictEqual(r.body.final, true);
   assert.strictEqual(r.body.correct, false);

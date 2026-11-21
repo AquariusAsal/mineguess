@@ -157,9 +157,12 @@ async function main() {
     bett: 'block/white_wool.png', eisengolem: 'block/iron_block.png', schneegolem: 'block/snow_block.png', wollblock: 'block/white_wool.png',
     verbrennung: 'item/blaze_powder.png', haltbarkeit: 'item/anvil.png', blitz: 'item/lightning_rod.png', laub: 'block/oak_leaves.png', feuersteinundstahl: 'item/flint_and_steel.png', amethystgeode: 'block/amethyst_block.png', antikesgestein: 'block/ancient_debris_side.png',
     armbrust: 'item/crossbow_standby.png', fermentiertesspinneauge: 'item/fermented_spider_eye.png', froschlicht: 'block/ochre_froglight_side.png',
+    gewachsterkupferblock: 'block/copper_block.png', glatterquarzblock: 'block/quartz_block_bottom.png', glatterrotersandstein: 'block/red_sandstone_top.png', glattersandstein: 'block/sandstone_top.png',
+    entrindetesakazienholz: 'block/stripped_acacia_log.png', entrindetesbirkenholz: 'block/stripped_birch_log.png', entrindetesblasseichenholz: 'block/stripped_pale_oak_log.png', entrindetesfichtenholz: 'block/stripped_spruce_log.png', entrindetesschwarzeichenholz: 'block/stripped_dark_oak_log.png',
+    geschaeltekarmesinhyphen: 'block/stripped_crimson_stem.png', geschaeltewirrhyphen: 'block/stripped_warped_stem.png', wirrhyphen: 'block/warped_stem.png',
     geselle: 'item/emerald.png', magmablock: 'block/magma.png', markierungderhimmelsrichtungen: 'item/compass_00.png', minecon2012: 'item/firework_rocket.png',
     schild: 'item/iron_helmet.png', redstone: 'item/redstone.png', roheskupfer: 'item/raw_copper.png', schiesspulver: 'item/gunpowder.png', verzauberterGoldenerapfel: 'item/golden_apple.png',
-    verzaubertergoldenerapfel: 'item/golden_apple.png', nuetzlich: 'item/emerald.png', schaedlich: 'item/spider_eye.png', positiv: 'item/emerald.png', negativ: 'item/spider_eye.png',
+    verzaubertergoldenerapfel: 'item/golden_apple.png', wahr: 'item/lime_dye.png', mythos: 'item/red_dye.png', nuetzlich: 'item/emerald.png', schaedlich: 'item/spider_eye.png', positiv: 'item/emerald.png', negativ: 'item/spider_eye.png',
   };
   const CAT_PROXY = { Biome: 'block/grass_block_side.png', Strukturen: 'block/stone_bricks.png', Weltgenerierung: 'block/grass_block_top.png',
     'Geschichte & Updates': 'item/book.png', Dimensionen: 'block/obsidian.png', Dorfbewohner: 'item/emerald.png', Redstone: 'item/redstone.png',
@@ -201,6 +204,15 @@ async function main() {
     const D = [];
     let m;
     if ((m = k.match(/^(.*)_slab$/))) { const b = m[1]; D.push(`block/${b}_planks.png`, `block/${b}.png`, `block/${b}s.png`, `block/${b}_top.png`, `block/${b}_side.png`); }
+    // Treppen/Mauern/Zaeune/Tore/Knoepfe/Druckplatten: Textur des Grundblocks (Holz -> Planken, Stein -> Block bzw. Ziegel-Mehrzahl)
+    if ((m = k.match(/^(.*)_(stairs|wall|fence|fence_gate|button|pressure_plate)$/))) {
+      const b = m[1];
+      D.push(`block/${b}_planks.png`, `block/${b}.png`, `block/${b}s.png`, `block/${b}_block.png`, `block/${b}_top.png`, `block/${b}_side.png`, `block/${b}_block_side.png`, `block/${b}_mosaic.png`);
+    }
+    if ((m = k.match(/^(.*)_banner$/))) D.push(`block/${m[1]}_wool.png`);
+    if (k === 'moss_carpet') D.push('block/moss_block.png');
+    if (k === 'trapped_chest') D.push('block/barrel_side.png');
+    if ((m = k.match(/^(.*)_(stairs|wall|slab)$/))) { const sb = { smooth_quartz: 'block/quartz_block_bottom.png', smooth_sandstone: 'block/sandstone_top.png', smooth_red_sandstone: 'block/red_sandstone_top.png', prismarine: 'block/prismarine_bricks.png' }[m[1]]; if (sb) D.push(sb); }
     if ((m = k.match(/^(stripped_)?(.*)_wood$/))) D.push(`block/${m[1] || ''}${m[2]}_log.png`);
     if ((m = k.match(/^(stripped_)?(.*)_hyphae$/))) D.push(`block/stripped_${m[2]}_stem.png`, `block/${m[1] || ''}${m[2]}_stem.png`);
     if ((m = k.match(/^(.*)_(bed|carpet)$/))) D.push(`block/${m[1]}_wool.png`);
@@ -218,7 +230,9 @@ async function main() {
   let fixedResults = 0;
   q.filter(x => x.type === 'crafting' && x.resultKey && ingredients[x.resultKey] && ingredients[x.resultKey].real).forEach(x => {
     const cur = icons[x.answer];
-    if (!cur || PLACEHOLDER.test(cur)) { icons[x.answer] = ingredients[x.resultKey].icon; fixedResults++; }
+    const e = ingredients[x.resultKey].icon, b = cur ? path.basename(cur, '.png') : '';
+    const passt = cur && (cur === e || b === x.resultKey || x.resultKey.includes(b) || b.includes(x.resultKey));
+    if (!cur || PLACEHOLDER.test(cur) || !passt) { icons[x.answer] = e; fixedResults++; }
   });
   if (fixedResults) console.log('Ergebnis-Icons korrigiert:', fixedResults);
   const ingMissing = Object.keys(ingredients).filter(k => !ingredients[k].real);

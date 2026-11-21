@@ -30,7 +30,7 @@ test('Ranked-Bau: Server sendet nur den Ergebnisnamen (kein Raster/keine Loesung
   const wrong = E(); wrong[0][0] = 'bedrock';
   const r1 = await post(S.url + '/api/ranked/answer', { runId: st.body.runId, grid: wrong });
   assert.strictEqual(r1.body.final, false); assert.strictEqual(r1.body.attemptsLeft, 2);
-  assert.ok(r1.body.diff && r1.body.diff.correct === 0 && r1.body.diff.total >= 2); assert.strictEqual(JSON.stringify(r1.body).includes(q.resultKey) && false, false);
+  assert.ok(r1.body.diff && r1.body.diff.correct === 0 && r1.body.diff.total >= 1); assert.strictEqual(JSON.stringify(r1.body).includes(q.resultKey) && false, false);
   assert.strictEqual(r1.body.answer, undefined); assert.strictEqual(r1.body.solutionGrid, undefined);
   // richtig: Raster der Frage (laesst Spiegelung/Tag-Mitglieder zu)
   await wait(600);

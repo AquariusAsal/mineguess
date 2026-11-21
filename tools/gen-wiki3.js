@@ -1,0 +1,315 @@
+/**
+ * Handgeschriebene Wiki-Fakten (Runde 43, Java Edition 1.21.4, eigene Formulierung) fuer duenne Kategorien:
+ * Redstone, Spielmechanik, Strukturen, Weltgenerierung, Dimensionen.   node tools/gen-wiki3.js [--dry]
+ * Platzhalter {key} = Item/Block (de_de), {m:key} = Mob, {b:key} = Biom, {j:key} = Beruf; fehlt ein Name, wird die Frage uebersprungen und gemeldet.
+ * Haengt Fragen mit gen 'w3_*' an questions.json an (bei jedem Lauf neu aufgebaut), IDs stabil ab 30001 (tools/wiki3-ids.json).
+ * Jede Frage hat ein source-Feld (Wiki-Seite + Version). Stichprobenpruefung durch den forscher vor dem Push.
+ */
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const CACHE = process.env.MC_CACHE || path.join(root, '..', 'mineguess-cache');
+const dry = process.argv.includes('--dry');
+const de = JSON.parse(fs.readFileSync(path.join(CACHE, 'de_de.json'), 'utf8'));
+const qPath = path.join(root, 'questions.json');
+const all = JSON.parse(fs.readFileSync(qPath, 'utf8'));
+const base = all.filter(q => !String(q.gen || '').startsWith('w3_'));
+const hash = (s) => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
+const norm = s => String(s).toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]/g, '');
+const band = (t, h) => (t === 1 ? 700 + (h % 8) * 50 : t === 2 ? 1300 + (h % 8) * 100 : t === 3 ? 2300 + (h % 8) * 100 : 3300 + (h % 6) * 100);
+const missing = [];
+const sub = (s) => String(s).replace(/\{(?:(m|b|j):)?([a-z0-9_]+)\}/g, (all2, kind, k) => {
+  const v = kind === 'm' ? de['entity.minecraft.' + k] : kind === 'b' ? de['biome.minecraft.' + k] : kind === 'j' ? de['entity.minecraft.villager.' + k] : (de['item.minecraft.' + k] || de['block.minecraft.' + k]);
+  if (!v) { missing.push(all2); return '??'; }
+  return v;
+});
+const rows = [];
+const N = (cat, tier, q, answer, unit, fact, src, extra) => rows.push({ f: 'n', cat, tier, q, a: answer, unit, fact, src, extra });
+const E = (cat, tier, q, answer, fact, src, aliases) => rows.push({ f: 'e', cat, tier, q, a: answer, fact, src, aliases });
+const C = (cat, tier, q, a, b, fact, src) => rows.push({ f: 'c', cat, tier, q, a, b, fact, src });
+const R = 'Redstone', S = 'Spielmechanik', T = 'Strukturen', W = 'Weltgenerierung', D = 'Dimensionen';
+const sR = 'Redstone-Komponenten (Minecraft Wiki, Java 1.21.4)', sM = 'Spielmechanik (Minecraft Wiki, Java 1.21.4)', sS = 'Strukturen (Minecraft Wiki, Java 1.21.4)', sW = 'Weltgenerierung (Minecraft Wiki, Java 1.21.4)', sD = 'Dimensionen (Minecraft Wiki, Java 1.21.4)';
+
+// ───────── Redstone ─────────
+N(R, 3, 'Auf wie viele Redstone-Ticks Verzögerung lässt sich ein {repeater} höchstens einstellen?', 4, 'Redstone-Ticks', 'Der {repeater} hat 4 Stufen; jeder Redstone-Tick dauert 2 Spielticks.', sR);
+N(R, 2, 'Wie viele Blöcke kann ein {piston} höchstens gleichzeitig schieben?', 12, 'Blöcke', 'Mehr als 12 Blöcke bewegt ein Kolben nicht.', sR);
+N(R, 2, 'Wie viele Inventarplätze hat ein {hopper}?', 5, 'Plätze', 'Ein {hopper} fasst 5 Stapel.', sR);
+N(R, 1, 'Wie viele Inventarplätze hat ein {dispenser}?', 9, 'Plätze', 'Der {dispenser} hat ein 3x3-Inventar, ebenso der {dropper}.', sR);
+N(R, 2, 'Wie viele Inventarplätze hat ein {dropper}?', 9, 'Plätze', 'Der {dropper} hat ein 3x3-Inventar.', sR);
+N(R, 4, 'Wie viele Items kann ein {hopper} im Standardbetrieb pro Sekunde weitergeben?', 2.5, 'Items', 'Ein {hopper} bewegt alle 8 Spielticks ein Item, also 2,5 pro Sekunde.', sR);
+N(R, 4, 'Wie viele Spielticks lang sendet ein {observer} sein Signal?', 2, 'Spielticks', 'Das Signal eines {observer} ist ein kurzer Puls von 2 Spielticks.', sR);
+N(R, 1, 'Wie stark (0 bis 15) ist das Signal eines {redstone_block}?', 15, '', 'Ein {redstone_block} liefert dauerhaft die volle Signalstärke 15.', sR);
+N(R, 3, 'Wie viele Spielticks dauert ein Redstone-Tick?', 2, 'Spielticks', 'Ein Redstone-Tick besteht aus 2 Spielticks, das sind 0,1 Sekunden.', sR);
+N(R, 2, 'Wie viele Spielticks laufen in einer Sekunde ab?', 20, 'Spielticks', 'Das Spiel läuft mit 20 Ticks pro Sekunde.', sM);
+N(R, 3, 'Wie viele Sekunden bleibt ein {oak_button} nach dem Drücken aktiv?', 1.5, 'Sekunden', 'Holzknöpfe bleiben 1,5 Sekunden aktiv, Steinknöpfe nur 1 Sekunde.', sR);
+N(R, 3, 'Wie viele Sekunden bleibt ein {stone_button} nach dem Drücken aktiv?', 1, 'Sekunden', 'Steinknöpfe schalten nach 1 Sekunde ab, Holzknöpfe erst nach 1,5.', sR);
+C(R, 3, 'Welcher Knopf bleibt länger aktiv: „{stone_button}“ oder „{oak_button}“?', '{oak_button}', '{stone_button}', 'Holzknöpfe bleiben 1,5 Sekunden aktiv, Steinknöpfe nur 1 Sekunde.', sR);
+E(R, 2, 'Welche Komponente kann den Füllstand einer Truhe als Redstone-Signal ausgeben?', '{comparator}', 'Der {comparator} liest Füllstände von Behältern aus.', sR);
+E(R, 2, 'Welcher Block sendet ein kurzes Signal, wenn sich der Block vor ihm verändert?', '{observer}', 'Der {observer} reagiert auf Block-Updates vor seiner Vorderseite.', sR);
+E(R, 2, 'Welche Komponente setzt ein schwaches Signal wieder auf volle Stärke und kann es verzögern?', '{repeater}', 'Der {repeater} verstärkt und verzögert Signale.', sR);
+E(R, 1, 'Welcher Block liefert ohne Zutun dauerhaft ein Redstone-Signal der Stärke 15?', '{redstone_block}', 'Der {redstone_block} ist eine dauerhafte Signalquelle.', sR);
+E(R, 2, 'Welcher Block erzeugt je nach Tageszeit ein Redstone-Signal?', '{daylight_detector}', 'Der {daylight_detector} misst das Sonnenlicht.', sR);
+E(R, 2, 'Welcher Block gibt ein Signal ab, wenn ein Pfeil oder Wurfgeschoss ihn trifft?', '{target}', 'Der {target} schaltet je nach Nähe zur Mitte unterschiedlich stark.', sR);
+E(R, 3, 'Welcher Block erkennt Vibrationen und sendet ein Redstone-Signal?', '{sculk_sensor}', 'Der {sculk_sensor} lauscht auf Vibrationen in der Nähe.', sR);
+E(R, 2, 'Welche Komponente wirft Items aus, wenn sie ein Signal erhält?', '{dropper}', 'Der {dropper} wirft Gegenstände nur aus, der {dispenser} benutzt sie.', sR);
+E(R, 2, 'Welche Komponente benutzt Items (zum Beispiel Pfeile abschießen), wenn sie ein Signal erhält?', '{dispenser}', 'Der {dispenser} schießt oder setzt Gegenstände ein.', sR);
+E(R, 1, 'Welche Redstone-Komponente bleibt an oder aus, bis man sie erneut schaltet?', '{lever}', 'Der {lever} ist ein dauerhafter Schalter.', sR);
+E(R, 2, 'Welche Tür lässt sich nicht von Hand, sondern nur per Redstone öffnen?', '{iron_door}', 'Die {iron_door} reagiert nur auf Redstone-Signale.', sR);
+E(R, 2, 'Welcher Kolben zieht den Block zurück, den er geschoben hat?', '{sticky_piston}', 'Der {sticky_piston} hat eine klebrige Fläche aus Schleim.', sR);
+E(R, 2, 'Welches Item braucht man, um aus einem Kolben einen klebrigen Kolben zu machen?', '{slime_ball}', 'Ein {piston} plus ein {slime_ball} ergibt einen klebrigen Kolben.', sR);
+C(R, 2, 'Welche Komponente invertiert ein Signal: „{redstone_torch}“ oder „{repeater}“?', '{redstone_torch}', '{repeater}', 'Die {redstone_torch} ist an, solange sie kein Signal erhält.', sR);
+N(R, 3, 'Welche Lichtstärke hat eine eingeschaltete {redstone_lamp}?', 15, '', 'Die {redstone_lamp} leuchtet mit der vollen Stufe 15.', sR);
+N(R, 3, 'Welche Lichtstärke hat eine {redstone_torch}?', 7, '', 'Die {redstone_torch} leuchtet schwächer als eine normale Fackel (Stufe 14).', sR);
+N(R, 2, 'Wie viele Inventarplätze hat ein {furnace}?', 3, 'Plätze', 'Der {furnace} hat Plätze für Zutat, Brennstoff und Ergebnis.', sM);
+N(R, 2, 'Wie viele Inventarplätze hat eine {chest}?', 27, 'Plätze', 'Eine einzelne {chest} fasst 27 Stapel, eine Doppeltruhe 54.', sM);
+N(R, 2, 'Wie viele Inventarplätze hat eine Doppeltruhe (zwei {chest} nebeneinander)?', 54, 'Plätze', 'Zwei Truhen nebeneinander bilden eine Doppeltruhe mit 54 Plätzen.', sM);
+N(R, 3, 'Wie viele Inventarplätze hat eine {shulker_box}?', 27, 'Plätze', 'Die {shulker_box} fasst 27 Stapel und behält den Inhalt beim Abbauen.', sM);
+N(R, 3, 'Wie viele Inventarplätze hat ein {barrel}?', 27, 'Plätze', 'Ein {barrel} fasst 27 Stapel.', sM);
+N(R, 3, 'Wie viele Inventarplätze hat ein {crafter}?', 9, 'Plätze', 'Der {crafter} hat ein 3x3-Raster und craftet automatisch per Redstone.', sR);
+E(R, 2, 'Welcher Block zieht Items aus dem Behälter darüber und gibt sie weiter?', '{hopper}', 'Der {hopper} saugt Items ein und leitet sie in die Richtung seines Auslasses.', sR);
+E(R, 3, 'Welcher Block kann Redstone-Signale zeitlich verzögert und gleichzeitig verstärken?', '{repeater}', 'Der {repeater} gibt das Signal mit voller Stärke weiter.', sR);
+E(R, 2, 'Welche Schiene beschleunigt Loren, wenn sie ein Redstone-Signal bekommt?', '{powered_rail}', 'Die {powered_rail} beschleunigt Loren, wenn sie ein Signal erhält.', sR);
+N(R, 3, 'Wie viele Spielticks vergehen, bis ein {repeater} auf Stufe 1 ein Signal weitergibt?', 2, 'Spielticks', 'Stufe 1 entspricht einem Redstone-Tick, also 2 Spielticks.', sR);
+E(R, 2, 'Welche Redstone-Komponente kann zwei Signalstärken vergleichen oder abziehen?', '{comparator}', 'Der {comparator} arbeitet im Vergleichs- oder Subtraktionsmodus.', sR);
+
+// ───────── Spielmechanik ─────────
+N(S, 1, 'Wie viele Minuten dauert ein Minecraft-Tag in Echtzeit?', 20, 'Minuten', 'Ein Tag-Nacht-Zyklus dauert 20 Minuten.', sM);
+N(S, 1, 'Wie viele Hungerpunkte (halbe Keulen) hat die volle Hungerleiste?', 20, 'Hungerpunkte', 'Die Hungerleiste hat 10 Keulen, also 20 Punkte.', sM);
+N(S, 1, 'Wie viele Luftblasen hat der Spieler, bevor er unter Wasser Schaden nimmt?', 10, 'Luftblasen', 'Die Luft reicht etwa 15 Sekunden.', sM);
+N(S, 2, 'Wie viele Rüstungspunkte hat ein vollständiger Satz Netherit-Rüstung?', 20, 'Rüstungspunkte', 'Netherit gibt volle 20 Punkte, Diamant 20 ebenfalls; Eisen 15.', sM);
+N(S, 3, 'Ab welcher Reparaturkosten-Stufe zeigt der Amboss „Zu teuer!“ an?', 40, 'Stufen', 'Ab Stufe 40 lehnt der Amboss die Arbeit im Überlebensmodus ab.', sM);
+N(S, 3, 'Wie viele Stufen hat ein Leuchtfeuer-Pyramide höchstens?', 4, 'Stufen', 'Die Pyramide hat bis zu 4 Ebenen.', sM);
+N(S, 2, 'Wie viele Inventarplätze (ohne Rüstung und Nebenhand) hat der Spieler?', 36, 'Plätze', '27 im Inventar und 9 in der Schnellleiste.', sM);
+N(S, 1, 'Wie viele Plätze hat die Schnellzugriffsleiste (Hotbar)?', 9, 'Plätze', 'Die Hotbar hat 9 Plätze.', sM);
+N(S, 3, 'Ab mehr als wie vielen Blöcken Fallhöhe nimmt ein Spieler Fallschaden?', 3, 'Blöcke', 'Bis 3 Blöcke Fall bleibt man unverletzt.', sM);
+N(S, 3, 'Wie hoch springt der Spieler normalerweise (in Blöcken)?', 1.25, 'Blöcke', 'Ein normaler Sprung ist 1,25 Blöcke hoch.', sM);
+N(S, 3, 'Wie viele Blöcke pro Sekunde läuft der Spieler zu Fuß (gerundet)?', 4.3, 'Blöcke pro Sekunde', 'Gehen: etwa 4,3 Blöcke pro Sekunde, Sprinten etwa 5,6.', sM, { tolerance: 0.1 });
+N(S, 3, 'Wie viele Blöcke pro Sekunde schafft der Spieler beim Sprinten (gerundet)?', 5.6, 'Blöcke pro Sekunde', 'Sprinten: etwa 5,6 Blöcke pro Sekunde.', sM, { tolerance: 0.1 });
+N(S, 3, 'Ab wie vielen Hungerpunkten regeneriert der Spieler auf Normal automatisch Leben?', 18, 'Hungerpunkte', 'Ab 18 Hungerpunkten (9 Keulen) regeneriert die Gesundheit.', sM);
+N(S, 1, 'Wie viele Wasserquellen braucht man mindestens für eine unendliche Wasserquelle?', 2, 'Quellen', 'Zwei Quellblöcke mit Block darunter erzeugen einen dritten.', sM);
+N(S, 4, 'Ab wie vielen Blöcken Abstand zum Spieler verschwinden Monster sofort (Despawn)?', 128, 'Blöcke', 'Ab 128 Blöcken despawnen Mobs sofort.', sM);
+N(S, 4, 'In welchem Mindestabstand (in Blöcken) zum Spieler spawnen Monster?', 24, 'Blöcke', 'Monster spawnen erst ab 24 Blöcken Abstand.', sM);
+N(S, 1, 'Wie viele Spieler passen in ein Boot?', 2, 'Spieler', 'Ein Boot trägt zwei Passagiere.', sM);
+N(S, 1, 'Wie viele Schwierigkeitsstufen gibt es (Friedlich bis Schwer)?', 4, 'Stufen', 'Friedlich, Leicht, Normal und Schwer.', sM);
+N(S, 3, 'Wie viele Seiten kann ein Buch mit Feder höchstens haben?', 100, 'Seiten', 'Ein beschreibbares Buch fasst bis zu 100 Seiten.', sM);
+N(S, 3, 'Wie oft lässt sich eine Karte am Kartentisch vergrößern?', 4, 'Mal', 'Die Karte hat 5 Maßstabsstufen, also 4 Vergrößerungen.', sM);
+N(S, 1, 'Wie viele Textzeilen hat ein Schild?', 4, 'Zeilen', 'Ein Schild bietet 4 Zeilen je Seite.', sM);
+N(S, 2, 'Wie viele Hungerpunkte entsprechen einer ganzen Keule in der Hungerleiste?', 2, 'Hungerpunkte', 'Eine Keule = 2 Hungerpunkte.', sM);
+N(S, 2, 'Wie viele Lebenspunkte entsprechen einem ganzen Herz?', 2, 'Lebenspunkte', 'Ein Herz = 2 Lebenspunkte.', sM);
+N(S, 3, 'Nach wie vielen Minuten verschwindet ein auf den Boden gefallenes Item?', 5, 'Minuten', 'Fallengelassene Items verschwinden nach 5 Minuten.', sM);
+N(S, 3, 'Wie viele Erfahrungsstufen kostet das maximale Verzaubern am Tisch (höchste Stufe)?', 30, 'Stufen', 'Die höchste Option kostet bis zu 30 Stufen.', sM);
+N(S, 2, 'Wie viele Lapislazuli kostet die höchste Verzauberungsoption am Tisch?', 3, 'Stück', 'Die dritte Option braucht 3 Lapislazuli.', sM);
+N(S, 3, 'Wie viele Blöcke weit sieht man auf der Standard-Sichtweite 12 Chunks?', 192, 'Blöcke', '12 Chunks mal 16 Blöcke ergeben 192 Blöcke.', sM);
+E(S, 2, 'In welchem Spielmodus kann man durch Blöcke hindurchfliegen?', 'Zuschauermodus', 'Im Zuschauermodus fliegt man durch Blöcke und kann Mobs beobachten.', sM, ['Zuschauer', 'Spectator']);
+E(S, 2, 'Mit welchem Befehl wechselt man den Spielmodus?', '/gamemode', 'Beispiel: /gamemode creative.', sM, ['gamemode', '/gamemode']);
+E(S, 2, 'Mit welchem Befehl teleportiert man sich zu Koordinaten?', '/tp', 'Beispiel: /tp 0 100 0.', sM, ['tp', '/tp', '/teleport', 'teleport']);
+E(S, 2, 'Mit welchem Befehl zeigt man den Weltstartwert (Seed) an?', '/seed', 'Der Seed bestimmt die Weltgenerierung.', sM, ['seed', '/seed']);
+E(S, 2, 'Mit welchem Befehl gibt man sich einen Gegenstand?', '/give', 'Beispiel: /give @s diamond.', sM, ['give', '/give']);
+E(S, 2, 'Mit welchem Befehl setzt man die Tageszeit?', '/time', 'Beispiel: /time set day.', sM, ['time', '/time']);
+E(S, 2, 'Mit welchem Befehl ändert man das Wetter?', '/weather', 'Beispiel: /weather clear.', sM, ['weather', '/weather']);
+E(S, 3, 'Mit welchem Befehl stellt man den Schwierigkeitsgrad ein?', '/difficulty', 'Beispiel: /difficulty hard.', sM, ['difficulty', '/difficulty']);
+E(S, 2, 'Mit welchem Befehl setzt man den Weltspawnpunkt?', '/setworldspawn', 'Der Weltspawn bestimmt, wo neue Spieler starten.', sM, ['setworldspawn', '/setworldspawn']);
+E(S, 2, 'Welcher Block setzt den Spawnpunkt des Spielers, wenn man darauf schläft?', '{white_bed}', 'Ein Bett setzt den Spawn schon durch Rechtsklick.', sM, ['Bett']);
+E(S, 3, 'Welcher Block setzt im Nether den Spawnpunkt, wenn man ihn mit Glowstone auflädt?', '{respawn_anchor}', 'Der {respawn_anchor} wird mit Glowstone geladen.', sM);
+E(S, 2, 'Mit welchem Item kann man Mobs anleinen?', '{lead}', 'Mit der {lead} bindet man Tiere an Zäune.', sM);
+E(S, 1, 'Welches Item benennt Mobs und Gegenstände?', '{name_tag}', 'Mit dem {name_tag} und einem Amboss gibt man Namen.', sM);
+E(S, 2, 'Welches Item zeigt immer zum Weltspawn?', '{compass}', 'Der {compass} zeigt zum Weltspawn, außer im Nether und im Ende.', sM);
+E(S, 2, 'Welches Item zeigt die Tageszeit an?', '{clock}', 'Die {clock} zeigt die Tageszeit, im Nether und Ende dreht sie sich.', sM);
+E(S, 2, 'Welches Item schützt den Spieler beim Fall vor Schaden, wenn man es kurz vor dem Aufprall platziert?', '{water_bucket}', 'Ein Wassereimer fängt den Fall ab.', sM);
+E(S, 2, 'Wie nennt man das Entfernen von Items, die am Boden liegen, nach 5 Minuten?', 'Despawn', 'Items verschwinden nach 5 Minuten.', sM, ['Despawnen', 'Verschwinden']);
+N(S, 3, 'Wie viele Erfahrungspunkte braucht man für Stufe 1?', 7, 'Punkte', 'Für die erste Stufe sind 7 Punkte nötig.', sM);
+N(S, 3, 'Wie viele Items kann man in einen Stapel Pfeile legen?', 64, 'Stück', 'Pfeile stapeln sich bis 64.', sM);
+N(S, 2, 'Wie viele Stück Ender-Perlen passen in einen Stapel?', 16, 'Stück', 'Enderperlen stapeln bis 16.', sM);
+
+// ───────── Strukturen ─────────
+N(T, 2, 'Wie viele Rahmenblöcke hat ein vollständiges Endportal?', 12, 'Rahmen', 'Jeder Rahmen braucht ein Ender-Auge.', sS);
+N(T, 3, 'Wie viele Blöcke bilden die Portalfläche eines Endportals (3 mal 3)?', 9, 'Blöcke', 'Die Fläche hat 3x3 Blöcke.', sS);
+N(T, 2, 'Wie viele Blöcke breit ist ein Netherportal mindestens (Innenmaß)?', 2, 'Blöcke', 'Das Innenmaß beträgt mindestens 2 breit und 3 hoch.', sS);
+N(T, 2, 'Wie viele Blöcke hoch ist ein Netherportal mindestens (Innenmaß)?', 3, 'Blöcke', 'Das Innenmaß beträgt mindestens 2 breit und 3 hoch.', sS);
+N(T, 4, 'Wie viele Blöcke breit darf ein Netherportal höchstens sein (Innenmaß)?', 21, 'Blöcke', 'Die Größe ist auf 21x21 begrenzt.', sS);
+N(T, 3, 'Wie viele Obsidianblöcke braucht man für das kleinste Netherportal?', 10, 'Blöcke', 'Ohne Ecken genügen 10 Obsidian.', sS);
+N(T, 3, 'Wie viele Große Wächter bewachen ein Ozeanmonument?', 3, 'Mobs', 'Ein Monument hat 3 Große Wächter.', sS);
+N(T, 3, 'Wie viele Truhen enthält ein Wüstentempel?', 4, 'Truhen', 'Die Truhen liegen in den vier Himmelsrichtungen unter dem Tempel.', sS);
+N(T, 3, 'Wie viele TNT-Blöcke liegen in der Falle unter einem Wüstentempel?', 9, 'Blöcke', 'Neun TNT-Blöcke hängen an der Druckplatte.', sS);
+N(T, 3, 'Wie viele Wellen hat ein Überfall (Raid) auf Normal?', 5, 'Wellen', 'Leicht 3, Normal 5, Schwer 7 Wellen.', sS);
+N(T, 3, 'Wie viele Wellen hat ein Überfall (Raid) auf Schwer?', 7, 'Wellen', 'Schwer hat 7 Wellen.', sS);
+N(T, 3, 'Wie viele Dorf-Varianten (Biom-Typen) gibt es in Java: Ebene, Wüste, Savanne, Taiga und …?', 5, 'Varianten', 'Dazu kommt das verschneite Dorf.', sS);
+E(T, 2, 'Welcher Mob bewacht die Antike Stadt?', '{m:warden}', 'Der Warden lebt tief in der Antiken Stadt.', sS);
+E(T, 2, 'Welcher Mob spawnt aus den Spawnern der Netherfestung?', '{m:blaze}', 'Die Lohe spawnt aus Spawnern in Netherfestungen.', sS);
+E(T, 2, 'Welcher Mob spawnt aus den Spawnern in Verlassenen Minenschächten?', '{m:cave_spider}', 'Dort stehen Höhlenspinnen-Spawner.', sS);
+E(T, 2, 'Welcher Mob lebt in Endstädten?', '{m:shulker}', 'Shulker leben in Endstädten.', sS);
+E(T, 3, 'Welches Item findet man nur in Endschiffen?', '{elytra}', 'Die {elytra} hängt in einem Rahmen im Endschiff.', sS);
+E(T, 1, 'Welche Dimension erreicht man durch ein Endportal?', 'Ende', 'Das Endportal führt ins Ende.', sS, ['Das Ende', 'End']);
+E(T, 2, 'In welcher Struktur befindet sich das Endportal?', 'Festung', 'Das Endportal liegt in der Festung.', sS, ['Stronghold']);
+E(T, 3, 'Welches Item öffnet Truhen in der Prüfungskammer?', '{trial_key}', 'Der {trial_key} gehört zur Prüfungskammer (1.21).', sS);
+E(T, 2, 'Welcher Mob spawnt in der Festung aus Silberfisch-Blöcken?', '{m:silverfish}', 'Silberfische verstecken sich in Steinblöcken der Festung.', sS);
+E(T, 2, 'Welche Mobs wohnen im Plünderer-Außenposten?', '{m:pillager}', 'Plünderer bewachen den Außenposten.', sS);
+E(T, 2, 'Welche Struktur liegt im Nether und wird von Piglins bewohnt?', 'Bastionsruine', 'Piglins leben in der Bastionsruine.', sS, ['Bastion', 'Bastionruine']);
+E(T, 3, 'Welche Struktur im Nether enthält Witherskelette?', 'Netherfestung', 'Witherskelette spawnen in der Netherfestung.', sS, ['Nether-Festung', 'Nether Festung']);
+C(T, 2, 'Wo findet man Elytren: im „Endschiff“ oder in der „Wüstenpyramide“?', 'Endschiff', 'Wüstenpyramide', 'Elytren gibt es nur im Endschiff.', sS);
+C(T, 2, 'Welche Struktur liegt im Nether: „Bastionsruine“ oder „Waldanwesen“?', 'Bastionsruine', 'Waldanwesen', 'Das Waldanwesen liegt in der Oberwelt.', sS);
+C(T, 3, 'Wo wartet der Warden: in der „Antiken Stadt“ oder in der „Festung“?', 'Antiken Stadt', 'Festung', 'Der Warden lebt in Antiken Städten.', sS);
+N(T, 4, 'Wie viele Blöcke Kantenlänge hat die Obsidianplattform, auf der man im Ende ankommt?', 5, 'Blöcke', 'Die Plattform hat 5x5 Blöcke.', sD);
+N(T, 3, 'Wie viele Berufe mit Arbeitsplatz gibt es bei Dorfbewohnern (ohne Arbeitslose und Nichtsnutze)?', 13, 'Berufe', 'Es gibt 13 Berufe mit Arbeitsplatz.', sS);
+E(T, 3, 'Welcher Block wird für den Beruf Bibliothekar benötigt?', '{lectern}', 'Das {lectern} ist der Arbeitsplatz des Bibliothekars.', sS);
+
+// ───────── Weltgenerierung ─────────
+N(W, 3, 'Auf welcher Y-Höhe liegt der Meeresspiegel der Oberwelt?', 63, '', 'Wasser steht in der Oberwelt bis Y=62; der Meeresspiegel liegt bei 63.', sW);
+N(W, 2, 'Auf welcher Y-Höhe liegt der Boden (Grundgestein) der Oberwelt?', -64, '', 'Der unterste Block liegt bei Y=-64.', sW);
+N(W, 3, 'Bis zu welcher Y-Höhe kann man in der Oberwelt maximal bauen?', 319, '', 'Die höchste Bauhöhe ist Y=319.', sW);
+N(W, 2, 'Wie viele Blöcke hoch ist die Oberwelt insgesamt?', 384, 'Blöcke', 'Von Y=-64 bis Y=319 sind es 384 Blöcke.', sW);
+N(W, 1, 'Wie viele Blöcke Kantenlänge hat ein Chunk?', 16, 'Blöcke', 'Ein Chunk ist 16x16 Blöcke breit.', sW);
+N(W, 4, 'Auf welcher Y-Höhe liegt der Lavameer-Spiegel im Nether?', 31, '', 'Das Lavameer des Nethers liegt bei Y=31.', sW);
+N(W, 4, 'Auf welcher Y-Höhe ist das Kupfererz am häufigsten?', 48, '', 'Kupfer hat sein Maximum um Y=48.', sW);
+N(W, 4, 'Auf welcher Y-Höhe ist das Kohleerz am häufigsten?', 96, '', 'Kohle hat ein Maximum um Y=96.', sW);
+N(W, 4, 'Auf welcher Y-Höhe ist Lapislazuli am häufigsten?', 0, '', 'Lapis ist am häufigsten um Y=0.', sW);
+N(W, 4, 'Auf welcher Y-Höhe ist Golderz in der Oberwelt am häufigsten?', -16, '', 'Gold hat sein Maximum um Y=-16.', sW);
+N(W, 3, 'Wie viele Bit hat der Weltstartwert (Seed) einer Welt?', 64, 'Bit', 'Der Seed ist eine 64-Bit-Zahl.', sW);
+N(W, 3, 'Wie viele Festungen (Strongholds) gibt es in einer Welt?', 128, 'Festungen', 'Es gibt 128 Festungen in einer Welt.', sW);
+N(W, 4, 'Ab etwa wie vielen Blöcken Abstand vom Zentrum beginnen die äußeren Inseln des Endes?', 1000, 'Blöcke', 'Die äußeren Inseln liegen rund 1000 Blöcke vom Zentrum.', sW, { tolerancePct: 10, toleranceMin: 50 });
+N(W, 2, 'Wie vielen Oberwelt-Blöcken entspricht ein Block im Nether?', 8, 'Blöcke', 'Nether-Koordinaten sind 1 zu 8.', sD);
+E(W, 3, 'In welchem Biom leben Pilzkühe?', '{b:mushroom_fields}', 'Pilzkühe leben nur im Biom „{b:mushroom_fields}“.', sW);
+E(W, 3, 'In welchem Biom leben Pandas?', '{b:bamboo_jungle}', 'Pandas leben im Bambusdschungel.', sW);
+E(W, 3, 'In welchem Höhlenbiom leben Axolotl?', '{b:lush_caves}', 'Axolotl leben in den Üppigen Höhlen.', sW);
+E(W, 3, 'In welchem Höhlenbiom wachsen große Mengen Tropfstein?', '{b:dripstone_caves}', 'Das Biom heißt „{b:dripstone_caves}“.', sW);
+E(W, 3, 'In welchem Biom findet man Sonnenblumen?', '{b:sunflower_plains}', 'Sonnenblumen wachsen nur in diesem Biom.', sW);
+E(W, 3, 'In welchem Nether-Biom gibt es Seelensand und Knochenblöcke?', '{b:soul_sand_valley}', 'Im Seelensandtal wachsen Knochenblock-Fossilien.', sW);
+E(W, 3, 'In welchem Nether-Biom wachsen Wirrpilze und Wirrstämme?', '{b:warped_forest}', 'Der Wirrwald hat türkisfarbene Pilzstämme.', sW);
+E(W, 3, 'In welchem Nether-Biom gibt es Basalt und Magmawürfel?', '{b:basalt_deltas}', 'Die Basaltdeltas sind voller Basalt und Lava.', sW);
+E(W, 3, 'In welchem Biom wachsen Mangroven?', '{b:mangrove_swamp}', 'Mangroven wachsen im Mangrovensumpf.', sW);
+E(W, 3, 'In welchem Biom blühen Kirschbäume?', '{b:cherry_grove}', 'Der Kirschhain hat rosa Bäume.', sW);
+E(W, 2, 'Auf welchem Boden wachsen Kakteen?', '{sand}', 'Kakteen wachsen auf Sand und Rotem Sand.', sW);
+E(W, 3, 'In welchem Biom lebt der Warden?', '{b:deep_dark}', 'Das Tiefe Dunkel enthält Antike Städte.', sW);
+E(W, 3, 'In welchem Biom leben Ozelots und Papageien?', '{b:jungle}', 'Ozelots und Papageien spawnen im Dschungel.', sW);
+E(W, 3, 'In welchem Biom gibt es Eisstacheln?', '{b:ice_spikes}', 'Das Biom heißt „{b:ice_spikes}“.', sW);
+E(W, 4, 'Welcher Block wächst als weicher Bewuchs in den Üppigen Höhlen?', '{moss_block}', 'Moosblöcke wachsen in Üppigen Höhlen.', sW);
+E(W, 2, 'Welcher Block entsteht, wenn Lava auf Wasser trifft und die Lava ein Quellblock ist?', '{obsidian}', 'Lava-Quellen werden zu Obsidian, fließende zu Bruchstein.', sW);
+E(W, 3, 'Welches Erz gibt es nur im Nether und liefert Netherit?', '{ancient_debris}', 'Antiker Schrott ist die Quelle für Netherit.', sW);
+E(W, 3, 'Welches Erz liefert im Nether Quarz?', '{nether_quartz_ore}', 'Das Quarzerz gibt Netherquarz.', sW);
+C(W, 2, 'Welches Erz gibt es auch im Nether: „Golderz“ oder „Diamanterz“?', '{nether_gold_ore}', '{diamond_ore}', 'Im Nether gibt es Nethergolderz, aber kein Diamanterz.', sW);
+
+// ───────── Dimensionen ─────────
+N(D, 1, 'Wie viele Dimensionen gibt es in Minecraft Java?', 3, 'Dimensionen', 'Oberwelt, Nether und Ende.', sD);
+N(D, 3, 'Wie viele Obsidiantürme stehen auf der Hauptinsel des Endes?', 10, 'Türme', 'Auf den Türmen sitzen Endkristalle.', sD);
+N(D, 3, 'Wie viele Endkristalle braucht man, um den Enderdrachen wiederzubeleben?', 4, 'Kristalle', 'Vier Endkristalle um das Austrittsportal beschwören den Drachen.', sD);
+N(D, 3, 'Wie viele Endkristalle gibt es zu Beginn auf der Hauptinsel?', 10, 'Kristalle', 'Jeder Obsidianturm trägt einen Endkristall.', sD);
+N(D, 3, 'Wie viele Lebenspunkte hat der Enderdrache (ein Herz = 2)?', 200, 'Lebenspunkte', 'Der Enderdrache hat 200 Lebenspunkte, 100 Herzen.', sD);
+E(D, 2, 'Welche Flüssigkeit lässt sich im Nether nicht platzieren?', '{water_bucket}', 'Wasser verdunstet im Nether sofort.', sD, ['Wasser']);
+E(D, 2, 'Welcher Mob feuert im Nether Feuerbälle und schwebt?', '{m:ghast}', 'Ghasts schweben und schießen Feuerbälle.', sD);
+E(D, 3, 'Welcher Mob läuft im Nether über Lava?', '{m:strider}', 'Schreiter laufen über Lava.', sD);
+E(D, 3, 'Welches Item lässt Nethergolderz fallen?', '{gold_nugget}', 'Nethergolderz lässt Goldklumpen fallen.', sD);
+E(D, 3, 'Welches Item liefert Quarzerz?', '{quartz}', 'Quarzerz lässt Netherquarz fallen.', sD);
+E(D, 3, 'Welches Item liefert Glowstone beim Abbau?', '{glowstone_dust}', 'Glowstone lässt Glowstone-Staub fallen.', sD);
+E(D, 2, 'Welche Frucht wächst im Ende und teleportiert beim Essen?', '{chorus_fruit}', 'Die {chorus_fruit} teleportiert den Spieler zufällig.', sD);
+E(D, 3, 'Womit sammelt man den Atem des Enderdrachen ein?', '{glass_bottle}', 'Man füllt eine {glass_bottle} mit Drachenatem.', sD);
+E(D, 2, 'Welcher Block erscheint nach dem Sieg über den Enderdrachen und bietet ein Ei?', '{dragon_egg}', 'Das {dragon_egg} entsteht auf dem Austrittsportal.', sD);
+E(D, 3, 'Aus welcher Dimension stammen Netherrack, Seelensand und Glowstone?', 'Nether', 'Diese Blöcke gibt es nur im Nether.', sD, ['Der Nether']);
+E(D, 3, 'In welcher Dimension generiert Endstein?', 'Ende', 'Endstein ist der Hauptbaustoff des Endes.', sD, ['Das Ende']);
+C(D, 2, 'Wo explodieren Betten: nur im „Nether“ oder im „Nether und Ende“?', 'Nether und Ende', 'Nether', 'Betten explodieren in beiden Dimensionen.', sD);
+C(D, 2, 'In welcher Dimension verdunstet Wasser: „Nether“ oder „Ende“?', 'Nether', 'Ende', 'Im Nether verdunstet Wasser.', sD);
+C(D, 2, 'Welche Dimension hat keine Tageszeit: „Oberwelt“ oder „Ende“?', 'Ende', 'Oberwelt', 'Im Ende und im Nether gibt es keinen Tagesverlauf.', sD);
+C(D, 3, 'Wo funktioniert ein Kompass normal: in der „Oberwelt“ oder im „Nether“?', 'Oberwelt', 'Nether', 'Im Nether dreht sich der Kompass wild.', sD);
+C(D, 3, 'Welcher Block führt in das Ende: „Endportal“ oder „Netherportal“?', 'Endportal', 'Netherportal', 'Das Netherportal führt in den Nether.', sD);
+C(D, 3, 'Welches Gestein gibt es nur im Ende: „Endstein“ oder „Netherrack“?', 'Endstein', 'Netherrack', 'Netherrack gibt es im Nether.', sD);
+E(D, 2, 'Aus welchem Material baut man ein Netherportal?', '{obsidian}', 'Netherportale bestehen aus Obsidian.', sD);
+E(D, 2, 'Womit entzündet man ein Netherportal?', '{flint_and_steel}', 'Mit {flint_and_steel} oder einer Feuerkugel.', sD);
+E(D, 2, 'Welches Item braucht man, um ein Endportal zu aktivieren?', '{ender_eye}', 'Das {ender_eye} wird in die Rahmen gesetzt.', sD);
+E(D, 2, 'Welche Zutat braucht man neben einer Enderperle für ein Ender-Auge?', '{blaze_powder}', 'Enderperle plus Lohenstaub.', sD);
+E(D, 3, 'Welcher Mob lässt Enderperlen fallen?', '{m:enderman}', 'Endermen lassen Enderperlen fallen.', sD);
+E(D, 3, 'Welcher Block im Ende lässt sich nicht abbauen und umgibt den Portalausgang?', '{bedrock}', 'Das Austrittsportal besteht aus Grundgestein.', sD);
+
+// ───────── Zusatz (Charge 2) ─────────
+N(R, 1, 'Wie viele Redstone-Staub ergeben einen {redstone_block}?', 9, 'Stück', 'Neun Redstone-Staub ergeben einen Block.', sR);
+E(R, 3, 'Welches Item aus dem Nether braucht man für einen {comparator}?', '{quartz}', 'Der {comparator} besteht aus Fackeln, Quarz und Stein.', sR);
+E(R, 2, 'Welcher Block ist neben Redstone die Hauptzutat einer {redstone_lamp}?', '{glowstone}', 'Die {redstone_lamp} entsteht aus Redstone und Glowstone.', sR);
+E(R, 1, 'Welches Item braucht man neben Sand für TNT?', '{gunpowder}', 'TNT besteht aus Schwarzpulver und Sand.', sR);
+N(R, 3, 'Wie viele Sekunden brennt die Zündschnur von TNT, bevor es explodiert?', 4, 'Sekunden', 'Gezündetes TNT explodiert nach 4 Sekunden.', sR);
+E(R, 2, 'Welche Schiene sendet ein Signal, wenn eine Lore darüberfährt?', '{detector_rail}', 'Die {detector_rail} erkennt Loren.', sR);
+E(R, 3, 'Welche Schiene aktiviert Trichter- und TNT-Loren?', '{activator_rail}', 'Die {activator_rail} wirft Passagiere ab und aktiviert Spezialloren.', sR);
+E(R, 2, 'Welcher Block lenkt Blitze auf sich?', '{lightning_rod}', 'Der {lightning_rod} leitet Blitze in seiner Nähe um.', sR);
+N(R, 4, 'In welchem Umkreis (in Blöcken) fängt ein Blitzableiter Blitze ein?', 128, 'Blöcke', 'Der Blitzableiter wirkt im Umkreis von 128 Blöcken.', sR);
+E(R, 1, 'Welcher Block spielt Töne, wenn er ein Redstone-Signal bekommt?', '{note_block}', 'Der {note_block} spielt je nach Block darunter verschiedene Klänge.', sR);
+E(R, 1, 'Welcher Block spielt Schallplatten ab?', '{jukebox}', 'Im {jukebox} laufen Musikplatten.', sR);
+
+E(S, 2, 'Welcher Block repariert Gegenstände, kombiniert Verzauberungen und benennt Items?', '{anvil}', 'Am {anvil} kombiniert man Items gegen Erfahrungsstufen.', sM);
+E(S, 2, 'Welcher Block entfernt Verzauberungen und gibt dafür Erfahrung?', '{grindstone}', 'Der {grindstone} entzaubert Gegenstände.', sM);
+E(S, 2, 'An welchem Block wertet man Diamantausrüstung zu Netherit auf?', '{smithing_table}', 'Am {smithing_table} wird mit Schmiedevorlagen veredelt.', sM);
+E(S, 2, 'Welcher Block schneidet Steinblöcke effizient zu Stufen und Treppen?', '{stonecutter}', 'Die {stonecutter} ist günstiger als das Crafting.', sM);
+E(S, 1, 'An welchem Block braut man Tränke?', '{brewing_stand}', 'Im {brewing_stand} braut man mit Lohenstaub als Treibstoff.', sM);
+E(S, 2, 'Welcher Ofen schmilzt Erze doppelt so schnell?', '{blast_furnace}', 'Der {blast_furnace} schmilzt nur Erze und Metall schneller.', sM);
+E(S, 2, 'Welcher Ofen gart Essen doppelt so schnell?', '{smoker}', 'Der {smoker} gart nur Essen schneller.', sM);
+N(S, 3, 'Wie viele Sekunden dauert es von der Zündung bis zur Explosion eines Creepers (gerundet)?', 1.5, 'Sekunden', 'Die Zündschnur eines Creepers dauert etwa 1,5 Sekunden.', sM, { tolerance: 0.2 });
+N(S, 3, 'Wie viele Lebenspunkte Fallschaden gibt es pro Block über 3 Blöcken Fallhöhe?', 1, 'Lebenspunkte', 'Jeder zusätzliche Block kostet 1 Lebenspunkt (halbes Herz).', sM);
+N(S, 1, 'Wie viele Plätze hat das Handwerksraster im Inventar des Spielers?', 4, 'Plätze', 'Das Inventar-Raster ist 2x2, die Werkbank 3x3.', sM);
+N(S, 1, 'Wie viele Plätze hat das Handwerksraster der {crafting_table}?', 9, 'Plätze', 'Das Raster der Werkbank ist 3x3.', sM);
+E(S, 2, 'Welches Item schützt davor, von Endermen angegriffen zu werden, wenn man es auf dem Kopf trägt?', '{carved_pumpkin}', 'Der {carved_pumpkin} verhindert Blickkontakt.', sM);
+E(S, 2, 'Welches Item rettet den Spieler vor dem Tod, wenn er es in der Hand hält?', '{totem_of_undying}', 'Das {totem_of_undying} gibt Leben zurück.', sM);
+E(S, 2, 'Mit welchem Item gleitet man durch die Luft?', '{elytra}', 'Mit {elytra} und Feuerwerksraketen fliegt man.', sM);
+C(S, 1, 'Welcher Mob verbrennt im Sonnenlicht: „{m:zombie}“ oder „{m:creeper}“?', '{m:zombie}', '{m:creeper}', 'Der {m:zombie} brennt bei Tageslicht, der {m:creeper} nicht.', sM);
+C(S, 2, 'Welcher Mob ist immun gegen Feuer: „{m:blaze}“ oder „{m:witch}“?', '{m:blaze}', '{m:witch}', 'Die {m:blaze} ist feuerfest.', sM);
+C(S, 2, 'Welcher Mob nimmt Schaden durch Wasser: „{m:enderman}“ oder „{m:skeleton}“?', '{m:enderman}', '{m:skeleton}', 'Endermen nehmen in Wasser Schaden.', sM);
+E(S, 2, 'Welcher Mob nimmt Blöcke auf und trägt sie weg?', '{m:enderman}', 'Der {m:enderman} kann Blöcke aufnehmen und versetzen.', sM);
+E(S, 2, 'Welcher Mob lässt sich mit Eisenbarren heilen?', '{m:iron_golem}', 'Der {m:iron_golem} wird mit Eisen repariert.', sM);
+E(S, 1, 'Welcher Block verhindert durch sein Licht, dass Monster in der Nähe spawnen?', '{torch}', 'Eine {torch} erhöht die Lichtstärke.', sM);
+
+E(T, 3, 'Welcher Dorfbewohner verkauft Karten zu Strukturen?', '{j:cartographer}', 'Der {j:cartographer} handelt mit Erkundungskarten.', sS);
+E(T, 2, 'Welcher Dorfbewohner verkauft verzauberte Bücher?', '{j:librarian}', 'Der {j:librarian} bietet verzauberte Bücher an.', sS);
+E(T, 2, 'Welcher Block warnt Dorfbewohner bei Gefahr, wenn man ihn läutet?', '{bell}', 'Die {bell} ruft Dorfbewohner in Deckung.', sS);
+E(T, 3, 'Welche Unterwasser-Struktur besteht aus Prismarin und hat nasse Schwämme?', 'Ozeanmonument', 'Das Ozeanmonument enthält nasse Schwämme.', sS, ['Meeresmonument', 'Monument']);
+E(T, 2, 'Welche kleine Struktur enthält Spawner und eine Truhe in einem Bruchstein-Raum?', 'Verlies', 'Ein Verlies hat einen Spawner und zwei Truhen.', sS, ['Dungeon', 'Kerker']);
+E(T, 3, 'In welcher Nether-Struktur gibt es einen Schatzraum mit Goldblöcken?', 'Bastionsruine', 'Im Schatzraum liegen Goldblöcke und Beute.', sS, ['Bastion']);
+E(T, 4, 'In welcher Struktur kann man die Netherit-Aufwertung (Schmiedevorlage) finden?', 'Bastionsruine', 'Die Vorlage liegt in Truhen der Bastionsruine.', sS, ['Bastion']);
+E(T, 2, 'In welcher Struktur im Ende leben Shulker?', 'Endstadt', 'Shulker bewachen die Endstadt.', sS, ['End City', 'Endstädte']);
+E(T, 3, 'Welche Struktur im Schnee hat einen Keller mit Labor?', 'Iglu', 'Manche Iglus haben einen geheimen Keller.', sS, ['Iglus']);
+
+E(W, 2, 'Welcher Block bedeckt den Boden von Taigen oft?', '{podzol}', 'Podsol wächst in Großen Taigen.', sW);
+E(W, 3, 'Welcher Block bedeckt den Boden im Pilzland?', '{mycelium}', 'Myzel breitet sich im Pilzland aus.', sW);
+E(W, 3, 'Welcher Block bildet den Boden im Wirrwald des Nethers?', '{warped_nylium}', 'Wirrpilz-Nylium bedeckt den Boden im Wirrwald.', sW);
+E(W, 3, 'Welcher Block bildet den Boden im Karmesinwald des Nethers?', '{crimson_nylium}', 'Karmesin-Nylium bedeckt den Boden im Karmesinwald.', sW);
+E(W, 2, 'Welches Erz kommt nur in Bergbiomen vor?', '{emerald_ore}', 'Smaragderz generiert in Gebirgen.', sW);
+E(W, 2, 'Welches Gestein ersetzt unterhalb von etwa Y=0 den normalen Stein?', '{deepslate}', 'Tiefenschiefer bildet die tiefen Schichten.', sW);
+E(W, 3, 'Welcher Block füllt das Innere einer Amethyst-Geode?', '{amethyst_block}', 'Geoden haben Amethystblöcke und Knospen.', sW);
+N(W, 2, 'Wie viele Blöcke hoch ist der Nether?', 128, 'Blöcke', 'Der Nether ist 128 Blöcke hoch.', sW);
+N(W, 3, 'Bis zu welcher Y-Höhe reicht die Decke des Nethers (oberste Blockschicht)?', 127, '', 'Die Grundgesteindecke liegt auf Y=127.', sW);
+
+E(D, 2, 'Welcher Nether-Block verlangsamt Spieler und lässt Netherwarzen wachsen?', '{soul_sand}', 'Auf {soul_sand} wächst Netherwarze.', sD);
+E(D, 3, 'Welche Pflanze wächst auf Seelensand im Nether?', '{nether_wart}', 'Netherwarze wächst nur auf Seelensand.', sD);
+E(D, 3, 'Welcher leuchtende Block wächst im Karmesinwald?', '{shroomlight}', 'Das {shroomlight} leuchtet an Pilzstämmen.', sD);
+C(D, 2, 'Wo steht die Obsidianplattform, wenn man ankommt: im „Ende“ oder im „Nether“?', 'Ende', 'Nether', 'Beim Betreten des Endes steht man auf einer Obsidianplattform.', sD);
+C(D, 1, 'Wo leben Piglins: im „Nether“ oder im „Ende“?', 'Nether', 'Ende', 'Piglins leben im Nether.', sD);
+C(D, 1, 'Wo spawnen Endermen besonders häufig: im „Ende“ oder im „Nether“?', 'Ende', 'Nether', 'Im Ende gibt es besonders viele Endermen.', sD);
+C(D, 2, 'Wo liegt die Antike Stadt: in der „Oberwelt“ oder im „Nether“?', 'Oberwelt', 'Nether', 'Antike Städte liegen tief unter der Oberwelt.', sD);
+C(D, 2, 'Wo liegt der Enderdrache: im „Ende“ oder im „Nether“?', 'Ende', 'Nether', 'Der Enderdrache lebt im Ende.', sD);
+C(D, 2, 'Wo findet man Ghasts: im „Nether“ oder in der „Oberwelt“?', 'Nether', 'Oberwelt', 'Ghasts leben im Nether.', sD);
+
+// ───────── Ausgabe ─────────
+const out = [];
+const seen = new Set(base.map(q => norm(q.question)));
+rows.forEach((r, i) => {
+  const m0 = missing.length;
+  const q = sub(r.q), fact = sub(r.fact);
+  const cat = r.cat;
+  const key = String(i) + '|' + norm(q);
+  let o;
+  if (r.f === 'n') o = { type: 'number', question: q, answer: r.a, unit: r.unit || '', tolerance: 0, ...(r.extra || {}), category: cat, funFact: fact };
+  else if (r.f === 'e') { const a = sub(r.a); o = { type: 'entity', question: q, answer: a, acceptedAnswers: [...new Set([a, ...(r.aliases || [])])], category: cat, funFact: fact }; }
+  else { const a = sub(r.a), b = sub(r.b); o = { type: 'entity', question: q, answer: a, acceptedAnswers: [a], category: cat, funFact: fact, choices: hash(key) % 2 ? [a, b] : [b, a] }; }
+  if (missing.length > m0 || /\?\?/.test(o.question + o.funFact + o.answer)) return;
+  if (seen.has(norm(o.question))) return;
+  seen.add(norm(o.question));
+  const h = hash('w3|' + norm(q));
+  o.rating = band(r.tier, h); o.tier = o.rating < 1200 ? 1 : o.rating < 2200 ? 2 : o.rating < 3200 ? 3 : 4;
+  o.gen = 'w3_' + norm(cat).slice(0, 8); o.source = r.src; o.__key = norm(q);
+  out.push(o);
+});
+const idsPath = path.join(__dirname, 'wiki3-ids.json');
+const ids = fs.existsSync(idsPath) ? JSON.parse(fs.readFileSync(idsPath, 'utf8')) : {};
+let next = Math.max(30000, ...Object.values(ids)) + 1;
+out.forEach(q => { if (!ids[q.__key]) ids[q.__key] = next++; q.id = ids[q.__key]; delete q.__key; });
+out.sort((a, b) => a.id - b.id);
+const c = {}, t = {}, f = {}; out.forEach(q => { c[q.category] = (c[q.category] || 0) + 1; t[q.tier] = (t[q.tier] || 0) + 1; const k = q.choices ? 'choice' : q.type; f[k] = (f[k] || 0) + 1; });
+console.log('Wiki-Fakten:', out.length, JSON.stringify(c), JSON.stringify(t), JSON.stringify(f), missing.length ? 'FEHLENDE NAMEN: ' + [...new Set(missing)].join(', ') : '');
+if (dry) process.exit(0);
+fs.writeFileSync(idsPath, JSON.stringify(ids));
+fs.writeFileSync(qPath, JSON.stringify(base.concat(out), null, 2));
+console.log('questions.json:', base.length + out.length, 'Fragen');

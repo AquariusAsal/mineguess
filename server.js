@@ -26,6 +26,66 @@ const app    = express();
 const server = http.createServer(app);
 const io     = new Server(server, { cors: { origin: '*' }, maxHttpBufferSize: 96 * 1024 });
 
+// ── Sicherheits-Header, CSP (zunaechst nur Report-Only), robots.txt, sitemap.xml ─────────────────────────
+// CSP_MODE: 'report' (Standard, blockiert nichts, meldet nur), 'enforce' (blockiert) oder 'off'.
+const CSP_MODE = ['enforce', 'off'].includes(process.env.CSP_MODE) ? process.env.CSP_MODE : 'report';
+const CSP_VALUE = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://open.spotify.com https://embed-cdn.spotifycdn.com",     // Inline-Skripte der Seiten, Firebase (gstatic), Google-Login, Spotify iFrame-API
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https://*.googleusercontent.com https://i.scdn.co https://www.gstatic.com https://embed-cdn.spotifycdn.com",
+  "font-src 'self' data:",
+  "media-src 'self' blob:",
+  "connect-src 'self' ws: wss: https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://open.spotify.com https://embed-cdn.spotifycdn.com https://*.spotify.com",   // socket.io, Firebase Auth/Firestore
+  "frame-src https://open.spotify.com https://embed-cdn.spotifycdn.com https://accounts.google.com https://*.firebaseapp.com https://apis.google.com",
+  "worker-src 'self' blob:", "manifest-src 'self'",
+  "object-src 'none'", "base-uri 'self'", "form-action 'self'", "frame-ancestors 'self'",
+  'report-uri /api/csp-report',
+].join('; ');
+let cspTotal = 0; const cspMap = new Map();      // "direktive|host" -> Anzahl (ohne Pfade, Queries, IPs)
+const cspTop = () => [...cspMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, n]) => ({ what: k, n }));
+app.use((req, res, next) => {
+  res.set({ 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'strict-origin-when-cross-origin', 'X-Frame-Options': 'SAMEORIGIN',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()' });
+  const https = req.headers['x-forwarded-proto'] === 'https' || req.secure;
+  if (https && process.env.RENDER) res.set('Strict-Transport-Security', 'max-age=15552000');        // nur ueber https (Render), kein includeSubDomains/preload
+  if (CSP_MODE !== 'off' && !req.path.startsWith('/api/') && !req.path.startsWith('/socket.io/') && req.path !== '/health') res.set(CSP_MODE === 'enforce' ? 'Content-Security-Policy' : 'Content-Security-Policy-Report-Only', CSP_VALUE);
+  next();
+});
+app.post('/api/csp-report', express.json({ type: ['application/json', 'application/csp-report', 'application/reports+json'], limit: '8kb' }), (req, res) => {
+  res.status(204).end();
+  if (!apiAllowed('csp', req.ip, 20, 3000)) return;
+  try {
+    const b = req.body; const list = Array.isArray(b) ? b : [b];
+    list.slice(0, 5).forEach(x => {
+      const r = (x && (x['csp-report'] || x.body)) || {};
+      const dir = String(r['effective-directive'] || r['violated-directive'] || r.effectiveDirective || '?').split(' ')[0].slice(0, 40);
+      let blocked = String(r['blocked-uri'] || r.blockedURL || r.blockedUri || '?');
+      try { blocked = blocked.includes('://') ? new URL(blocked).host : blocked.split(/[?#]/)[0].slice(0, 20); } catch (e) { blocked = '?'; }
+      const k = dir + '|' + blocked.slice(0, 60); cspTotal++; cspMap.set(k, (cspMap.get(k) || 0) + 1);
+      if (cspMap.size > 300) cspMap.clear();
+    });
+  } catch (e) { /* ignorieren */ }
+});
+const siteBase = (req) => (process.env.SITE_URL || ((req.headers['x-forwarded-proto'] === 'https' || req.secure ? 'https' : 'http') + '://' + (req.headers.host || 'localhost'))).replace(/\/+$/, '');
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').set('Cache-Control', 'public, max-age=3600').send(['User-agent: *', 'Disallow: /api/', 'Disallow: /admin.html', 'Disallow: /health', 'Disallow: /socket.io/', 'Allow: /', '', 'Sitemap: ' + siteBase(req) + '/sitemap.xml', ''].join('\n'));
+});
+app.get('/sitemap.xml', (req, res) => {
+  const b = siteBase(req), day = new Date().toISOString().slice(0, 10);
+  const urls = [['/', '1.0'], ['/game.html', '0.9'], ['/multiplayer.html', '0.8'], ['/datenschutz.html', '0.2'], ['/impressum.html', '0.2']];
+  res.type('application/xml').set('Cache-Control', 'public, max-age=3600').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + urls.map(([u, p]) => `  <url><loc>${b}${u}</loc><lastmod>${day}</lastmod><priority>${p}</priority></url>`).join('\n') + '\n</urlset>\n');
+});
+// Fakt des Tages: deterministisch nach Datum (Europe/Berlin) aus den vorhandenen Funfacts, ohne Personenbezug
+app.get('/api/fact-of-the-day', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=600');
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin' }).format(new Date());
+  const pool = (Array.isArray(allQuestions) ? allQuestions : []).filter(q => q.funFact && String(q.funFact).length >= 25 && String(q.funFact).length <= 240 && q.type !== 'crafting');
+  if (!pool.length) return res.status(503).json({ ok: false });
+  let h = 2166136261; for (const c of day) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const q = pool[h % pool.length];
+  res.json({ ok: true, date: day, fact: String(q.funFact), category: q.category, id: q.id });
+});
 // Admin-Seite (falls vorhanden): nie indexieren, nie im Service-Worker-Cache (tools/gen-sw-assets.js kennt sie nicht)
 app.use((req, res, next) => { if (req.path === '/admin.html') res.set('X-Robots-Tag', 'noindex, nofollow, noarchive'); next(); });
 // ── Statische Dateien: nur Whitelist (keine Server-, Config-, Daten- oder Doku-Dateien) ──────────
@@ -162,6 +222,8 @@ const REPORT_BURST = Number(process.env.REPORT_RATE_BURST) > 0 ? Number(process.
 const mailer = require('./lib/mailer.js').create({ log });
 const reportsApi = require('./lib/reports.js').create({
   store, cleanText, redactText, mailer, log,
+  profileOfToken: (t) => (profilesApi ? profilesApi.pidOfToken(t) : null),
+  onConfirm: (pid) => (profilesApi ? profilesApi.addHunter(pid) : false),
   knownQuestion: (id) => { const q = Array.isArray(allQuestions) ? allQuestions.find(x => x.id === id) : null; return q ? String(q.question || 'Frage') : ''; },
 });
 app.post('/api/report', express.json({ limit: '6kb' }), (req, res) => {
@@ -194,25 +256,48 @@ function adminSummary() {
     rooms: { total: rs.length, public: rs.filter(r => r.isPublic).length, private: rs.filter(r => !r.isPublic).length, byPhase, playersConnected: rs.reduce((n, r) => n + Object.values(r.players).filter(p => p.connected).length, 0) },
     ranked: { entries: rankedStore.size, activeRuns: rankedApi.runs.size },
     profiles: profilesApi ? { total: Object.keys(profilesApi.profiles()).length, groups: soc ? Object.keys(soc.groups || {}).length : 0, duels: soc ? Object.keys(soc.duels || {}).length : 0 } : null,
-    errors: counters,
+    errors: counters, csp: { total: cspTotal, byDirective: cspTop() },
   };
 }
-app.get('/api/admin/overview', (req, res) => {
+// gemeinsame Pruefung aller Admin-Routen: ohne ENV 404, zeitkonstanter Tokenvergleich, 5 Fehlversuche = 10 min Sperre
+function adminGuard(req, res) {
   res.set({ 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow, noarchive' });
-  if (!adminOn) return res.status(404).end();                                   // ohne ENV nicht vorhanden
+  if (!adminOn) { res.status(404).end(); return false; }                        // ohne ENV nicht vorhanden
   const ip = req.ip, f = adminFails.get(ip);
-  if (f && f.until > Date.now()) return res.status(429).json({ ok: false });
-  if (!apiAllowed('admin', ip, 30, 2000)) return res.status(429).json({ ok: false });
+  if (f && f.until > Date.now()) { res.status(429).json({ ok: false }); return false; }
+  if (!apiAllowed('admin', ip, 30, 2000)) { res.status(429).json({ ok: false }); return false; }
   const h = String(req.headers.authorization || ''), given = h.startsWith('Bearer ') ? h.slice(7) : String(req.headers['x-admin-token'] || '');
   const ok = crypto.timingSafeEqual(crypto.createHash('sha256').update(given).digest(), adminHash);          // zeitkonstanter Vergleich
   if (!ok) {
     const e = f && !(f.until > 0 && f.until <= Date.now()) ? f : { n: 0, until: 0 };
     e.n++; if (e.n >= 5) { e.until = Date.now() + 10 * 60 * 1000; e.n = 0; }                               // 5 Fehlversuche: 10 min Sperre
     adminFails.set(ip, e); if (adminFails.size > 5000) adminFails.clear();
-    return res.status(401).json({ ok: false });
+    res.status(401).json({ ok: false }); return false;
   }
   adminFails.delete(ip);
-  res.json(adminSummary());
+  return true;
+}
+app.get('/api/admin/overview', (req, res) => { if (adminGuard(req, res)) res.json(adminSummary()); });
+// Meldungen pruefen (ohne Freitext/Kontakt/Spieler): Liste und Aktion confirm|reject|reopen; confirm vergibt Fehlerjaeger-Punkte an verknuepfte Profile
+app.get('/api/admin/reports', (req, res) => { if (adminGuard(req, res)) res.json({ ok: true, reports: reportsApi.list({ status: req.query.status, limit: req.query.limit }) }); });
+app.post('/api/admin/report-action', express.json({ limit: '1kb' }), (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const b = req.body || {}; const r = reportsApi.act(b.id, b.action); res.status(r.status).json(r.body);
+});
+// Geprueft-Siegel: Admin markiert Fragen als geprueft (Store 'qreview'), oeffentlich nur die Liste der IDs
+app.post('/api/admin/question-review', express.json({ limit: '2kb' }), (req, res) => {
+  if (!adminGuard(req, res)) return;
+  const b = req.body || {};
+  const ids = (Array.isArray(b.questionIds) ? b.questionIds : [b.questionId]).filter((x) => Number.isInteger(x) && knownQuestionId(x)).slice(0, 500);
+  if (!ids.length || typeof b.verified !== 'boolean') return res.status(400).json({ ok: false });
+  let rv = store.get('qreview'); if (!rv || typeof rv !== 'object' || Array.isArray(rv)) rv = {};
+  ids.forEach((id) => { if (b.verified) rv[id] = Date.now(); else delete rv[id]; });
+  store.set('qreview', rv); res.json({ ok: true, verified: Object.keys(rv).length });
+});
+app.get('/api/verified-questions', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  const rv = store.get('qreview');
+  res.json({ ok: true, ids: rv && typeof rv === 'object' ? Object.keys(rv).map(Number).sort((a, b) => a - b) : [] });
 });
 
 app.post('/api/stats', express.json({ limit: '1kb' }), (req, res) => {
@@ -312,10 +397,19 @@ const ANSWER_TIME  = 10;          // Antwortphase fuer ALLE nach dem Laeuten (Ge
 const FAST_TEST = process.env.MP_TEST_FAST === '1';          // nur Tests: kurze Pausen und 2-Runden-Spiele
 const RESULT_TIME  = FAST_TEST ? 1 : 6;
 const MAX_PLAYERS  = 8;
+// Klassenraum (Lehrkraft + Schueler ohne Konto): feste Namensliste, kein Freitext, keine Speicherung, Auto-Loeschung nach Inaktivitaet
+const CLASS_NAMES = require('./lib/classnames.js').NAMES;
+const CLASS_MAX = 30;                                                                      // Schueler je Klassenraum
+const CLASS_IDLE_MS = Number(process.env.CLASS_IDLE_MS) > 0 ? Number(process.env.CLASS_IDLE_MS) : 4 * 3600 * 1000;   // Inaktivitaet bis zur Loeschung (Tests verkuerzen)
+const CLASS_SWEEP_MS = Number(process.env.CLASS_SWEEP_MS) > 0 ? Number(process.env.CLASS_SWEEP_MS) : 60 * 1000;
+const MAX_CLASSES = 200;
+const CLASS_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';                              // ohne I, O, 0, 1
+const newClassCode = () => { for (let i = 0; i < 60; i++) { let c = ''; for (let k = 0; k < 6; k++) c += CLASS_CODE_CHARS[crypto.randomInt(CLASS_CODE_CHARS.length)]; if (!rooms[c.toLowerCase()]) return c; } return null; };
 const DEFAULT_ROUNDS = 10;
 const ROUND_CHOICES  = FAST_TEST ? [2, 10, 25, 50, 100] : [10, 25, 50, 100];
 const ANSWER_CHOICES = [8, 10, 15];
 const BUILD_CHOICES = ['off', 'mix', 'only'];
+const TF_CHOICES = ['mix', 'only', 'off'];      // Wahr oder Mythos im Raum: mix (Standard) | only (nur tf) | off (keine tf)
 const BUILD_SECONDS = [45, 60];
 const BUILD_FACTORS = [1, 0.8, 0.65, 0.5, 0.4, 0.3, 0.25, 0.2];     // Punkte nach Zeitrang der richtigen Loesung
 const BUILD_CHECKS = 3;
@@ -388,12 +482,19 @@ function makeLimiter(cap, perSec) {
 // ── Raum-Verwaltung ───────────────────────────────────────────────────────────
 const rooms = {};
 
-function buildPool(categories, difficulty, build) {
+function buildPool(categories, difficulty, build, tf) {
   let pool = allQuestions.map((q, i) => i);
   if (categories && categories.length) {
     const set = new Set(categories);
     const filtered = allQuestions.map((q, i) => set.has(q.category) ? i : -1).filter(i => i !== -1);
     if (filtered.length >= 5) pool = filtered;
+  }
+  if (tf === 'only') {                         // Raumtyp "Wahr oder Mythos": nur tf-Fragen
+    const t = pool.filter(i => allQuestions[i].fmt === 'tf');
+    if (t.length >= 20) pool = t;
+  } else if (tf === 'off') {
+    const t = pool.filter(i => allQuestions[i].fmt !== 'tf');
+    if (t.length >= 20) pool = t;
   }
   if (build === 'only') {                      // Raumtyp "Bauen": nur baubare Crafting-Raetsel
     const b = pool.filter(i => allQuestions[i].type === 'crafting' && allQuestions[i].buildable && allQuestions[i].solution);
@@ -417,6 +518,7 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent, 
     teams:         null,        // { list:[{id,name,symbol,color}] } wenn Teams aktiv
     teamCarry:     {},          // Punkte ausgeschiedener Spieler je Team
     build:         'off',       // Bau-Runden: off | mix | only
+    tf:            'mix',       // Wahr oder Mythos: mix | only | off
     buildSeconds:  60,
     buildRound:    false,
     builds:        null,        // Map playerId -> { attempts, done, ms, order, timeLeft }
@@ -494,6 +596,29 @@ function destroyRoom(room) {
   broadcastPublicRooms();
 }
 
+// Klassenraeume ohne Aktivitaet werden geloescht (kein Weiterleben von Schueler-Namen, nichts wird gespeichert)
+function sweepClasses() {
+  const now = Date.now();
+  Object.values(rooms).forEach((r) => {
+    if (r.isClass && !r.dead && now - (r.lastActivity || r.created || 0) > CLASS_IDLE_MS) {
+      io.to(r.id).emit('class_closed', { reason: 'idle' });
+      destroyRoom(r); log('info', 'class_expired', {});
+    }
+  });
+}
+setInterval(sweepClasses, CLASS_SWEEP_MS).unref();
+// Export ohne Personenbezug: nur feste Tiernamen, Antworten und Trefferquoten (kein Zeitstempel, keine IDs)
+function classExport(room) {
+  const rep2 = hostReport(room), pct = (c, n) => (n ? Math.round(c / n * 1000) / 10 : 0);
+  const csvCell = (v) => { v = String(v == null ? '' : v).replace(/[\r\n;"]+/g, ' ').trim(); return /^[=+\-@]/.test(v) ? "'" + v : v; };
+  const dec = (n) => String(n).replace('.', ',');
+  const students = rep2.players.map((p) => ({ name: p.name, answered: p.answered, correct: p.correct, hitPct: pct(p.correct, p.answered), points: p.points }));
+  const questions = rep2.questions.map((q) => ({ n: q.n, qid: q.qid, question: q.question, format: q.format, answered: q.answered, correct: q.correct, hitPct: Math.round(q.hitRate * 1000) / 10 }));
+  const csv = ['Name;Antworten;Richtig;Trefferquote %;Punkte'].concat(students.map((x) => [csvCell(x.name), x.answered, x.correct, dec(x.hitPct), x.points].join(';')))
+    .concat(['', 'Runde;Frage;Format;Antworten;Richtig;Trefferquote %']).concat(questions.map((x) => [x.n, csvCell(x.question), x.format, x.answered, x.correct, dec(x.hitPct)].join(';'))).join('\r\n');
+  return { ok: true, rounds: rep2.rounds, avgHitPct: Math.round(rep2.totals.avgHitRate * 1000) / 10, students, questions, csv };
+}
+
 function connectedIds(room) { return Object.values(room.players).filter(p => p.connected).map(p => p.id); }
 function playerCount(room)  { return Object.keys(room.players).length; }
 
@@ -543,7 +668,7 @@ function broadcastPublicRooms() {
 
 function settingsOf(room) {
   return { rounds: room.rounds, answerTime: room.answerTime, categories: room.categories, difficulty: room.difficulty,
-           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password, teams: teamsOf(room), build: room.build, buildSeconds: room.buildSeconds };
+           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password, teams: teamsOf(room), build: room.build, buildSeconds: room.buildSeconds, tf: room.tf, isClass: !!room.isClass };
 }
 
 // ── Teams ─────────────────────────────────────────────────────────────────────
@@ -573,7 +698,7 @@ function balanceTeams(room) {
 
 // Host-Uebergabe: naechster verbundener Spieler (nach Beitrittsreihenfolge)
 function passHost(room) {
-  if (room.permanent) return;
+  if (room.permanent || room.isClass) return;       // Klassenraum: nur die Lehrkraft ist Host
   const cur = room.players[room.hostId];
   if (cur && cur.connected) return;
   const next = Object.values(room.players).find(p => p.connected);
@@ -621,6 +746,7 @@ function buildCraftingOptions(q) {
 function buildOptions(q) {
   if (q.type === 'crafting') return buildCraftingOptions(q);
   // Zwei-Optionen-Fragen: genau diese zwei Antworten, pro Runde zufaellig gemischt, nie Zusatzoptionen
+  if (q.fmt === 'tf') return [...q.choices];                                   // Wahr links, Mythos rechts: feste Reihenfolge
   if (Array.isArray(q.choices) && q.choices.length === 2) return shuffle([...q.choices]);
   const own = new Set(q.acceptedAnswers.map(MGAnswer.normText));
   own.add(MGAnswer.normText(q.answer));
@@ -649,7 +775,7 @@ function questionPayload(room) {
   }
   return {
     id: q.id, type: q.type, question: q.question, category: q.category,
-    unit: q.unit || null, options: room.options || null,
+    unit: q.unit || null, options: room.options || null, ...(q.fmt === 'tf' ? { fmt: 'tf' } : {}),
     ...(q.type === 'crafting' ? { grid: q.grid, shapeless: !!q.shapeless } : {}),
     choiceOnly: !!(Array.isArray(q.choices) && q.choices.length === 2),   // nur diese zwei Optionen, kein freies Tippen
     roundNum: room.roundNum,
@@ -677,7 +803,7 @@ function nextQuestion(room) {
 
   if (!room.questionOrder.length || room.currentIndex >= room.questionOrder.length) {
     const lastIdx = room.questionOrder.length ? room.questionOrder[room.questionOrder.length - 1] : -1;
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf));
     if (room.questionOrder.length > 1 && room.questionOrder[0] === lastIdx) {
       const t = room.questionOrder[0]; room.questionOrder[0] = room.questionOrder[1]; room.questionOrder[1] = t;
     }
@@ -887,7 +1013,7 @@ function resolveAnswers(room) {
 }
 
 // ── Rundenuebersicht und Host-Report ─────────────────────────────────────────
-function formatOfQ(q, build) { return q.type === 'crafting' ? (build ? 'craft-build' : 'craft-guess') : (Array.isArray(q.choices) && q.choices.length === 2 ? 'choice' : (q.type === 'number' ? 'number' : 'entity')); }
+function formatOfQ(q, build) { return q.type === 'crafting' ? (build ? 'craft-build' : 'craft-guess') : (q.fmt === 'tf' ? 'tf' : Array.isArray(q.choices) && q.choices.length === 2 ? 'choice' : (q.type === 'number' ? 'number' : 'entity')); }
 function pushHistory(room) {
   const q = room.question, rv = room.lastReveal;
   if (!q) return;
@@ -929,7 +1055,7 @@ function hostReport(room) {
     players: [...per.values()].map(p => ({ name: p.name, answered: p.answered, correct: p.correct, points: p.points, avgMs: p.msN ? Math.round(p.msSum / p.msN) : null, fastestMs: p.fastestMs, noAnswers: p.noAnswers })).sort((a, b) => b.points - a.points),
     questions, hardest: hardest ? { n: hardest.n, qid: hardest.qid, hitRate: hardest.hitRate } : null, easiest: easiest ? { n: easiest.n, qid: easiest.qid, hitRate: easiest.hitRate } : null, fastest };
 }
-function sendHostReport(room) { if (room.hostId && room.players[room.hostId]) io.to(room.hostId).emit('host_report', hostReport(room)); }
+function sendHostReport(room) { if (room.hostId && (room.players[room.hostId] || room.isClass)) io.to(room.hostId).emit('host_report', hostReport(room)); }
 
 // ── Bau-Runde (alle bauen gleichzeitig) ──────────────────────────────────────
 function startBuildCountdown(room) {
@@ -1044,7 +1170,7 @@ function checkBuzzerDeadlock(room) {
 }
 
 function maybeAutoStart(room) {
-  if (room.phase !== 'waiting' || room.starting) return;
+  if (room.phase !== 'waiting' || room.starting || room.isClass) return;      // Klassenraum: nur die Lehrkraft startet (class_start)
   const ids = connectedIds(room);
   if (ids.length > 0 && ids.every(id => room.ready.has(id))) {
     room.ready.clear();
@@ -1134,7 +1260,7 @@ function kickPlayer(room, targetId, reason) {
   const p = room.players[targetId];
   if (!p) return false;
   if (t) {
-    room.kickBan.set(ipOf(t), Date.now() + KICK_BAN_MS);
+    if (!room.isClass) room.kickBan.set(ipOf(t), Date.now() + KICK_BAN_MS);
     t.emit('kicked', { reason: reason || 'host' });
     if (typeof t.data.leaveRoom === 'function') t.data.leaveRoom();
   } else {
@@ -1233,6 +1359,7 @@ io.on('connection', (socket) => {
 
   const on = (ev, fn) => socket.on(ev, (...args) => {
     if (!limiter()) return;
+    if (currentRoom && rooms[currentRoom]) rooms[currentRoom].lastActivity = Date.now();
     try { fn(...args); } catch (e) { log('error', 'socket_handler_error', { ev, error: String(e && e.message).slice(0, 120) }); }
   });
 
@@ -1292,7 +1419,7 @@ io.on('connection', (socket) => {
       if (room.hostId === p.id) { room.hostId = null; passHost(room); }
       voteCheckTarget(room, p.id);
       if (playerCount(room) === 0) {
-        if (room.permanent) resetRoom(room); else destroyRoom(room);
+        if (room.permanent || room.isClass) resetRoom(room); else destroyRoom(room);
         return;
       }
       if (connectedIds(room).length === 0) resetRoom(room);
@@ -1337,7 +1464,7 @@ io.on('connection', (socket) => {
       answerTime: d.answerTime, difficulty: d.difficulty, maxPlayers: d.maxPlayers,
       hostId: socket.id,
     });
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build));
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf));
     rooms[rid] = room;
     joinRoomAs(room, cleanText(d.playerName, MAX_NAME_LEN) || 'Host', validSkin(d.skin), null, d.character);
     log('info', 'room_created', { rooms: Object.keys(rooms).length });
@@ -1353,7 +1480,7 @@ io.on('connection', (socket) => {
       if (++joinFails >= 6) { joinBlockUntil = Date.now() + 30000; joinFails = 0; }
       socket.emit('join_error', { message });
     };
-    if (!room || room.dead) return fail(`Raum "${cleanText(rid, 40)}" nicht gefunden.`);
+    if (!room || room.dead || room.isClass) return fail(`Raum "${cleanText(rid, 40)}" nicht gefunden.`);      // Klassenraeume nur ueber join_class
     if (currentRoom === rid && room.players[socket.id]) return;     // schon drin
     if (playerCount(room) >= room.maxPlayers) return fail('Raum voll.');
     const ban = room.kickBan.get(ipOf(socket));
@@ -1367,6 +1494,83 @@ io.on('connection', (socket) => {
     const name = cleanText(d.playerName, MAX_NAME_LEN) || `Spieler ${playerCount(room) + 1}`;
     joinRoomAs(room, name, validSkin(d.skin), null, d.character);
     log('info', 'player_joined', { players: playerCount(room) });
+  });
+
+  // Klassenraum ─────────────────────────────────────────────────────────────────
+  const classIpOk = (cost) => apiAllowed('class-join', ipOf(socket), 120, 500) && (cost ? apiAllowed('class-fail', ipOf(socket), 12, 30000) : true);
+  const classOf = (code) => { const c = typeof code === 'string' ? code.toUpperCase().replace(/[^A-Z0-9]/g, '') : ''; const r = c.length === 6 ? rooms[c.toLowerCase()] : null; if (r && r.isClass && !r.dead) { r.lastActivity = Date.now(); return r; } return null; };
+  const classTeacher = () => { const room = getRoom(); return room && room.isClass && room.hostId === socket.id ? room : null; };
+  on('create_class', (d) => {
+    d = d || {};
+    const now = Date.now();
+    if (now - lastCreate < 2000 || !apiAllowed('class-create', ipOf(socket), 6, 600000)) return socket.emit('class_denied', { reason: 'rate' });
+    if (Object.values(rooms).filter((r) => r.isClass).length >= MAX_CLASSES || Object.keys(rooms).length >= MAX_ROOMS + MAX_CLASSES) return socket.emit('class_denied', { reason: 'busy' });
+    lastCreate = now;
+    if (currentRoom) leaveCurrent(true);
+    const code = newClassCode(); if (!code) return socket.emit('class_denied', { reason: 'busy' });
+    const cats = Array.isArray(d.categories) ? d.categories.filter((c) => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30) : [];
+    const room = makeRoom({ rounds: ROUND_CHOICES.includes(d.rounds) ? d.rounds : DEFAULT_ROUNDS, id: code.toLowerCase(), displayName: 'Klasse ' + code, isPublic: false, password: null, categories: cats,
+      answerTime: d.answerTime, difficulty: d.difficulty, maxPlayers: MAX_PLAYERS, hostId: socket.id });
+    room.isClass = true; room.maxPlayers = CLASS_MAX; room.teacherToken = crypto.randomBytes(16).toString('hex'); room.lastActivity = now;
+    if (TF_CHOICES.includes(d.tf)) room.tf = d.tf;
+    if (BUILD_CHOICES.includes(d.build)) room.build = d.build;
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf));
+    rooms[room.id] = room;
+    currentRoom = room.id; socket.join(room.id);
+    socket.emit('class_created', { code, token: room.teacherToken, settings: settingsOf(room), max: CLASS_MAX, idleMinutes: Math.round(CLASS_IDLE_MS / 60000), names: CLASS_NAMES });
+    log('info', 'class_created', { classes: Object.values(rooms).filter((r) => r.isClass).length });
+  });
+  // Schueler: freie Namen anzeigen (ohne Anmeldung, nur mit Code)
+  on('class_info', (d) => {
+    const room = classOf(d && d.code);
+    if (!room) { if (!classIpOk(true)) joinBlockUntil = Date.now() + 60000; return socket.emit('class_info', { ok: false }); }
+    if (!classIpOk(false)) return socket.emit('class_info', { ok: false });
+    const taken = new Set(Object.values(room.players).map((p) => p.name));
+    socket.emit('class_info', { ok: true, free: CLASS_NAMES.filter((n) => !taken.has(n)), count: playerCount(room), max: CLASS_MAX, phase: room.phase });
+  });
+  on('join_class', (d) => {
+    d = d || {};
+    const deny = (reason, code) => { socket.emit('join_error', { message: reason, code: code || 'class' }); };
+    if (Date.now() < joinBlockUntil) return deny('Zu viele Versuche – kurz warten.', 'rate');
+    const room = classOf(d.code);
+    if (!room) { if (!classIpOk(true)) joinBlockUntil = Date.now() + 60000; return deny('Klassenraum nicht gefunden.', 'notfound'); }
+    if (!classIpOk(false)) return deny('Zu viele Versuche – kurz warten.', 'rate');
+    if (currentRoom === room.id && room.players[socket.id]) return;
+    if (playerCount(room) >= CLASS_MAX) return deny('Klassenraum voll.', 'full');
+    if (room.phase !== 'waiting') return deny('Das Spiel läuft schon.', 'running');
+    const taken = new Set(Object.values(room.players).map((p) => p.name));
+    const free = CLASS_NAMES.filter((n) => !taken.has(n));
+    if (!free.length) return deny('Klassenraum voll.', 'full');
+    let name;
+    if (d.name !== undefined && d.name !== null && d.name !== '') {
+      if (typeof d.name !== 'string' || !CLASS_NAMES.includes(d.name)) return deny('Bitte einen Namen aus der Liste wählen.', 'name');
+      if (taken.has(d.name)) return deny('Dieser Name ist schon vergeben.', 'name_taken');
+      name = d.name;
+    } else name = free[crypto.randomInt(free.length)];
+    if (currentRoom) leaveCurrent(true);
+    joinRoomAs(room, name, null, null, 'steve');
+    log('info', 'class_joined', { students: playerCount(room) });
+  });
+  on('class_start', () => {
+    const room = classTeacher(); if (!room) return;
+    if (room.phase !== 'waiting' || room.starting) return socket.emit('class_denied', { reason: 'phase' });
+    if (connectedIds(room).length < 1) return socket.emit('class_denied', { reason: 'students' });
+    room.ready.clear(); room.starting = true; broadcastLobby(room);
+    later(room, () => { room.starting = false; if (room.phase === 'waiting' && connectedIds(room).length > 0) nextQuestion(room); }, 1500);
+  });
+  on('class_rejoin', (d) => {
+    d = d || {};
+    const room = classOf(d.code);
+    if (!room || typeof d.token !== 'string' || d.token.length !== 32 || room.teacherToken !== d.token) { if (!classIpOk(true)) joinBlockUntil = Date.now() + 60000; return socket.emit('class_denied', { reason: 'notfound' }); }
+    if (currentRoom && currentRoom !== room.id) leaveCurrent(true);
+    room.hostId = socket.id; room.lastActivity = Date.now(); currentRoom = room.id; socket.join(room.id);
+    socket.emit('class_created', { code: room.id.toUpperCase(), token: room.teacherToken, settings: settingsOf(room), max: CLASS_MAX, idleMinutes: Math.round(CLASS_IDLE_MS / 60000), names: CLASS_NAMES, rejoined: true });
+    broadcastLobby(room); sendSnapshot(socket, room);
+  });
+  on('class_export', () => { const room = classTeacher(); if (room) socket.emit('class_export', classExport(room)); });
+  on('class_close', () => {
+    const room = classTeacher(); if (!room) return;
+    io.to(room.id).emit('class_closed', { reason: 'teacher' }); destroyRoom(room); currentRoom = null;
   });
 
   // Reconnect (Token aus 'joined') ─────────────────────────────────────────────
@@ -1399,6 +1603,7 @@ io.on('connection', (socket) => {
     if (!room) return;
     const p = room.players[socket.id];
     if (!p) return;
+    if (room.isClass) return;
     if (typeof d.character === 'string') p.character = validCharacter(d.character);
     if (Object.prototype.hasOwnProperty.call(d, 'skin')) { p.skin = validSkin(d.skin); p.skinId = skinIdOf(p.skin); }
     io.to(room.id).emit('player_updated', { player: fullPlayer(p) });
@@ -1518,16 +1723,18 @@ io.on('connection', (socket) => {
     if (d.rounds !== undefined && !ROUND_CHOICES.includes(d.rounds)) return deny('rounds');
     if (d.answerTime !== undefined && !ANSWER_CHOICES.includes(d.answerTime)) return deny('answerTime');
     if (d.difficulty !== undefined && (typeof d.difficulty !== 'string' || !Object.prototype.hasOwnProperty.call(DIFFICULTIES, d.difficulty))) return deny('difficulty');
-    if (d.maxPlayers !== undefined && (!Number.isInteger(d.maxPlayers) || d.maxPlayers < MIN_PLAYERS_SETTING || d.maxPlayers > MAX_PLAYERS || d.maxPlayers < playerCount(room))) return deny('maxPlayers');
+    if (d.maxPlayers !== undefined && (room.isClass || !Number.isInteger(d.maxPlayers) || d.maxPlayers < MIN_PLAYERS_SETTING || d.maxPlayers > MAX_PLAYERS || d.maxPlayers < playerCount(room))) return deny('maxPlayers');
     if (d.categories !== undefined && !Array.isArray(d.categories)) return deny('categories');
     if (d.password !== undefined && (typeof d.password !== 'string' || d.password.length > 40)) return deny('password');
     if (d.build !== undefined && !BUILD_CHOICES.includes(d.build)) return deny('build');
     if (d.buildSeconds !== undefined && !BUILD_SECONDS.includes(d.buildSeconds)) return deny('buildSeconds');
+    if (d.tf !== undefined && !TF_CHOICES.includes(d.tf)) return deny('tf');
     if (d.rounds !== undefined) room.rounds = d.rounds;
     if (d.answerTime !== undefined) room.answerTime = d.answerTime;
     if (d.difficulty !== undefined) room.difficulty = d.difficulty;
     if (d.maxPlayers !== undefined) room.maxPlayers = d.maxPlayers;
     if (d.build !== undefined) room.build = d.build;
+    if (d.tf !== undefined) room.tf = d.tf;
     if (d.buildSeconds !== undefined) room.buildSeconds = d.buildSeconds;
     if (d.categories !== undefined) {
       const cats = d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30);
@@ -1535,7 +1742,7 @@ io.on('connection', (socket) => {
     }
     if (d.isPublic !== undefined) room.isPublic = !!d.isPublic;
     if (d.password !== undefined) room.password = d.password.slice(0, 40) || null;
-    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build)); room.currentIndex = 0;
+    room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf)); room.currentIndex = 0;
     io.to(room.id).emit('settings_updated', settingsOf(room));
     broadcastLobby(room);
   });
@@ -1556,7 +1763,7 @@ io.on('connection', (socket) => {
     if (!room || !d || typeof d.id !== 'string') return;
     const me = room.players[socket.id], t = room.players[d.id];
     if (!me || !t || !t.connected || d.id === socket.id) return socket.emit('votekick_denied', { reason: 'target' });
-    if (connectedIds(room).length < VOTE_MIN_PLAYERS) return socket.emit('votekick_denied', { reason: 'players' });
+    if (room.isClass || connectedIds(room).length < VOTE_MIN_PLAYERS) return socket.emit('votekick_denied', { reason: 'players' });
     if (room.vote) return socket.emit('votekick_denied', { reason: 'running' });
     if (d.id === room.hostId) return socket.emit('votekick_denied', { reason: 'host' });
     const now = Date.now();
@@ -1754,7 +1961,7 @@ process.on('uncaughtException', (e) => log('error', 'uncaught_exception', { erro
 process.on('unhandledRejection', (e) => log('error', 'unhandled_rejection', { error: String(e && e.message).slice(0, 160) }));
 
 const PORT = process.env.PORT || 3000;
-store.init(['ranked', 'reports', 'qstats', 'runs', 'profiles', 'skins', 'social'], { ranked: [], reports: [], qstats: {}, runs: {}, profiles: {}, skins: {}, social: {} }).then((kind) => {
+store.init(['ranked', 'reports', 'qstats', 'runs', 'profiles', 'skins', 'social', 'qreview'], { ranked: [], reports: [], qstats: {}, runs: {}, profiles: {}, skins: {}, social: {}, qreview: {} }).then((kind) => {
   hydrateRanked();
   // Profile und Freunde (lib/profiles.js): nach dem Laden des Speichers einhaengen; nutzt die signierten Ranked-Tokens zur Anmeldung
   profilesApi = require('./lib/profiles.js').create({ app, express, store, rankedStore, saveRankedSoon, sign: rankedApi.sign, verify: rankedApi.verify, apiAllowed, log, getQuestions: () => allQuestions, categories: { has: (k) => KNOWN_CATEGORIES.has(k) } });

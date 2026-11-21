@@ -10,7 +10,7 @@ test('Challenge: gleicher Seed = dieselben 10 Fragen (reproduzierbar, unabhaengi
   const a = C.select(qs, '1-abcd1234'), b = C.select(qs.slice().reverse(), '1-abcd1234'), c = C.select(JSON.parse(JSON.stringify(qs)), 'ABCD1234');
   assert.ok(a.ok); assert.strictEqual(a.ids.length, 10); assert.strictEqual(new Set(a.ids).size, 10);
   assert.deepStrictEqual(b.ids, a.ids);
-  assert.deepStrictEqual(c.ids, a.ids, 'ohne Versionsvorsatz = neueste Version');
+  assert.deepStrictEqual(c.ids, C.select(qs, '3-abcd1234').ids, 'ohne Versionsvorsatz = neueste Version (3)');
   assert.notStrictEqual(C.select(qs, '1-abcd1235').ids.join(), a.ids.join());
 });
 
@@ -41,10 +41,10 @@ test('Challenge: Aufbau (Tier-Verlauf, keine Wiederholung, Vorlage nie direkt do
 
 test('Challenge: Seed-Validierung (streng)', () => {
   assert.strictEqual(C.parse('1-k3x9a2bq').ok, true);
-  assert.strictEqual(C.parse('k3x9a2bq').seed, '1-k3x9a2bq');
+  assert.strictEqual(C.parse('k3x9a2bq').seed, '3-k3x9a2bq'); assert.strictEqual(C.parse('3-k3x9a2bq').ok, true);
   ['', 'abc', 'a b c d e f', '../../etc', '9-abcdefgh', '1-abc', '1-abcdefghijklmnop', 'abcd$1234', '1-ABCD_1234', '<script>', 'a'.repeat(30), null, undefined, 12345678, {}].forEach(s => assert.strictEqual(C.parse(s).ok, false, String(s)));
   assert.strictEqual(C.select(qs, '9-abcdefgh').ok, false);
-  assert.match(C.newSeed(), /^1-[a-z0-9]{8}$/);
+  assert.match(C.newSeed(), /^3-[a-z0-9]{8}$/);
 });
 
 test('Challenge: spoilerfreie Zusammenfassung und Teilen-Text', () => {
@@ -61,3 +61,10 @@ test('Challenge: spoilerfreie Zusammenfassung und Teilen-Text', () => {
 });
 
 test('Challenge: selfTest des Moduls', () => { assert.ok(C.selfTest(qs).includes('Seed')); });
+
+test('Challenge: Version 2 enthaelt Wahr-oder-Mythos-Fragen, Version 1 keine (alte Links bleiben stabil)', () => {
+  let tf2 = 0;
+  for (let i = 0; i < 60; i++) { const s = C.select(qs, '2-tfcheck' + i); assert.ok(s.ok); tf2 += s.questions.filter(q => q.fmt === 'tf').length; s.questions.forEach(q => assert.ok(q.tier >= 1)); }
+  assert.ok(tf2 > 20, 'tf in Version 2: ' + tf2);
+  for (let i = 0; i < 60; i++) assert.ok(C.select(qs, '1-tfcheck' + i).questions.every(q => q.fmt !== 'tf'));
+});

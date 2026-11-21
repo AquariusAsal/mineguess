@@ -42,10 +42,10 @@
     return /^(item|block)\//.test(key) ? String(key).replace(/\.png$/, '') : 'item/' + key;
   }
   function nameOf(key) { return byKey[key] ? byKey[key].de : String(key).replace(/^(item|block)\//, '').replace(/_/g, ' '); }
-  function img(key, cls, size) { return imgP(iconOf(key), cls, size); }
-  function imgP(p, cls, size) {
+  function img(key, cls, size) { return imgP(iconOf(key), cls, size, nameOf(key)); }
+  function imgP(p, cls, size, label) {
     var alt = p.indexOf('item/') === 0 ? 'block/' + p.slice(5) : (p.indexOf('block/') === 0 ? 'item/' + p.slice(6) : '');
-    return '<img class="' + cls + '" src="' + BASE + esc(p) + '.png" width="' + size + '" height="' + size + '" alt="" draggable="false" data-alt="' + esc(alt) + '" onerror="MGCraftBuild._ie(this)">';
+    return '<img class="' + cls + '"' + (label ? ' data-iso-label="' + esc(label) + '"' : '') + ' src="' + BASE + esc(p) + '.png" width="' + size + '" height="' + size + '" alt="" draggable="false" data-alt="' + esc(alt) + '" onerror="MGCraftBuild._ie(this)">';
   }
 
   function search(text) {
@@ -97,7 +97,7 @@
           '</div>' +
           '<div class="craft-arrow" aria-hidden="true"></div>' +
           '<div class="craft-out"><div class="craft-slot out full" id="cb-out" role="img" aria-label="Ergebnis: ' + esc((count ? count + ' mal ' : '') + (q.answer || '')) + '">' +
-            (global.MGIcon && MGIcon.forLabel && !MGIcon.__ok ? '' : imgP(resPath(), 'craft-big', 64)) + (count ? '<span class="craft-count">' + count + '</span>' : '') + '</div></div>' +
+            (global.MGIcon && MGIcon.forLabel && !MGIcon.__ok ? '' : imgP(resPath(), 'craft-big', 64, q.answer)) + (count ? '<span class="craft-count">' + count + '</span>' : '') + '</div></div>' +
         '</div>' +
         '<div class="cb-hand" aria-live="polite"></div>' +
         '<div class="cb-search"><div class="cb-search-in">' +
@@ -396,7 +396,7 @@
 
     paintAll(); renderHand(); renderRecent();
     if (global.MGIcon && MGIcon.ready) MGIcon.ready.then(function () { MGIcon.__ok = true; fillOut(); });
-    function fillOut() { var n = $('#cb-out'); if (n) n.innerHTML = imgP(resPath(), 'craft-big', 64) + (count ? '<span class="craft-count">' + count + '</span>' : ''); }
+    function fillOut() { var n = $('#cb-out'); if (n) n.innerHTML = imgP(resPath(), 'craft-big', 64, q.answer) + (count ? '<span class="craft-count">' + count + '</span>' : ''); }
     loadCatalog(function () { paintAll(); renderHand(); renderRecent(); if (!global.MGIcon || MGIcon.__ok) fillOut(); });
 
     // ── Controller ──

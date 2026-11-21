@@ -2,7 +2,8 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="logo-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="mg-i18n.js"></script>
 <meta name="theme-color" content="#15171a">
@@ -10,6 +11,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MineGuess – Teste dein Minecraft-Wissen</title>
 <meta name="description" content="MineGuess ist ein inoffizielles Minecraft-Quiz: allein, ranked, täglich oder im Multiplayer mit Glocke.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MineGuess">
+<meta property="og:title" content="MineGuess – Teste dein Minecraft-Wissen">
+<meta property="og:description" content="Inoffizielles Minecraft-Quiz: allein üben, ranked aufsteigen, täglich spielen oder im Multiplayer mit Glocke. Kostenlos, ohne Anmeldung.">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MineGuess – Teste dein Minecraft-Wissen">
+<meta name="twitter:description" content="Inoffizielles Minecraft-Quiz: allein üben, ranked aufsteigen, täglich spielen oder im Multiplayer mit Glocke. Kostenlos, ohne Anmeldung.">
+<script>(function(){var o=location.origin,u=o+"/";function m(a,k,v){var e=document.createElement('meta');e.setAttribute(a,k);e.setAttribute('content',v);document.head.appendChild(e);}var l=document.createElement('link');l.rel='canonical';l.href=u;document.head.appendChild(l);m('property','og:url',u);m('property','og:image',o+'/og-image.png');m('property','og:image:width','1200');m('property','og:image:height','630');m('name','twitter:image',o+'/og-image.png');})();</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"MineGuess","logo":"/brand-512.png","image":"/og-image.png","alternateName":"MineGuess Minecraft-Quiz","description":"Inoffizielles Minecraft-Quiz: allein, ranked, täglich oder im Multiplayer mit Glocke.","applicationCategory":"GameApplication","genre":"Quiz","operatingSystem":"Alle (Webbrowser)","inLanguage":["de","en"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"disclaimer":"Nicht offizielles Minecraft-Produkt. Nicht von Mojang oder Microsoft genehmigt oder mit ihnen verbunden."}</script>
 <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/silkscreen-700-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="mg.css">
@@ -140,7 +151,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
 
 <header class="mg-nav">
   <a class="mg-logo" href="index.html" aria-label="MineGuess Startseite">
-    <img src="logo-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
+    <img src="brand-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
   </a>
   <nav class="mg-nav-links" aria-label="Hauptnavigation">
     <span id="nav-gear"></span>
@@ -170,7 +181,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
   </section>
 
   <div class="wrap"><ul class="stats" aria-label="MineGuess in Zahlen">
-    <li><b data-count="9">0</b><span>Spielmodi</span></li>
+    <li><b data-count="10">0</b><span>Spielmodi</span></li>
     <li><b data-count="8">0</b><span>Spieler pro Raum</span></li>
     <li><b data-count="5">0</b><span>Ränge</span></li>
     <li><b data-count="36">0</b><span>Abzeichen</span></li>
@@ -185,7 +196,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/grass_block_top.png)"><img src="assets/mc/block/grass_block_side.png" width="48" height="48" alt=""></div>
           <div class="mode-body"><h3>Endlosmodus <span class="tag tag-green">Für alle</span></h3>
-          <p>Fragen ohne Ende aus allen Kategorien, mit Tipps, Fun Facts und eigener Kategorien-Auswahl.</p><span class="go">Üben</span></div>
+          <p>Über 5000 Fragen aus 18 Kategorien, ohne Ende, mit Tipps, Fun Facts und eigener Kategorien-Auswahl.</p><span class="go">Üben</span></div>
         </a>
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/gold_block.png)"><img src="assets/mc/item/golden_sword.png" width="48" height="48" alt=""></div>
@@ -195,7 +206,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
         <a class="mode" href="multiplayer.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/oak_planks.png)"><img src="assets/mc/item/ender_eye.png" width="48" height="48" alt=""></div>
           <div class="mode-body"><h3>Multiplayer <span class="tag tag-blue">Echtzeit</span></h3>
-          <p>Glocken-Runden mit bis zu 8 Spielern: Wer zuerst läutet, antwortet. Wer am nächsten liegt, gewinnt. Mit Teams, Bau-Runden, Rundenübersicht und Einladungen für Freunde.</p><span class="go">Raum öffnen</span></div>
+          <p>Glocken-Runden mit bis zu 8 Spielern: Wer zuerst läutet, antwortet. Wer am nächsten liegt, gewinnt. Mit Teams, Bau-Runden, Rundenübersicht, Einladungen für Freunde und Klassenraum für Schulen.</p><span class="go">Raum öffnen</span></div>
         </a>
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/redstone_block.png)"><img src="assets/mc/item/firework_rocket.png" width="48" height="48" alt=""></div>
@@ -210,7 +221,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/crafting_table_top.png)"><img src="assets/mc/block/crafting_table_front.png" width="48" height="48" alt=""></div>
           <div class="mode-body"><h3>Crafting-Rätsel <span class="tag tag-green">Neu</span></h3>
-          <p>Erkenne, was aus dem Raster entsteht, oder baue das Rezept selbst ins Raster.</p><span class="go">Rätseln</span></div>
+          <p>Erkenne, was aus dem Raster entsteht, oder baue das Rezept selbst ins Raster. Mit 3D-Symbolen für Treppen, Stufen, Zäune und mehr.</p><span class="go">Rätseln</span></div>
         </a>
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/red_wool.png)"><img src="assets/mc/gui/heart_full.png" width="48" height="48" alt="" style="image-rendering:pixelated"></div>
@@ -228,6 +239,11 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
           <p>10 Fragen, für alle mit demselben Link gleich. Teile dein Ergebnis ohne Spoiler.</p><span class="go">Herausfordern</span></div>
         </a>
         <a class="mode" href="game.html">
+          <div class="mode-img" style="background-image:url(assets/mc/block/tnt_side.png)"><img src="assets/mc/item/emerald.png" width="48" height="48" alt=""></div>
+          <div class="mode-body"><h3>Wahr oder Mythos <span class="tag tag-green">Neu</span></h3>
+          <p>Stimmt die Aussage oder ist es ein Mythos? Nach jeder Antwort gibt es die Erklärung, einen Versuch pro Aussage.</p><span class="go">Prüfen</span></div>
+        </a>
+        <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/crafting_table_top.png)"><img src="assets/mc/item/name_tag.png" width="48" height="48" alt=""></div>
           <div class="mode-body"><h3>Profil und Freunde <span class="tag tag-green">Neu</span></h3>
           <p>Freunde per Code hinzufügen, im 1-gegen-1-Duell herausfordern, in Gruppen Wochenziele schaffen. Dein Profil ist standardmäßig privat, ohne Chat und ohne Freitext.</p><span class="go">Profil öffnen</span></div>
@@ -235,7 +251,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
         <a class="mode" href="game.html">
           <div class="mode-img" style="background-image:url(assets/mc/block/obsidian.png)"><img src="assets/mc/item/enchanted_book.png" width="48" height="48" alt=""></div>
           <div class="mode-body"><h3>Fun Facts</h3>
-          <p>Nach jeder Frage lernst du etwas über die Antwort, auf Deutsch und Englisch akzeptiert.</p><span class="go">Entdecken</span></div>
+          <p>Nach jeder Frage lernst du etwas über die Antwort, auf Deutsch und Englisch akzeptiert.</p><p id="fact-of-day" class="fod" lang="de" hidden></p><span class="go">Entdecken</span></div>
         </a>
       </div>
       <div class="daily">
@@ -270,7 +286,7 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
       <p class="eyebrow">So funktioniert's</p>
       <h2 class="sec">In drei Schritten loslegen</h2>
       <div class="steps" style="margin-top:24px">
-        <div class="step"><h3>Modus wählen</h3><p>Üben, Ranked, Blitz, Daily, Hardcore, Höher oder Tiefer, Herausforderung oder Multiplayer. Ohne Anmeldung als Gast, mit Google für Rang und Statistik.</p></div>
+        <div class="step"><h3>Modus wählen</h3><p>Üben, Ranked, Blitz, Daily, Hardcore, Höher oder Tiefer, Wahr oder Mythos, Herausforderung oder Multiplayer. Ohne Anmeldung als Gast, mit Google für Rang und Statistik.</p></div>
         <div class="step"><h3>Frage beantworten</h3><p>Zahl eintippen oder Mob wählen. Tipp und Joker helfen, im Multiplayer entscheidet die Glocke.</p></div>
         <div class="step"><h3>Aufsteigen</h3><p>Sammle Punkte, Abzeichen und MMR. Dein Rang erscheint als Barren neben deinem Namen.</p></div>
       </div>
@@ -375,6 +391,18 @@ body.pg-out main { opacity:0; transition:opacity .15s; }
       requestAnimationFrame(drift);
     })();
   })();
+</script>
+<script>
+(function () {
+  var el = document.getElementById('fact-of-day'); if (!el) return;
+  fetch('facts.json').then(function (r) { return r.ok ? r.json() : []; }).then(function (a) {
+    if (!a.length) return; var d = new Date(), day = Math.floor((Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(d.getFullYear(), 0, 0)) / 86400000);
+    var en = document.documentElement.lang === 'en';
+    el.textContent = '';
+    var b = document.createElement('b'); b.textContent = en ? 'Fact of the day (German): ' : 'Fakt des Tages: ';
+    el.appendChild(b); el.appendChild(document.createTextNode(a[day % a.length])); el.hidden = false;
+  }).catch(function () {});
+})();
 </script>
 </body>
 </html>

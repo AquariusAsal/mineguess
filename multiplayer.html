@@ -2,10 +2,21 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8"/>
-<link rel="icon" type="image/png" href="logo-64.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="mg-i18n.js"></script>
 <meta name="theme-color" content="#15171a">
+<meta name="description" content="MineGuess Multiplayer: Räume bis 8 Spieler, Glocke, Teams und Bau-Runden. Inoffizielles Minecraft-Quiz.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MineGuess">
+<meta property="og:title" content="MineGuess – Multiplayer">
+<meta property="og:description" content="Glocken-Runden mit bis zu 8 Spielern, Teams, Bau-Runden und Rundenübersicht. Kostenlos spielen.">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MineGuess – Multiplayer">
+<meta name="twitter:description" content="Glocken-Runden mit bis zu 8 Spielern, Teams, Bau-Runden und Rundenübersicht. Kostenlos spielen.">
+<script>(function(){var o=location.origin,u=o+"/multiplayer.html";function m(a,k,v){var e=document.createElement('meta');e.setAttribute(a,k);e.setAttribute('content',v);document.head.appendChild(e);}var l=document.createElement('link');l.rel='canonical';l.href=u;document.head.appendChild(l);m('property','og:url',u);m('property','og:image',o+'/og-image.png');m('property','og:image:width','1200');m('property','og:image:height','630');m('name','twitter:image',o+'/og-image.png');})();</script>
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>MineGuess – Multiplayer</title>
@@ -14,6 +25,7 @@
   <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
   <script src="mg-icons.js"></script>
+<script src="mg-iso.js"></script>
   <script src="mg-audio.js"></script>
   <script src="mg-badges.js"></script>
   <script src="mg-settings.js"></script>
@@ -264,7 +276,7 @@
 
 <header class="mg-nav">
   <a class="mg-logo" href="index.html" aria-label="MineGuess Startseite">
-    <img src="logo-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
+    <img src="brand-64.png" alt="" width="30" height="30"><span style="color:var(--text)">Mine</span><span>Guess</span>
   </a>
   <span class="tag tag-blue beta">Beta</span>
   <div class="header-right">
@@ -542,7 +554,7 @@ let lastPlayers = [];
 window.MGReportContext = function () {
   const inRoom = typeof myRoomId !== 'undefined' && myRoomId;
   const q = (typeof currentQ !== 'undefined' && currentQ) ? currentQ : null;
-  const fmt = q ? (q.type === 'crafting' ? 'craft-guess' : (Array.isArray(q.choices) ? 'choice' : (q.type === 'number' ? 'number' : 'entity'))) : '';
+  const fmt = q ? (q.fmt === 'tf' ? 'tf' : q.type === 'crafting' ? 'craft-guess' : (Array.isArray(q.choices) ? 'choice' : (q.type === 'number' ? 'number' : 'entity'))) : '';
   return { mode: inRoom ? 'multiplayer' : 'menu', room: inRoom ? myRoomId : '', players: (lastPlayers || []).filter(p => p.id !== myId).map(p => p.name), questionId: q && q.id ? q.id : 0, format: fmt };
 };
 const deltas = {};      // Punkte-Änderung in dieser Runde je Spieler
@@ -1018,11 +1030,11 @@ function buildAnswerInput(q) {
     const names = (q.choices || q.options).slice(0, 2);
     const host = document.createElement('div'); host.id = 'choice-host';
     inner.appendChild(host);
-    const btns = MGIcon.choiceButtons(host, names, (n) => submitAnswer(n));
+    let btns; btns = MGIcon.choiceButtons(host, names, (n) => { submitAnswer(n); if (btns && btns.lock) btns.lock('Antwort abgegeben: ' + n); }, { tf: q.fmt === 'tf' });
     choiceKeys = (e) => {
       if (myPhase !== 'answering') return;
       const t = e.target && e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA') return;
-      if (e.key === '1' || e.key === '2') { e.preventDefault(); const b = btns[+e.key - 1]; if (b) b.click(); }
+      return;   /* Tasten (W/M, 1/2) belegt MGIcon.choiceButtons */
     };
     document.addEventListener('keydown', choiceKeys);
     btns[0].focus();
@@ -1038,6 +1050,7 @@ function buildAnswerInput(q) {
       btn.className = 'entity-opt';
       const im = document.createElement('img');
       im.width = 28; im.height = 28; im.alt = ''; im.loading = 'lazy'; im.className = 'mc-icon';
+      im.setAttribute('data-iso-label', opt);
       im.src = (window.MGIcon ? MGIcon.base + MGIcon.forLabel(opt, '') : 'assets/mc/item/barrier') + '.png';
       im.onerror = function () { this.onerror = null; this.src = 'assets/mc/item/barrier.png'; };
       btn.appendChild(im);

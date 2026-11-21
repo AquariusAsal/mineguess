@@ -19,8 +19,8 @@
 (function (root) {
   'use strict';
 
-  var POOL_VERSIONS = { 1: 1933 };            // Version -> hoechste Frage-ID im Pool (neue Version: neue Zeile, alte bleiben)
-  var LATEST = 1;
+  var POOL_VERSIONS = { 1: 1933, 2: 3999, 3: 99999 };            // Version -> hoechste Frage-ID im Pool (neue Version: neue Zeile, alte bleiben)
+  var LATEST = 3;      // 3: mit Crafting2 (4001+) und Datenfragen (10001+); 2: tf; 1 bleibt fuer alte Links unveraendert
   var TIERS = [1, 1, 2, 2, 2, 3, 3, 3, 4, 4];
   var ID_RE = /^[a-z0-9]{6,12}$/;
   var R = (typeof module !== 'undefined' && module.exports) ? require('./ranked.js') : root.MGRanked;

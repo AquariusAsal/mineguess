@@ -86,13 +86,19 @@
   var NAMES = null;
   var ready = fetch(BASE + 'icons.json').then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) { NAMES = j || {}; }).catch(function () { NAMES = {}; });
   /** Textur-Pfad (ohne .png) zu einem Anzeigenamen: icons.json, sonst lokale Namenssuche, sonst item/barrier */
+  // Im Spiel flache Sprites: Tueren (Item-Sprite statt Oberseite), Glasscheiben (Glastextur), Truhe (eigener Stellvertreter, nicht das Fass)
+  var FIX = { 'Eichenholztür': 'item/oak_door', 'Eichentür': 'item/oak_door', 'Eisentür': 'item/iron_door', 'Truhe': 'block/oak_planks' };
   function forLabel(name, enName) {
     var p = NAMES && NAMES[name];
+    if (FIX[name]) return FIX[name];
+    if (p) { p = String(p).replace(/.png$/, ''); var m = /^block[/](.+)_door_top$/.exec(p); if (m) return 'item/' + m[1] + '_door'; m = /^block[/](.+)_pane_top$/.exec(p); if (m) return 'block/' + m[1]; return p; }
     if (p) return String(p).replace(/.png$/, '');
     return forName(name, enName) || 'item/barrier';
   }
   /** Zwei gleichwertige Auswahlbuttons (ODER-Fragen). onPick(name). Reihenfolge so, wie sie kommt (Server/Client mischt). */
-  function choiceButtons(host, names, onPick) {
+  function choiceButtons(host, names, onPick, opts) {
+    var tf = !!(opts && opts.tf);
+    if (tf) names = names.slice().sort(function (a, b) { return a === 'Wahr' ? -1 : (b === 'Wahr' ? 1 : 0); });   // feste Reihenfolge: Wahr links, Mythos rechts
     host.innerHTML = '';
     host.className = (host.className ? host.className + ' ' : '') + 'choice-grid';
     host.setAttribute('role', 'group'); host.setAttribute('aria-label', 'Antwort waehlen');
@@ -101,12 +107,15 @@
       b.type = 'button'; b.className = 'choice-btn'; b.dataset.opt = n;
       var im = document.createElement('img');
       im.width = 32; im.height = 32; im.alt = ''; im.className = 'mc-icon'; im.loading = 'lazy';
-      im.src = BASE + forLabel(n, '') + '.png';
+      if (!tf) im.setAttribute('data-iso-label', n);
+      im.src = BASE + (tf ? (n === 'Wahr' ? 'item/emerald' : 'block/tnt_side') : forLabel(n, '')) + '.png';
       im.onerror = function () { this.onerror = null; this.src = BASE + 'item/barrier.png'; };
       var sp = document.createElement('span'); sp.className = 'choice-name'; sp.textContent = n;
-      var k = document.createElement('kbd'); k.textContent = String(i + 1); k.setAttribute('aria-hidden', 'true');
+      var k = document.createElement('kbd'); k.textContent = tf ? (n === 'Wahr' ? 'W' : 'M') : String(i + 1); k.setAttribute('aria-hidden', 'true');
+      if (tf) { b.classList.add('tf-btn', n === 'Wahr' ? 'tf-true' : 'tf-myth'); var sy = document.createElement('span'); sy.className = 'tf-sym'; sy.setAttribute('aria-hidden', 'true'); sy.textContent = n === 'Wahr' ? '\u2713' : '\u2715'; b.appendChild(sy); }
       b.appendChild(im); b.appendChild(sp); b.appendChild(k);
       b.addEventListener('click', function () {
+        if (b.getAttribute('aria-disabled') === 'true') return;
         btns.forEach(function (x) { x.classList.toggle('picked', x === b); x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
         onPick(n, b);
       });
@@ -118,6 +127,19 @@
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); btns[(i + 1 + btns.length) % btns.length].focus(); }
       else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); btns[(i - 1 + btns.length) % btns.length].focus(); }
     });
+    var live = document.createElement('span'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.style.cssText = 'position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap'; host.appendChild(live);
+    // Nach der Antwort: aria-disabled auf allen Buttons (Fokus bleibt), Ansage ueber die Live-Region
+    btns.lock = function (msg) { btns.forEach(function (x) { x.setAttribute('aria-disabled', 'true'); x.classList.add('locked'); }); if (msg) live.textContent = msg; };
+    var wasIn = false;
+    {   // Tastatur: W = Wahr, M = Mythos (nur tf), 1/2 immer (nicht in Eingabefeldern), solange die Buttons im Dokument sind
+      var onKey = function (e) {
+        if (host.isConnected) wasIn = true; else if (wasIn) { document.removeEventListener('keydown', onKey); return; } else return;
+        var t = e.target && e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || e.ctrlKey || e.metaKey || e.altKey) return;
+        var key = String(e.key).toLowerCase(), idx = (tf && key === 'w') ? 0 : ((tf && key === 'm') ? 1 : (key === '1' ? 0 : (key === '2' ? 1 : -1)));
+        if (idx >= 0 && btns[idx] && !btns[idx].disabled && btns[idx].getAttribute('aria-disabled') !== 'true') { e.preventDefault(); e.stopImmediatePropagation(); btns[idx].click(); }
+      };
+      document.addEventListener('keydown', onKey);
+    }
     return btns;
   }
   global.MGIcon = { choiceButtons: choiceButtons, ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };

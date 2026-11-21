@@ -147,7 +147,7 @@
 
   // Vorlage/Format einer Frage fuer die Diversitaetsregeln (alte Fragen: Kategorie + Typ)
   function templateKey(q) { return q.gen || ('alt:' + q.category + ':' + q.type); }
-  function formatKey(q) { return (q.choices || /^cmp_/.test(q.gen || '')) ? 'cmp' : q.type; }
+  function formatKey(q) { if (q.fmt === 'tf') return 'tf'; return (q.choices || /^cmp_/.test(q.gen || '')) ? 'cmp' : q.type; }
 
   // Fragenauswahl nach MMR-Zone, ohne Zuruecklegen, gewichtet zufaellig und abwechslungsreich:
   //  - nie eine Frage aus 'used' (aktueller Lauf), zuerst nur ungesehene (opts.seen = IDs, aelteste zuerst),

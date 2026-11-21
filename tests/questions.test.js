@@ -45,7 +45,7 @@ test('Fragen: crafting gueltig, eindeutig, Icons vorhanden', () => {
   cr.forEach(q => {
     assert.ok(Array.isArray(q.grid) && q.grid.length === 3 && q.grid.every(r => r.length === 3), 'Raster ' + q.id);
     const cells = q.grid.flat().filter(Boolean);
-    assert.ok(cells.length >= 2, 'Zutaten ' + q.id);
+    assert.ok(cells.length >= 1, 'Zutaten ' + q.id);
     const sig = q.shapeless ? 'S' + [...cells].sort().join(',') : 'G' + JSON.stringify(q.grid);
     assert.ok(!sigs.has(sig) || sigs.get(sig) === q.answer, 'gleiches Raster, anderes Ergebnis ' + q.id);
     sigs.set(sig, q.answer);

@@ -34,8 +34,8 @@
     if (!l && ING && ING[key] && ING[key].de) l = ING[key].de;
     return l || pretty(key);
   }
-  function img(path, size, cls) {
-    return '<img class="' + (cls || 'craft-ico') + '" src="' + BASE + esc(path) + '.png" width="' + size + '" height="' + size +
+  function img(path, size, cls, label) {
+    return '<img class="' + (cls || 'craft-ico') + '"' + (label ? ' data-iso-label="' + esc(label) + '"' : '') + '  src="' + BASE + esc(path) + '.png" width="' + size + '" height="' + size +
       '" alt="" loading="lazy" onerror="this.onerror=null;this.src=\'' + BASE + 'item/barrier.png\'">';
   }
 
@@ -51,7 +51,7 @@
         var key = grid[r][c], lab = label(q, r, c);
         rd.push(lab);
         cells += '<div class="craft-slot' + (key ? ' full' : '') + '" role="gridcell" aria-label="Reihe ' + (r + 1) + ', Spalte ' + (c + 1) + ': ' + esc(lab) + '" title="' + esc(lab) + '">' +
-          (key ? img(texOf(key), 48) : '') + '</div>';
+          (key ? img(texOf(key), 48, null, lab) : '') + '</div>';
       }
       desc.push('Reihe ' + (r + 1) + ': ' + rd.join(', '));
       rows += '<div class="craft-row" role="row">' + cells + '</div>';
@@ -82,7 +82,7 @@
     if (!out) return;
     if (host.classList.contains('revealed') && name && name.textContent === ((q.resultCount > 1 ? q.resultCount + 'x ' : '') + (q.answer || ''))) return;   // schon gezeigt (answers_revealed vor result)
     var path = resultIcon(q), n = q.resultCount > 1 ? q.resultCount : 0;
-    out.innerHTML = img(path, 64, 'craft-big') + (n ? '<span class="craft-count">' + n + '</span>' : '');
+    out.innerHTML = img(path, 64, 'craft-big', q.answer) + (n ? '<span class="craft-count">' + n + '</span>' : '');
     out.classList.add('pop');
     out.setAttribute('aria-label', 'Ergebnis: ' + (n ? n + ' mal ' : '') + (q.answer || ''));
     if (name) name.textContent = (n ? n + 'x ' : '') + (q.answer || '');

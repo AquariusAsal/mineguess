@@ -23,6 +23,28 @@
     var t = ls(A11Y.text); if (t === 'l' || t === 'xl') h.setAttribute('data-text', t); else h.removeAttribute('data-text');
   }
   applyA11y();
+  // Update-Hinweis: "Neue Version verfuegbar - neu laden" (kein erzwungenes Neuladen waehrend einer Runde oder im Multiplayer-Raum)
+  function isBusy() {
+    try {
+      var gw = document.getElementById('game-wrapper');
+      if (gw && gw.offsetParent !== null) return true;                       // Spielscreen (Runde laeuft oder Endkarte)
+      if (document.getElementById('hl-end') && document.getElementById('mg-hl') && !document.getElementById('mg-hl').hidden) return true;
+      if (typeof myRoomId !== 'undefined' && myRoomId) return true;          // Multiplayer-Raum
+    } catch (e) {}
+    return false;
+  }
+  function showUpdate() {
+    if (document.getElementById('mg-update')) return;
+    var el = document.createElement('div'); el.id = 'mg-update'; el.className = 'mg-update'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<span>Neue Version verfügbar</span><button type="button" class="btn btn-primary">Neu laden</button><button type="button" class="btn btn-ghost" aria-label="Hinweis schließen">Später</button>';
+    el.querySelector('.btn-primary').addEventListener('click', function () { location.reload(); });
+    el.querySelector('.btn-ghost').addEventListener('click', function () { el.remove(); });
+    document.body.appendChild(el);
+  }
+  function versionText() {
+    if (!global.caches || !caches.keys) return Promise.resolve('–');
+    return caches.keys().then(function (k) { var v = k.filter(function (x) { return /^mineguess-v/.test(x); }).map(function (x) { return x.replace('mineguess-', ''); }); return v.length ? v[v.length - 1] : '–'; }).catch(function () { return '–'; });
+  }
   // App installieren (PWA) und Offline-Hinweis
   var installEv = null;
   global.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEv = e; var b = document.getElementById('mg-set-install-row'); if (b) b.hidden = false; });
@@ -59,11 +81,14 @@
           '<h3 id="mg-set-a11y">Barrierefreiheit</h3>' +
           '<div class="mg-set-row"><label for="mg-set-contrast">Hoher Kontrast</label><input type="checkbox" id="mg-set-contrast" class="mg-switch"></div>' +
           '<div class="mg-set-row"><label for="mg-set-font">Lesbare Schrift</label><input type="checkbox" id="mg-set-font" class="mg-switch"></div>' +
+          '<div class="mg-set-row"><label for="mg-set-time">Mehr Zeit (nur Solo)</label><select id="mg-set-time" class="form-input" style="max-width:150px"><option value="0">Aus</option><option value="50">+50 %</option><option value="100">+100 %</option></select></div>' +
+          '<div class="mg-set-row"><label for="mg-set-numhelp">Wertebereich-Hilfe bei Zahlenfragen (nur Solo)</label><input type="checkbox" id="mg-set-numhelp" class="mg-switch"></div>' +
           '<div class="mg-set-row"><span id="mg-set-text-l">Textgröße</span><div class="mg-seg" role="radiogroup" aria-labelledby="mg-set-text-l" id="mg-set-text">' +
             '<button type="button" class="chip" role="radio" data-t="m">Normal</button><button type="button" class="chip" role="radio" data-t="l">Groß</button><button type="button" class="chip" role="radio" data-t="xl">Sehr groß</button></div></div>' +
           '<div class="mg-set-row"><span>Einführung</span><button type="button" class="btn" id="mg-set-tutorial">Tutorial ansehen</button></div>' +
         '</div>' +
         '<div class="mg-set-row" id="mg-set-install-row" hidden><span>App</span><button type="button" class="btn" id="mg-set-install">App installieren</button></div>' +
+        '<div class="mg-set-row"><span><img src="brand-64.png" alt="" width="18" height="18" style="vertical-align:-4px;margin-right:6px;border-radius:4px">Version</span><span id="mg-set-version" class="mg-set-ver">–</span></div>' +
         '<div class="mg-set-row"><span>Hilfe</span><button type="button" class="btn" id="mg-set-report">Problem melden</button></div>' +
         '<div class="mg-set-row"><span>Spielerprofil</span><button type="button" class="btn" id="mg-set-profile">Profil, Skin, Figur</button></div>' +
         '<div class="mg-set-row"><span>Rankliste</span><button type="button" class="btn" id="mg-set-rank">Rankliste öffnen</button></div>' +
@@ -76,6 +101,8 @@
     $('mg-set-music').addEventListener('click', function () { close(); if (global.MGSpotify) MGSpotify.open(); });
     function bindFlag(id, key) { $(id).addEventListener('change', function (e) { ls(key, e.target.checked ? '1' : '0'); applyA11y(); }); }
     bindFlag('mg-set-contrast', A11Y.contrast); bindFlag('mg-set-font', A11Y.font);
+    $('mg-set-time').addEventListener('change', function (e) { ls('mg_more_time', e.target.value); });
+    $('mg-set-numhelp').addEventListener('change', function (e) { ls('mg_num_help', e.target.checked ? '1' : '0'); });
     $('mg-set-text').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-t]'); if (!b) return;
       ls(A11Y.text, b.getAttribute('data-t')); applyA11y(); syncText();
@@ -127,6 +154,9 @@
     panel.querySelector('#mg-set-lang').value = (global.MGI18n && MGI18n.lang) || 'de';
     panel.querySelector('#mg-set-loader').checked = ls('mg_loader_short') === '1';
     panel.querySelector('#mg-set-install-row').hidden = standalone() || !(installEv || isIos());
+    versionText().then(function (v) { var e = panel.querySelector('#mg-set-version'); if (e) e.textContent = v; });
+    panel.querySelector('#mg-set-time').value = ls('mg_more_time') || '0';
+    panel.querySelector('#mg-set-numhelp').checked = ls('mg_num_help') === '1';
     panel.querySelector('#mg-set-contrast').checked = ls(A11Y.contrast) === '1';
     panel.querySelector('#mg-set-font').checked = ls(A11Y.font) === '1';
     syncText();
@@ -153,9 +183,17 @@
   // Service Worker auf jeder Seite registrieren (Offline-Start auch ab der Startseite)
   if ('serviceWorker' in navigator) {
     global.addEventListener('load', function () {
-      var had = !!navigator.serviceWorker.controller, reloaded = false;   // Update: nach dem Wechsel auf den neuen Service Worker einmal neu laden
-      navigator.serviceWorker.addEventListener('controllerchange', function () { if (had && !reloaded) { reloaded = true; location.reload(); } had = true; });
-      navigator.serviceWorker.register('/sw.js').catch(function () {});
+      var had = !!navigator.serviceWorker.controller, reloaded = false;
+      // Update: nie mitten in einer Runde oder im Raum neu laden; dann nur dezenter Hinweis. Im Menue/Leerlauf wird einmal automatisch neu geladen.
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (had && !reloaded) { if (isBusy()) showUpdate(); else { reloaded = true; location.reload(); } }
+        had = true;
+      });
+      navigator.serviceWorker.register('/sw.js').then(function (reg) {
+        function check() { try { reg.update(); } catch (e) {} }
+        setInterval(check, 30 * 60 * 1000);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) check(); });
+      }).catch(function () {});
     });
   }
   // Esc schließt alle bekannten Overlays (Abzeichen, Statistik, Report, Rankliste)

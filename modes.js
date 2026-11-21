@@ -30,7 +30,7 @@
 
   // Format-Matrix: welche Formate ein Modus ziehen kann. Alle Modi ziehen Zahl, Name und ODER aus dem gemeinsamen Fragenpool;
   // Crafting-Raetsel liegen im Pool (Kategorie "Crafting", Typ crafting). Blitz und Challenge: Bau ausgeschlossen (60 s Gesamtzeit bzw. gleiche Fragen fuer alle ohne Bau-Zeitdruck).
-  var ALL = ['number', 'entity', 'choice', 'craft-guess'];
+  var ALL = ['number', 'entity', 'choice', 'tf', 'craft-guess'];
   var MATRIX = {
     endless:    { formats: ALL.concat('craft-build'), note: 'gesamter Pool, Diversitaet per diversify(); Bau-Variante je buildable-Rätsel gewürfelt' },
     blitz:      { formats: ALL, note: 'gesamter Pool, Crafting nur im Raten-Modus (60 s Gesamtzeit)' },
@@ -40,11 +40,16 @@
     crafting:   { formats: ['craft-guess', 'craft-build'], note: 'eigener Modus: nur Crafting; Untermodus erraten/bauen/mix' },
     ranked:     { formats: ALL.concat('craft-build'), note: 'Server wählt über pickIndex; Bau-Variante nur, wenn der Client sie beim Start anmeldet (build:true), Server prüft das Raster' },
     hardcore:   { formats: ALL.concat('craft-build'), note: 'gesamter Pool nach Ziel-Rating, alle Formate gemischt' },
-    challenge:  { formats: ALL, note: 'gleiche 10 Fragen für alle, Crafting nur im Raten-Modus' }
+    challenge:  { formats: ALL, note: 'gleiche 10 Fragen für alle, Crafting nur im Raten-Modus' },
+    tf:         { formats: ['tf'], note: 'eigener Solo-Modus Wahr oder Mythos: nur Fragen mit fmt tf; Multiplayer/Teams ziehen tf über den gemeinsamen Pool' }
   };
+
+  /** Wahr-oder-Mythos-Frage (Format tf): technisch eine ODER-Frage mit den Optionen Wahr/Mythos. */
+  function isTf(q) { return !!q && q.fmt === 'tf'; }
 
   function formatOf(q, variant) {
     if (q.type === 'crafting') return variant === 'build' ? 'craft-build' : 'craft-guess';
+    if (q.fmt === 'tf') return 'tf';
     if (Array.isArray(q.choices) && q.choices.length === 2) return 'choice';
     return q.type === 'number' ? 'number' : 'entity';
   }
@@ -96,17 +101,19 @@
     var lo = avg(0), hi = avg(15);
     if (!(hi > lo + 800)) throw new Error('Schwierigkeit steigt nicht: ' + Math.round(lo) + ' -> ' + Math.round(hi));
     var st = hardcore.newState(), ids = {}, formats = {};
-    for (var i = 0; i < 80; i++) {
+    for (var i = 0; i < 400; i++) {
+      if (i % 20 === 0) st = hardcore.newState();            // viele kurze Laeufe (die Kategorie-Obergrenze gilt je Lauf)
+      st.streak = i % 14;                                   // Ziel-Rating durchlaufen (Formate verteilen sich ueber alle Schwierigkeiten)
       var n = hardcore.next(questions, st, rnd);
-      if (ids[n.question.id]) throw new Error('Wiederholung: ' + n.question.id);
-      ids[n.question.id] = 1; formats[n.format] = 1;
+      if (st.used.slice(0, -1).indexOf(n.index) >= 0) throw new Error('Wiederholung im Lauf: ' + n.question.id);
+      formats[n.format] = 1;
       hardcore.record(st, n.question, true, n.variant);
     }
-    ['number', 'entity', 'choice', 'craft-guess', 'craft-build'].forEach(function (f) { if (!formats[f]) throw new Error('Format fehlt: ' + f); });
+    ['number', 'entity', 'choice', 'tf', 'craft-guess', 'craft-build'].forEach(function (f) { if (!formats[f]) throw new Error('Format fehlt: ' + f); });
     return 'Ziel-Rating Serie 0: ' + Math.round(lo) + ', Serie 15: ' + Math.round(hi) + ', Formate: ' + Object.keys(formats).join('/');
   }
 
-  var api = { hardcore: hardcore, formatOf: formatOf, craftVariant: craftVariant, MATRIX: MATRIX, BUILD: BUILD, selfTest: selfTest };
+  var api = { hardcore: hardcore, formatOf: formatOf, isTf: isTf, craftVariant: craftVariant, MATRIX: MATRIX, BUILD: BUILD, selfTest: selfTest };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MGModes = api;
 })(typeof window !== 'undefined' ? window : this);

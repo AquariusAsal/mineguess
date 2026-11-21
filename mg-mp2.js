@@ -174,15 +174,16 @@
     if (!row) {
       row = document.createElement('div'); row.id = 'mp2-buildrow'; row.className = 'hs-row';
       row.innerHTML = '<span class="form-label" id="mp2-bl">Bau-Runden (alle bauen gleichzeitig)</span><div class="toggle-row" role="group" aria-labelledby="mp2-bl" data-g="build"><button type="button" class="toggle-opt" data-v="off">Aus</button><button type="button" class="toggle-opt" data-v="mix">Gemischt</button><button type="button" class="toggle-opt" data-v="only">Nur bauen</button></div>' +
+        '<span class="form-label" id="mp2-tl">Wahr oder Mythos</span><div class="toggle-row" role="group" aria-labelledby="mp2-tl" data-g="tf"><button type="button" class="toggle-opt" data-v="off">Aus</button><button type="button" class="toggle-opt" data-v="mix">Gemischt</button><button type="button" class="toggle-opt" data-v="only">Nur Wahr/Mythos</button></div>' +
         '<span class="form-label" id="mp2-bt">Bauzeit</span><div class="toggle-row" role="group" aria-labelledby="mp2-bt" data-g="buildSeconds"><button type="button" class="toggle-opt" data-v="45">45 s</button><button type="button" class="toggle-opt" data-v="60">60 s</button></div>';
       hs.appendChild(row);
       row.addEventListener('click', function (e) {
-        var b = e.target.closest('.toggle-opt'); if (!b) return; var g = b.parentNode.getAttribute('data-g'), v = b.getAttribute('data-v'), o = {}; o[g] = g === 'build' ? v : parseInt(v, 10);
+        var b = e.target.closest('.toggle-opt'); if (!b) return; var g = b.parentNode.getAttribute('data-g'), v = b.getAttribute('data-v'), o = {}; o[g] = (g === 'build' || g === 'tf') ? v : parseInt(v, 10);
         socket.emit('update_settings', o);
       });
     }
     var s = S.settings || {};
-    [].forEach.call(row.querySelectorAll('.toggle-opt'), function (b) { var g = b.parentNode.getAttribute('data-g'), on = String(s[g] == null ? (g === 'build' ? 'off' : '60') : s[g]) === b.getAttribute('data-v'); b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    [].forEach.call(row.querySelectorAll('.toggle-opt'), function (b) { var g = b.parentNode.getAttribute('data-g'), on = String(s[g] == null ? (g === 'build' ? 'off' : (g === 'tf' ? 'mix' : '60')) : s[g]) === b.getAttribute('data-v'); b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
   }
 
   // ── Bau-Runde: Spiel ──
@@ -271,4 +272,122 @@
       MGPng.alpha(by).then(function (res) { if (res && MGPng.plausible(res) && !MGSkin.get()) MGSkin.save(u); });
     }).catch(function () {});
   })();
+
+  // ═══ Klassenraum (Lehrkraft + Schueler, ohne Konto, feste Namen, kein Freitext) ═══
+  var CLS = { code: '', token: '', max: 30, settings: {}, players: [], phase: 'waiting', round: 0, rounds: 0, q: '', over: false, exp: null };
+  var CLS_KEY = 'mg_class_t';
+  try { var sv = JSON.parse(sessionStorage.getItem(CLS_KEY) || 'null'); if (sv && sv.code && sv.token) { CLS.code = sv.code; CLS.token = sv.token; } } catch (e) {}
+  var CLS_ERR = { rate: 'Zu viele Versuche. Bitte kurz warten.', busy: 'Der Server ist gerade ausgelastet.', phase: 'Das geht gerade nicht (Spiel läuft schon).', students: 'Es ist noch kein Schüler im Raum.', notfound: 'Klassenraum nicht gefunden.' };
+  var JOIN_ERR = { notfound: 'Klassenraum nicht gefunden. Prüfe den Code.', full: 'Der Klassenraum ist voll.', running: 'Das Spiel läuft schon. Bitte warte auf die nächste Runde.', name: 'Dieser Name ist nicht in der Liste.', name_taken: 'Dieser Name ist schon vergeben.', rate: 'Zu viele Versuche. Bitte eine Minute warten.' };
+  function clsSave() { try { sessionStorage.setItem(CLS_KEY, JSON.stringify({ code: CLS.code, token: CLS.token })); } catch (e) {} }
+  function clsClear() { CLS.code = ''; CLS.token = ''; CLS.over = false; try { sessionStorage.removeItem(CLS_KEY); } catch (e) {} }
+  function addClassEntry() {
+    var jc = document.querySelector('#join-screen .card'); if (!jc || $('mp2-class-open')) return;
+    var box = document.createElement('div'); box.className = 'mp2-classbox';
+    box.innerHTML = '<h3 class="hs-title">Klassenraum</h3><p class="mp2-sub">Für Schulklassen: ohne Konto, mit festen Tiernamen, ohne Chat. Die Lehrkraft steuert das Spiel.</p><div class="mp2-btnrow"><button type="button" class="btn" id="mp2-class-open">Klassenraum öffnen</button></div>';
+    jc.appendChild(box); $('mp2-class-open').addEventListener('click', openClass);
+  }
+  document.addEventListener('DOMContentLoaded', addClassEntry); addClassEntry();
+  function clsDlg() { return dialog('mp2-class', 'Klassenraum'); }
+  function openClass() {
+    var d = clsDlg(), b = d.querySelector('.mp2-body');
+    if (CLS.code && CLS.token) { socket.emit('class_rejoin', { code: CLS.code, token: CLS.token }); b.innerHTML = '<p class="mp2-sub">Verbinde …</p>'; openDlg(d); return; }
+    b.innerHTML = '<div class="mp2-btnrow"><button type="button" class="btn btn-primary" data-a="teacher">Ich bin Lehrkraft</button><button type="button" class="btn" data-a="student">Ich bin Schüler oder Schülerin</button></div><p class="mp2-sub">Es werden keine Namen, Konten oder Chats benötigt. Ein Klassenraum löscht sich nach 4 Stunden ohne Aktivität.</p>';
+    b.onclick = function (e) { var x = e.target.closest('button[data-a]'); if (x) (x.getAttribute('data-a') === 'teacher' ? teacherSetup : studentStart)(d, b); };
+    openDlg(d);
+  }
+  // ── Lehrkraft ──
+  function seg(g, label, opts, cur) { return '<div class="hs-row"><span class="form-label" id="cl-' + g + '">' + label + '</span><div class="toggle-row" role="group" aria-labelledby="cl-' + g + '" data-g="' + g + '">' + opts.map(function (o) { return '<button type="button" class="toggle-opt' + (String(cur) === String(o[0]) ? ' selected' : '') + '" aria-pressed="' + (String(cur) === String(o[0])) + '" data-v="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div></div>'; }
+  function teacherSetup(d, b) {
+    var cfg = { rounds: 10, tf: 'mix', build: 'off' };
+    function draw() {
+      b.innerHTML = '<p class="mp2-sub">Die Lehrkraft spielt nicht mit, sondern startet das Spiel und sieht die Ergebnisse je Tiername.</p>' + seg('rounds', 'Runden', [[10, '10'], [25, '25'], [50, '50']], cfg.rounds) + seg('tf', 'Wahr oder Mythos', [['off', 'Aus'], ['mix', 'Gemischt'], ['only', 'Nur Wahr/Mythos']], cfg.tf) + seg('build', 'Bau-Runden', [['off', 'Aus'], ['mix', 'Gemischt'], ['only', 'Nur bauen']], cfg.build) +
+        '<div class="mp2-btnrow"><button type="button" class="btn btn-primary" id="cl-make">Klassenraum erstellen</button></div><p class="mp2-sub" id="cl-msg" role="status"></p>';
+    }
+    draw();
+    b.onclick = function (e) {
+      var t = e.target.closest('.toggle-opt');
+      if (t) { var g = t.parentNode.getAttribute('data-g'), v = t.getAttribute('data-v'); cfg[g] = g === 'rounds' ? parseInt(v, 10) : v; draw(); return; }
+      if (e.target.id === 'cl-make') { $('cl-msg').textContent = 'Erstelle …'; socket.emit('create_class', { rounds: cfg.rounds, tf: cfg.tf, build: cfg.build }); }
+    };
+  }
+  function teacherPanel() {
+    var d = clsDlg(), b = d.querySelector('.mp2-body'); if (!d.classList.contains('open')) openDlg(d);
+    var run = CLS.phase !== 'waiting' && !CLS.over;
+    b.innerHTML = '<div class="mp2-codebox"><span class="mp2-sub">Code für die Klasse</span><b class="mp2-code" aria-label="Klassencode ' + E(CLS.code.split('').join(' ')) + '">' + E(CLS.code) + '</b><button type="button" class="btn" data-a="copy">Kopieren</button></div>' +
+      '<p class="mp2-sub">' + CLS.players.length + ' von ' + CLS.max + ' Schülern im Raum' + (run ? ' · Runde ' + CLS.round + (CLS.rounds ? ' von ' + CLS.rounds : '') : (CLS.over ? ' · Spiel beendet' : '')) + '</p>' +
+      (run && CLS.q ? '<p class="mp2-q">' + E(CLS.q) + '</p>' : '') +
+      '<ul class="mp2-flist">' + (CLS.players.length ? CLS.players.map(function (p) { return '<li><span>' + E(p.name) + '</span>' + (CLS.phase === 'waiting' || CLS.over ? '<button type="button" class="btn btn-ghost" data-k="' + E(p.id) + '" aria-label="' + E(p.name) + ' entfernen">Entfernen</button>' : '<b>' + E(p.score || 0) + ' Pkt.</b>') + '</li>'; }).join('') : '<li class="mp2-sub">Noch niemand beigetreten. Schüler öffnen diese Seite und wählen „Klassenraum öffnen“.</li>') + '</ul>' +
+      '<div class="mp2-btnrow">' + (CLS.phase === 'waiting' ? '<button type="button" class="btn btn-primary" data-a="start"' + (CLS.players.length ? '' : ' disabled') + '>Spiel starten</button>' : '') +
+      '<button type="button" class="btn" data-a="export">Ergebnisse (CSV)</button><button type="button" class="btn" data-a="print">Druckansicht</button><button type="button" class="btn btn-ghost" data-a="close">Klassenraum schließen</button></div><p class="mp2-sub" id="cl-msg" role="status" aria-live="polite"></p>';
+    b.onclick = function (e) {
+      var x = e.target.closest('button'); if (!x) return;
+      if (x.dataset.k) { socket.emit('kick_player', { id: x.dataset.k }); return; }
+      var a = x.getAttribute('data-a');
+      if (a === 'copy') { (navigator.clipboard ? navigator.clipboard.writeText(CLS.code) : Promise.reject()).then(function () { $('cl-msg').textContent = 'Code kopiert.'; }, function () { $('cl-msg').textContent = 'Bitte den Code abschreiben.'; }); }
+      else if (a === 'start') socket.emit('class_start');
+      else if (a === 'export' || a === 'print') { CLS.want = a; socket.emit('class_export'); }
+      else if (a === 'close') { if (confirm('Klassenraum für alle schließen?')) socket.emit('class_close'); }
+    };
+  }
+  socket.on('class_created', function (d) {
+    if (!d) return; CLS.code = d.code; CLS.token = d.token || CLS.token; CLS.max = d.max || 30; CLS.settings = d.settings || {}; CLS.over = false; clsSave(); teacherPanel();
+  });
+  socket.on('class_denied', function (d) { var t = CLS_ERR[d && d.reason] || 'Das hat nicht geklappt.'; var m = $('cl-msg'); if (m) m.textContent = t; else showToast(t, 3000); if (d && d.reason === 'notfound') { clsClear(); } });
+  socket.on('class_closed', function (d) { clsClear(); CLS.players = []; var dl = $('mp2-class'); if (dl) dl.classList.remove('open'); showToast(d && d.reason === 'idle' ? 'Klassenraum wegen Inaktivität geschlossen.' : 'Klassenraum wurde geschlossen.', 4000); if (!amStudent) return; location.reload(); });
+  var amStudent = false;
+  socket.on('room_state', function (d) {
+    if (!d) return;
+    if (CLS.code && CLS.token) { CLS.players = (d.players || []).filter(function (p) { return p.id !== myId; }); CLS.phase = d.phase || CLS.phase; var dl = $('mp2-class'); if (dl && dl.classList.contains('open') && !dl.__student) teacherPanel(); }
+  });
+  socket.on('question', function (q) { if (CLS.code && CLS.token) { CLS.round = q.roundNum || 0; CLS.rounds = q.maxRounds || CLS.rounds; CLS.q = q.mode === 'build' ? 'Bau-Runde: ' + (q.answer || '') : (q.question || ''); CLS.phase = 'running'; var dl = $('mp2-class'); if (dl && dl.classList.contains('open')) teacherPanel(); } });
+  socket.on('game_over', function () { if (CLS.code && CLS.token) { CLS.over = true; CLS.phase = 'waiting'; var dl = $('mp2-class'); if (dl && dl.classList.contains('open')) teacherPanel(); } });
+  function csvDownload(csv) {
+    var blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'klassenraum-ergebnisse.csv'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+  function printView(x) {
+    var old = $('mp2-print'); if (old) old.remove();
+    var p = document.createElement('div'); p.id = 'mp2-print';
+    p.innerHTML = '<h1>MineGuess Klassenraum: Ergebnisse</h1><p>' + (x.rounds || 0) + ' Runden · durchschnittliche Trefferquote ' + (x.avgHitPct == null ? '–' : x.avgHitPct + ' %') + ' · ohne Personenbezug (Tiernamen)</p>' +
+      '<h2>Schüler (Tiername)</h2><table><thead><tr><th>Name</th><th>Beantwortet</th><th>Richtig</th><th>Trefferquote</th><th>Punkte</th></tr></thead><tbody>' + (x.students || []).map(function (s) { return '<tr><td>' + E(s.name) + '</td><td>' + s.answered + '</td><td>' + s.correct + '</td><td>' + s.hitPct + ' %</td><td>' + s.points + '</td></tr>'; }).join('') + '</tbody></table>' +
+      '<h2>Fragen</h2><table><thead><tr><th>#</th><th>Frage</th><th>Format</th><th>Beantwortet</th><th>Richtig</th><th>Trefferquote</th></tr></thead><tbody>' + (x.questions || []).map(function (q) { return '<tr><td>' + q.n + '</td><td>' + E(q.question) + '</td><td>' + E(q.format) + '</td><td>' + q.answered + '</td><td>' + q.correct + '</td><td>' + q.hitPct + ' %</td></tr>'; }).join('') + '</tbody></table>';
+    document.body.appendChild(p); document.body.classList.add('mp2-printing');
+    var done = function () { document.body.classList.remove('mp2-printing'); p.remove(); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done); setTimeout(function () { window.print(); }, 50);
+  }
+  socket.on('class_export', function (x) {
+    if (!x || !x.ok) { var m = $('cl-msg'); if (m) m.textContent = 'Es gibt noch keine Ergebnisse.'; return; }
+    if (CLS.want === 'print') printView(x); else if (x.csv) csvDownload(x.csv);
+    var m2 = $('cl-msg'); if (m2) m2.textContent = CLS.want === 'print' ? 'Druckansicht geöffnet.' : 'CSV heruntergeladen.'; CLS.want = '';
+  });
+  socket.on('connect', function () { if (CLS.code && CLS.token) socket.emit('class_rejoin', { code: CLS.code, token: CLS.token }); });
+  // ── Schueler ──
+  function studentStart(d, b) {
+    d.__student = true; amStudent = true;
+    b.innerHTML = '<div class="hs-row"><label class="form-label" for="cl-code">Code der Klasse (6 Zeichen)</label><input id="cl-code" class="form-input" maxlength="6" autocomplete="off" autocapitalize="characters" spellcheck="false" style="max-width:200px;text-transform:uppercase"></div><div class="mp2-btnrow"><button type="button" class="btn btn-primary" id="cl-next">Weiter</button></div><p class="mp2-sub" id="cl-msg" role="status" aria-live="polite"></p><div id="cl-names"></div>';
+    var chosen = '';
+    function ask() { var c = $('cl-code').value.trim().toUpperCase(); if (c.length < 6) { $('cl-msg').textContent = 'Bitte den 6-stelligen Code eingeben.'; return; } $('cl-msg').textContent = 'Prüfe …'; socket.emit('class_info', { code: c }); }
+    b.onclick = function (e) {
+      if (e.target.id === 'cl-next') ask();
+      var n = e.target.closest('button[data-name]'); if (n) { chosen = n.getAttribute('data-name'); [].forEach.call(b.querySelectorAll('button[data-name]'), function (x) { var on = x === n; x.classList.toggle('picked', on); x.setAttribute('aria-pressed', String(on)); }); }
+      if (e.target.id === 'cl-join') socket.emit('join_class', { code: $('cl-code').value.trim().toUpperCase(), name: chosen || undefined });
+    };
+    $('cl-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(); });
+    setTimeout(function () { $('cl-code').focus(); }, 50);
+  }
+  socket.on('class_info', function (d) {
+    var box = $('cl-names'), m = $('cl-msg'); if (!box || !m) return;
+    if (!d || !d.ok) { m.textContent = 'Klassenraum nicht gefunden. Prüfe den Code.'; box.innerHTML = ''; return; }
+    if (d.phase && d.phase !== 'waiting') { m.textContent = 'Das Spiel läuft schon. Bitte warte auf die nächste Runde.'; box.innerHTML = ''; return; }
+    m.textContent = (d.count || 0) + ' von ' + (d.max || 30) + ' Plätzen belegt. Wähle deinen Namen oder lass dir einen zufällig geben.';
+    box.innerHTML = '<div class="mp2-names" role="group" aria-label="Freie Namen">' + (d.free || []).map(function (n) { return '<button type="button" class="chip" data-name="' + E(n) + '" aria-pressed="false">' + E(n) + '</button>'; }).join('') + '</div><div class="mp2-btnrow"><button type="button" class="btn btn-primary" id="cl-join">Beitreten</button></div>';
+  });
+  socket.on('join_error', function (d) { var m = $('cl-msg'); if (m && d && d.code && JOIN_ERR[d.code]) m.textContent = JOIN_ERR[d.code]; });
+  socket.on('joined', function (d) {
+    if (!(d && d.settings && d.settings.isClass)) return;
+    var cd = $('mp2-class'); if (cd) cd.classList.remove('open');
+    var rb = $('btn-ready'); if (rb) rb.hidden = true;
+    var ib = $('mp2-invbtn'); if (ib) ib.hidden = true;
+    if (!$('mp2-classnote')) { var n = document.createElement('p'); n.id = 'mp2-classnote'; n.className = 'mp2-sub'; n.textContent = 'Klassenraum: Die Lehrkraft startet das Spiel. Du brauchst nichts zu tun.'; var lc = $('lobby-code'); if (lc && lc.parentNode) lc.parentNode.appendChild(n); }
+  });
 })();

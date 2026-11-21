@@ -22,7 +22,7 @@
 
   var cube = '<div class="mgl-cube" aria-hidden="true"><i class="mgl-f mgl-f1"></i><i class="mgl-f mgl-f2"></i><i class="mgl-f mgl-f3"></i><i class="mgl-f mgl-f4"></i><i class="mgl-f mgl-f5"></i><i class="mgl-f mgl-f6"></i></div>';
   var segs = ''; for (var i = 0; i < SEG; i++) segs += '<i></i>';
-  root.innerHTML = '<div class="mgl-box">' + cube + '<div class="mgl-title">MINEGUESS</div><div class="mgl-splash" aria-hidden="true"></div>' +
+  root.innerHTML = '<div class="mgl-box"><img class="mgl-banner" src="banner-600.png" width="520" height="218" alt="" decoding="async">' + '<div class="mgl-title">MINEGUESS</div><div class="mgl-splash" aria-hidden="true"></div>' +
     '<div class="mgl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Ladefortschritt">' + segs + '</div>' +
     '<div class="mgl-status" id="mgl-status">Lade Chunks …</div><p class="mgl-tip" id="mgl-tip"></p>' +
     '<div class="mgl-err" id="mgl-err" hidden><p></p><button type="button" class="btn btn-primary" id="mgl-reload">Neu laden</button></div>' +

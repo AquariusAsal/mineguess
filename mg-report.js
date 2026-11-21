@@ -40,6 +40,7 @@
       '<div class="mgr-row"><label for="mgr-text">Anmerkung <span id="mgr-req" class="mgr-opt">(optional, max. 300 Zeichen)</span></label><textarea id="mgr-text" maxlength="300" rows="3" class="report-text" placeholder="Was ist passiert?"></textarea></div>' +
       '<div class="mgr-row"><label class="mgr-check"><input type="checkbox" id="mgr-consent"> Ich darf für Rückfragen per E-Mail kontaktiert werden (freiwillig)</label>' +
       '<input id="mgr-email" type="email" class="form-input" maxlength="120" autocomplete="email" placeholder="E-Mail (nur mit Haken)" disabled></div>' +
+      '<label class="mgr-check" id="mgr-link-row" hidden><input type="checkbox" id="mgr-link" checked> Meldung anonym mit meinem Profil verknüpfen (für das Abzeichen „Fehlerjäger“). Die Zuordnung wird nach der Prüfung gelöscht.</label>' +
       '<div class="mgr-hp" aria-hidden="true"><label>Website <input type="text" id="mgr-website" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"></label></div>' +
       '<p class="mgr-note">Es werden nur Modus, Frage, App-Version, grobe Geräteart und bis zu 5 Fehlermeldungen mitgesendet, keine IP-Adresse. Details in der <a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</p>' +
       '<div class="mgr-msg" id="mgr-msg" role="status" aria-live="polite"></div>' +
@@ -94,6 +95,8 @@
     sel.innerHTML = '<option value="">Bitte wählen</option>' + (ctx.players || []).map(function (n) { return '<option>' + esc(String(n).slice(0, 20)) + '</option>'; }).join('');
     dlg.querySelector('#mgr-text').value = ''; dlg.querySelector('#mgr-consent').checked = false; var m = dlg.querySelector('#mgr-email'); m.value = ''; m.disabled = true;
     dlg.querySelector('#mgr-website').value = ''; dlg.querySelector('#mgr-msg').textContent = '';
+    var hasPt = false; try { hasPt = !!localStorage.getItem('mg_pt'); } catch (e) {}
+    dlg.querySelector('#mgr-link-row').hidden = !hasPt; dlg.querySelector('#mgr-link').checked = true;
     dlg.querySelector('#mgr-player-row').hidden = true;
     if (ctx.mode === 'profile' && ctx.players && ctx.players.length === 1) sel.value = String(ctx.players[0]).slice(0, 20);
     validate();
@@ -115,6 +118,7 @@
         context: { app: app, device: (global.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'mobil' : 'desktop', errors: errors.slice(), ts: Date.now() }
       };
       if (picked.reason) body.reason = picked.reason;
+      try { var pt = localStorage.getItem('mg_pt'); if (pt && dlg.querySelector('#mgr-link').checked) body.pt = pt; } catch (e) {}
       if (ctx.format) body.format = ctx.format;
       if (Number(ctx.questionId) > 0) body.questionId = Number(ctx.questionId);
       if (Number(ctx.round) > 0) body.round = Number(ctx.round);

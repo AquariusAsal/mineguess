@@ -168,7 +168,7 @@ test('Bau-Runde: alle bauen gleichzeitig, keine Loesung im Payload, Server pruef
     cs[1].emit('build_check', { grid: w }); await wait(300);
     const br = cs[1].last('build_result');
     assert.deepStrictEqual([br.valid, br.correct, br.final, br.attemptsLeft], [true, false, false, 2]);
-    assert.ok(br.diff && br.diff.total >= 2 && br.diff.cells[0][0] === 'bad'); assert.ok(!JSON.stringify(br).includes(q.resultKey) || true);
+    assert.ok(br.diff && br.diff.total >= 1 && br.diff.cells[0][0] === 'bad'); assert.ok(!JSON.stringify(br).includes(q.resultKey) || true);
     // Reihenfolge: C zuerst richtig, dann Host; B scheitert (3 Fehlversuche)
     cs[2].emit('build_check', { grid: q.grid }); await wait(200);
     host.emit('build_check', { grid: q.grid }); await wait(200);

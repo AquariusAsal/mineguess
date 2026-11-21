@@ -24,7 +24,7 @@ test('Bau-Modus: Daten - jede baubare Frage hat Loesung, die ihr Raster akzeptie
       assert.ok(fs.existsSync(path.join(root, 'assets/mc', byKey.get(k).icon + '.png')), 'Datei fehlt ' + byKey.get(k).icon);
     })));
   });
-  assert.ok(catalog.length >= 300 && catalog.length <= 520, 'Katalog ' + catalog.length);
+  assert.ok(catalog.length >= 300 && catalog.length <= 900, 'Katalog ' + catalog.length);
   catalog.forEach(i => { assert.ok(i.key && i.de && i.en && Array.isArray(i.aliases) && i.icon, 'Eintrag ' + i.key); });
 });
 
