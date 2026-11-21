@@ -34,7 +34,7 @@ function save(n,cv){return new Promise(r=>cv.toBlob(b=>fetch('/'+n,{method:'POST
   if(o>0){var sil=document.createElement('canvas');sil.width=w;sil.height=h;var qx=sil.getContext('2d');qx.drawImage(s,0,0);qx.globalCompositeOperation='source-in';qx.fillStyle='#10151f';qx.fillRect(0,0,w,h);
    for(var a=0;a<16;a++){var ang=a/16*Math.PI*2;cx.drawImage(sil,o+Math.round(Math.cos(ang)*o),o+Math.round(Math.sin(ang)*o))}}
   cx.drawImage(s,o,o);return cv}
- for(var h of [40,80]){await save('banner-dark-'+h+'.png',scaled(h,0));await save('banner-light-'+h+'.png',scaled(h,1))}
+ for(var h of [44,60,88,120]){await save('banner-dark-'+h+'.png',scaled(h,0));await save('banner-light-'+h+'.png',scaled(h,h>=88?2:1))}
  await fetch('/done',{method:'POST',body:'1'});
 })();</script>`;
 const out = ROOT;
@@ -48,4 +48,4 @@ const srv = http.createServer((q, r) => {
   const ch = cp.spawn(chrome, ['--headless', '--disable-gpu', '--user-data-dir=' + ud, '--virtual-time-budget=60000', '--dump-dom', 'http://localhost:' + PORT + '/gen.html'], { stdio: 'ignore' });
   setTimeout(() => { console.error('Zeitueberschreitung'); process.exit(1); }, 90000);
 });
-function finish() { console.log('banner-dark-40/80.png, banner-light-40/80.png erzeugt'); setTimeout(() => process.exit(0), 300); }
+function finish() { console.log('banner-dark/light-44/60/88/120.png erzeugt'); setTimeout(() => process.exit(0), 300); }
