@@ -20,16 +20,18 @@
   ss('mg_loader_seen', '1');
   var tasks = [], doneCount = 0, finished = false, failed = false, started = Date.now(), timer = 0, shown = 0, raf = 0, skipped = false, allDoneAt = 0;
 
-  var cube = '<div class="mgl-cube" aria-hidden="true"><i class="mgl-f mgl-f1"></i><i class="mgl-f mgl-f2"></i><i class="mgl-f mgl-f3"></i><i class="mgl-f mgl-f4"></i><i class="mgl-f mgl-f5"></i><i class="mgl-f mgl-f6"></i></div>';
+  var light = document.documentElement.getAttribute('data-theme') === 'light' || ls('mg_theme') === 'light';
+  var still = reduced || document.documentElement.getAttribute('data-motion') === 'reduce';
+  root.classList.toggle('mgl-light', light);
+  var gifSrc = 'assets/brand/loading-' + (light ? 'light' : 'dark') + (still ? '.png' : '.gif');
   var segs = ''; for (var i = 0; i < SEG; i++) segs += '<i></i>';
-  root.innerHTML = '<div class="mgl-box"><img class="mgl-banner" src="banner-600.png" width="520" height="218" alt="" decoding="async">' + '<div class="mgl-title">MINEGUESS</div><div class="mgl-splash" aria-hidden="true"></div>' +
-    '<div class="mgl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Ladefortschritt">' + segs + '</div>' +
-    '<div class="mgl-status" id="mgl-status">Lade Chunks …</div><p class="mgl-tip" id="mgl-tip"></p>' +
-    '<div class="mgl-err" id="mgl-err" hidden><p></p><button type="button" class="btn btn-primary" id="mgl-reload">Neu laden</button></div>' +
-    '<button type="button" class="mgl-skip" id="mgl-skip" aria-label="Lade-Bildschirm überspringen">tap to skip</button></div>';
+  root.innerHTML = '<div class="mgl-box"><img class="mgl-gif" src="' + gifSrc + '" width="640" height="360" alt="" decoding="async">' +
+    '<div class="mgl-splash" hidden></div><p class="mgl-tip" id="mgl-tip" hidden></p>' +
+    '<div class="mgl-err" id="mgl-err" hidden><p></p><button type="button" class="btn btn-primary" id="mgl-reload">Neu laden</button></div></div>' +
+    '<div class="mgl-xp"><div class="mgl-status" id="mgl-status">Loading</div>' +
+    '<div class="mgl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Ladefortschritt">' + segs + '</div></div>' +
+    '<button type="button" class="mgl-skip" id="mgl-skip" aria-label="Lade-Bildschirm überspringen">tap to skip</button>';
   var bar = root.querySelector('.mgl-bar'), segEls = bar.children, status = root.querySelector('#mgl-status'), tip = root.querySelector('#mgl-tip'), errBox = root.querySelector('#mgl-err');
-  root.querySelector('.mgl-splash').textContent = SPLASH[Math.floor(Math.random() * SPLASH.length)];
-  tip.textContent = 'Wusstest du? ' + TIPS[Math.floor(Math.random() * TIPS.length)];
   root.querySelector('#mgl-reload').addEventListener('click', function () { location.reload(); });
   document.body.setAttribute('aria-busy', 'true');
   root.classList.add('mgl-on');
@@ -41,7 +43,8 @@
     for (var k = 0; k < segEls.length; k++) { var on = k < n; if ((segEls[k].className === 'on') !== on) segEls[k].className = on ? 'on' : ''; }
     bar.setAttribute('aria-valuenow', String(Math.round(p * 100)));
   }
-  function label() { var pend = tasks.filter(function (t) { return !t.done; })[0]; status.textContent = pend ? 'Lade Chunks: ' + pend.label + ' …' : (shown >= 1 ? 'Fertig!' : 'Chunks werden geordnet …'); }
+  function label() { return; }
+  function labelOld() { var pend = tasks.filter(function (t) { return !t.done; })[0]; status.textContent = pend ? 'Lade Chunks: ' + pend.label + ' …' : (shown >= 1 ? 'Fertig!' : 'Chunks werden geordnet …'); }
   function tick() {
     raf = 0; if (finished) return;
     var el = Date.now() - started, target = Math.min(realP(), Math.min(1, el / minShow));

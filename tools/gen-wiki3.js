@@ -133,7 +133,6 @@ N(T, 3, 'Wie viele Truhen enthält ein Wüstentempel?', 4, 'Truhen', 'Die Truhen
 N(T, 3, 'Wie viele TNT-Blöcke liegen in der Falle unter einem Wüstentempel?', 9, 'Blöcke', 'Neun TNT-Blöcke hängen an der Druckplatte.', sS);
 N(T, 3, 'Wie viele Wellen hat ein Überfall (Raid) auf Normal?', 5, 'Wellen', 'Leicht 3, Normal 5, Schwer 7 Wellen.', sS);
 N(T, 3, 'Wie viele Wellen hat ein Überfall (Raid) auf Schwer?', 7, 'Wellen', 'Schwer hat 7 Wellen.', sS);
-N(T, 3, 'Wie viele Dorf-Varianten (Biom-Typen) gibt es in Java: Ebene, Wüste, Savanne, Taiga und …?', 5, 'Varianten', 'Dazu kommt das verschneite Dorf.', sS);
 E(T, 2, 'Welcher Mob bewacht die Antike Stadt?', '{m:warden}', 'Der Warden lebt tief in der Antiken Stadt.', sS);
 E(T, 2, 'Welcher Mob spawnt aus den Spawnern der Netherfestung?', '{m:blaze}', 'Die Lohe spawnt aus Spawnern in Netherfestungen.', sS);
 E(T, 2, 'Welcher Mob spawnt aus den Spawnern in Verlassenen Minenschächten?', '{m:cave_spider}', 'Dort stehen Höhlenspinnen-Spawner.', sS);
@@ -159,7 +158,7 @@ N(W, 2, 'Auf welcher Y-Höhe liegt der Boden (Grundgestein) der Oberwelt?', -64,
 N(W, 3, 'Bis zu welcher Y-Höhe kann man in der Oberwelt maximal bauen?', 319, '', 'Die höchste Bauhöhe ist Y=319.', sW);
 N(W, 2, 'Wie viele Blöcke hoch ist die Oberwelt insgesamt?', 384, 'Blöcke', 'Von Y=-64 bis Y=319 sind es 384 Blöcke.', sW);
 N(W, 1, 'Wie viele Blöcke Kantenlänge hat ein Chunk?', 16, 'Blöcke', 'Ein Chunk ist 16x16 Blöcke breit.', sW);
-N(W, 4, 'Auf welcher Y-Höhe liegt der Lavameer-Spiegel im Nether?', 31, '', 'Das Lavameer des Nethers liegt bei Y=31.', sW);
+N(W, 4, 'Auf welcher Y-Höhe liegt der Lavameer-Spiegel im Nether (ein Block genau reicht nicht, ±1 gilt)?', 32, '', 'Das Lavameer des Nethers liegt bei Y=32.', sW, { tolerance: 1 });
 N(W, 4, 'Auf welcher Y-Höhe ist das Kupfererz am häufigsten?', 48, '', 'Kupfer hat sein Maximum um Y=48.', sW);
 N(W, 4, 'Auf welcher Y-Höhe ist das Kohleerz am häufigsten?', 96, '', 'Kohle hat ein Maximum um Y=96.', sW);
 N(W, 4, 'Auf welcher Y-Höhe ist Lapislazuli am häufigsten?', 0, '', 'Lapis ist am häufigsten um Y=0.', sW);
@@ -194,7 +193,7 @@ N(D, 3, 'Wie viele Obsidiantürme stehen auf der Hauptinsel des Endes?', 10, 'T�
 N(D, 3, 'Wie viele Endkristalle braucht man, um den Enderdrachen wiederzubeleben?', 4, 'Kristalle', 'Vier Endkristalle um das Austrittsportal beschwören den Drachen.', sD);
 N(D, 3, 'Wie viele Endkristalle gibt es zu Beginn auf der Hauptinsel?', 10, 'Kristalle', 'Jeder Obsidianturm trägt einen Endkristall.', sD);
 N(D, 3, 'Wie viele Lebenspunkte hat der Enderdrache (ein Herz = 2)?', 200, 'Lebenspunkte', 'Der Enderdrache hat 200 Lebenspunkte, 100 Herzen.', sD);
-E(D, 2, 'Welche Flüssigkeit lässt sich im Nether nicht platzieren?', '{water_bucket}', 'Wasser verdunstet im Nether sofort.', sD, ['Wasser']);
+E(D, 2, 'Welche Flüssigkeit lässt sich im Nether nicht platzieren?', 'Wasser', 'Wasser verdunstet im Nether sofort.', sD, ['Wassereimer', 'Eimer Wasser']);
 E(D, 2, 'Welcher Mob feuert im Nether Feuerbälle und schwebt?', '{m:ghast}', 'Ghasts schweben und schießen Feuerbälle.', sD);
 E(D, 3, 'Welcher Mob läuft im Nether über Lava?', '{m:strider}', 'Schreiter laufen über Lava.', sD);
 E(D, 3, 'Welches Item lässt Nethergolderz fallen?', '{gold_nugget}', 'Nethergolderz lässt Goldklumpen fallen.', sD);
@@ -250,7 +249,7 @@ C(S, 2, 'Welcher Mob ist immun gegen Feuer: „{m:blaze}“ oder „{m:witch}“
 C(S, 2, 'Welcher Mob nimmt Schaden durch Wasser: „{m:enderman}“ oder „{m:skeleton}“?', '{m:enderman}', '{m:skeleton}', 'Endermen nehmen in Wasser Schaden.', sM);
 E(S, 2, 'Welcher Mob nimmt Blöcke auf und trägt sie weg?', '{m:enderman}', 'Der {m:enderman} kann Blöcke aufnehmen und versetzen.', sM);
 E(S, 2, 'Welcher Mob lässt sich mit Eisenbarren heilen?', '{m:iron_golem}', 'Der {m:iron_golem} wird mit Eisen repariert.', sM);
-E(S, 1, 'Welcher Block verhindert durch sein Licht, dass Monster in der Nähe spawnen?', '{torch}', 'Eine {torch} erhöht die Lichtstärke.', sM);
+E(S, 1, 'Welcher Block verhindert durch sein Licht, dass Monster in der Nähe spawnen?', '{torch}', 'Eine {torch} erhöht die Lichtstärke.', sM, ['Fackel', 'Seelenfackel', 'Laterne']);
 
 E(T, 3, 'Welcher Dorfbewohner verkauft Karten zu Strukturen?', '{j:cartographer}', 'Der {j:cartographer} handelt mit Erkundungskarten.', sS);
 E(T, 2, 'Welcher Dorfbewohner verkauft verzauberte Bücher?', '{j:librarian}', 'Der {j:librarian} bietet verzauberte Bücher an.', sS);
@@ -292,7 +291,7 @@ rows.forEach((r, i) => {
   const key = String(i) + '|' + norm(q);
   let o;
   if (r.f === 'n') o = { type: 'number', question: q, answer: r.a, unit: r.unit || '', tolerance: 0, ...(r.extra || {}), category: cat, funFact: fact };
-  else if (r.f === 'e') { const a = sub(r.a); o = { type: 'entity', question: q, answer: a, acceptedAnswers: [...new Set([a, ...(r.aliases || [])])], category: cat, funFact: fact }; }
+  else if (r.f === 'e') { const a = sub(r.a); const bedAl = r.a === '{white_bed}' ? Object.keys(de).filter(k => /^block\.minecraft\.[a-z_]+_bed$/.test(k)).map(k => de[k]) : []; o = { type: 'entity', question: q, answer: a, acceptedAnswers: [...new Set([a, ...(r.aliases || []), ...bedAl])], category: cat, funFact: fact }; }
   else { const a = sub(r.a), b = sub(r.b); o = { type: 'entity', question: q, answer: a, acceptedAnswers: [a], category: cat, funFact: fact, choices: hash(key) % 2 ? [a, b] : [b, a] }; }
   if (missing.length > m0 || /\?\?/.test(o.question + o.funFact + o.answer)) return;
   if (seen.has(norm(o.question))) return;

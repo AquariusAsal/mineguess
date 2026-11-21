@@ -1,7 +1,7 @@
 // MineGuess Service Worker — Offline Support
 // Version bei jedem Deploy erhöhen. HTML/JS/CSS/JSON: network-first (frische Deploys),
 // Bilder/Fonts: cache-first. Socket.io und Firebase werden nie abgefangen.
-const CACHE = 'mineguess-v191';
+const CACHE = 'mineguess-v196';
 // ASSETS_START (generiert von tools/gen-sw-assets.js)
 const ASSETS = [
   "/",
@@ -65,8 +65,6 @@ const ASSETS = [
   "/icon-512.png",
   "/icon-maskable-512.png",
   "/apple-touch-icon.png",
-  "/logo-64.png",
-  "/logo-128.png",
   "/brand-64.png",
   "/brand-128.png",
   "/brand-192.png",
@@ -130,6 +128,7 @@ self.addEventListener('fetch', e => {
     // cache-first, im Hintergrund auffrischen
     e.respondWith(
       caches.match(req).then(cached => {
+        if (cached && url.pathname.startsWith('/assets/brand/')) return cached;   // grosse Lade-GIFs nur aus dem Cache
         const net = fetch(req).then(res => {
           if (res && res.status === 200) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
           return res;

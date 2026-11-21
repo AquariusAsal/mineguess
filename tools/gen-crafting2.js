@@ -91,6 +91,7 @@ for (const r of srcRecipes) {
   if ((famCount[fam] || 0) >= FAM_CAP(fam)) { skip('Familien-Obergrenze ' + fam, r); continue; }
   famCount[fam] = (famCount[fam] || 0) + 1;
   let t = r.tier >= 3 ? 3 : r.tier === 2 ? 2 : 1;
+  if (/(deepslate|tuff|hyphae|stem|crimson|warped|pale_oak|mud_brick|resin|cut_copper|blackstone|prismarine|purpur|mangrove|cherry|bamboo|copper)/.test(r.result) && t < 2) t = 2;      // Obskures nie Tier 1
   const sl = filled.length; if (sl >= 7 && t < 3) t++; if (sl <= 1) t = 1;                  // Rating auch nach Zutaten-Anzahl (nicht nur nach Familie)
   const h = hash(r.result) % 8;
   const rating = t === 1 ? 700 + h * 50 : t === 2 ? 1300 + h * 100 : 2300 + h * 100;
@@ -99,7 +100,7 @@ for (const r of srcRecipes) {
     answer: d, acceptedAnswers: [...new Set([d, ...(e && norm(e) !== norm(d) ? [e] : [])])],
     category: 'Crafting', grid: cells, shapeless, resultCount: r.count || 1, resultKey: r.result,
     ...(solution ? { solution, buildable: true } : {}),
-    funFact: `${FAM_FACT[fam] || FAM_FACT.sonstige} Ein Rezept liefert ${r.count || 1} ${d}.`, source: r.family || 'Crafting-Rezept', gen: 'crafting2', rating, tier: t === 3 ? 3 : t,
+    funFact: `${fam === 'sonstige' ? `${d} entsteht im Handwerksraster aus ${filled.length} Zutat${filled.length === 1 ? '' : 'en'}.` : FAM_FACT[fam]} Ein Rezept liefert ${r.count || 1} ${d}.`, source: r.family || 'Crafting-Rezept', gen: 'crafting2', rating, tier: t === 3 ? 3 : t,
   };
   if (!MGAnswer.check(q, q.answer).correct) { skip('Antwort nicht erkannt', r); continue; }
   seenSig.set(sig, r.result); seenAns.add(norm(d));

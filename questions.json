@@ -39419,7 +39419,16 @@
     "answer": "Weißes Bett",
     "acceptedAnswers": [
       "Weißes Bett",
-      "White Bed"
+      "White Bed",
+      "braunes bett",
+      "graues bett",
+      "grünes bett",
+      "hellblaues bett",
+      "hellgraues bett",
+      "magenta bett",
+      "rosa bett",
+      "violettes bett",
+      "rotes bett"
     ],
     "category": "Crafting",
     "grid": [
@@ -40704,11 +40713,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Bambusmosaik.",
+    "funFact": "Bambusmosaik entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Bambusmosaik.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 1000,
-    "tier": 1
+    "rating": 1900,
+    "tier": 2
   },
   {
     "id": 4021,
@@ -40837,8 +40846,8 @@
     "funFact": "Druckplatten senden ein Redstone-Signal, solange etwas darauf steht. Ein Rezept liefert 1 Bambusdruckplatte.",
     "source": "Druckplatte",
     "gen": "crafting2",
-    "rating": 1000,
-    "tier": 1
+    "rating": 1900,
+    "tier": 2
   },
   {
     "id": 4023,
@@ -42108,11 +42117,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Gemeißelter Tiefenschiefer.",
+    "funFact": "Gemeißelter Tiefenschiefer entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Gemeißelter Tiefenschiefer.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 800,
-    "tier": 1
+    "rating": 1500,
+    "tier": 2
   },
   {
     "id": 4074,
@@ -42230,11 +42239,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Gemeißelter polierter Schwarzstein.",
+    "funFact": "Gemeißelter polierter Schwarzstein entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Gemeißelter polierter Schwarzstein.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 700,
-    "tier": 1
+    "rating": 1300,
+    "tier": 2
   },
   {
     "id": 4076,
@@ -42291,7 +42300,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Gemeißelter roter Sandstein.",
+    "funFact": "Gemeißelter roter Sandstein entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Gemeißelter roter Sandstein.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1000,
@@ -42352,11 +42361,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Gemeißelter Tuffstein.",
+    "funFact": "Gemeißelter Tuffstein entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Gemeißelter Tuffstein.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 700,
-    "tier": 1
+    "rating": 1300,
+    "tier": 2
   },
   {
     "id": 4078,
@@ -42416,8 +42425,8 @@
     "funFact": "Ziegel entstehen aus gebranntem Ton und ergeben Ziegelblöcke. Ein Rezept liefert 1 Gemeißelte Tuffsteinziegel.",
     "source": "Ziegel",
     "gen": "crafting2",
-    "rating": 850,
-    "tier": 1
+    "rating": 1600,
+    "tier": 2
   },
   {
     "id": 4082,
@@ -42613,8 +42622,8 @@
     "funFact": "Aus vier Stämmen entsteht Holz mit Rinde auf allen Seiten. Ein Rezept liefert 3 Karmesinhyphen.",
     "source": "Holz",
     "gen": "crafting2",
-    "rating": 800,
-    "tier": 1
+    "rating": 1500,
+    "tier": 2
   },
   {
     "id": 4089,
@@ -42674,8 +42683,8 @@
     "funFact": "Druckplatten senden ein Redstone-Signal, solange etwas darauf steht. Ein Rezept liefert 1 Karmesindruckplatte.",
     "source": "Druckplatte",
     "gen": "crafting2",
-    "rating": 850,
-    "tier": 1
+    "rating": 1600,
+    "tier": 2
   },
   {
     "id": 4093,
@@ -42805,7 +42814,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Geschnittener roter Sandstein.",
+    "funFact": "Geschnittener roter Sandstein entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Geschnittener roter Sandstein.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 850,
@@ -43399,11 +43408,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Tiefenschieferfliesen.",
+    "funFact": "Tiefenschieferfliesen entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Tiefenschieferfliesen.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 1000,
-    "tier": 1
+    "rating": 1900,
+    "tier": 2
   },
   {
     "id": 4131,
@@ -43599,8 +43608,8 @@
     "funFact": "Kupfer oxidiert mit der Zeit, Wachs hält den Zustand fest. Ein Rezept liefert 4 Angelaufener Kupferrost.",
     "source": "Kupfer",
     "gen": "crafting2",
-    "rating": 950,
-    "tier": 1
+    "rating": 1800,
+    "tier": 2
   },
   {
     "id": 4135,
@@ -43664,8 +43673,8 @@
     "funFact": "Kupfer oxidiert mit der Zeit, Wachs hält den Zustand fest. Ein Rezept liefert 4 Angelaufener geschnittener Kupferblock.",
     "source": "Kupfer",
     "gen": "crafting2",
-    "rating": 700,
-    "tier": 1
+    "rating": 1300,
+    "tier": 2
   },
   {
     "id": 4136,
@@ -43727,8 +43736,8 @@
     "funFact": "Platten sind halbe Blöcke, zwei übereinander ergeben einen vollen Block. Ein Rezept liefert 6 Angelaufene geschnittene Kupferstufe.",
     "source": "Stufe/Platte",
     "gen": "crafting2",
-    "rating": 750,
-    "tier": 1
+    "rating": 1400,
+    "tier": 2
   },
   {
     "id": 4137,
@@ -44599,7 +44608,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Leder.",
+    "funFact": "Leder entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 1 Leder.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1000,
@@ -45320,8 +45329,8 @@
     "funFact": "Druckplatten senden ein Redstone-Signal, solange etwas darauf steht. Ein Rezept liefert 1 Mangrovenholzdruckplatte.",
     "source": "Druckplatte",
     "gen": "crafting2",
-    "rating": 850,
-    "tier": 1
+    "rating": 1600,
+    "tier": 2
   },
   {
     "id": 4199,
@@ -45383,8 +45392,8 @@
     "funFact": "Platten sind halbe Blöcke, zwei übereinander ergeben einen vollen Block. Ein Rezept liefert 6 Mangrovenholzstufe.",
     "source": "Stufe/Platte",
     "gen": "crafting2",
-    "rating": 1050,
-    "tier": 1
+    "rating": 2000,
+    "tier": 2
   },
   {
     "id": 4206,
@@ -45873,8 +45882,8 @@
     "funFact": "Kupfer oxidiert mit der Zeit, Wachs hält den Zustand fest. Ein Rezept liefert 1 Oxidierter gemeißelter Kupferblock.",
     "source": "Kupfer",
     "gen": "crafting2",
-    "rating": 850,
-    "tier": 1
+    "rating": 1600,
+    "tier": 2
   },
   {
     "id": 4225,
@@ -46003,8 +46012,8 @@
     "funFact": "Platten sind halbe Blöcke, zwei übereinander ergeben einen vollen Block. Ein Rezept liefert 6 Oxidierte geschnittene Kupferstufe.",
     "source": "Stufe/Platte",
     "gen": "crafting2",
-    "rating": 850,
-    "tier": 1
+    "rating": 1600,
+    "tier": 2
   },
   {
     "id": 4230,
@@ -46167,8 +46176,8 @@
     "funFact": "Druckplatten senden ein Redstone-Signal, solange etwas darauf steht. Ein Rezept liefert 1 Blasseichenholzdruckplatte.",
     "source": "Druckplatte",
     "gen": "crafting2",
-    "rating": 700,
-    "tier": 1
+    "rating": 1300,
+    "tier": 2
   },
   {
     "id": 4237,
@@ -46441,7 +46450,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Polierter Basalt.",
+    "funFact": "Polierter Basalt entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Polierter Basalt.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1050,
@@ -46507,8 +46516,8 @@
     "funFact": "Platten sind halbe Blöcke, zwei übereinander ergeben einen vollen Block. Ein Rezept liefert 6 Polierte Schwarzsteinziegelstufe.",
     "source": "Stufe/Platte",
     "gen": "crafting2",
-    "rating": 950,
-    "tier": 1
+    "rating": 1800,
+    "tier": 2
   },
   {
     "id": 4254,
@@ -46572,8 +46581,8 @@
     "funFact": "Ziegel entstehen aus gebranntem Ton und ergeben Ziegelblöcke. Ein Rezept liefert 4 Polierte Schwarzsteinziegel.",
     "source": "Ziegel",
     "gen": "crafting2",
-    "rating": 950,
-    "tier": 1
+    "rating": 1800,
+    "tier": 2
   },
   {
     "id": 4261,
@@ -46703,7 +46712,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Polierter Diorit.",
+    "funFact": "Polierter Diorit entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Polierter Diorit.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 900,
@@ -46768,7 +46777,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Polierter Granit.",
+    "funFact": "Polierter Granit entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Polierter Granit.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 700,
@@ -46902,11 +46911,11 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 4 Polierter Tuffstein.",
+    "funFact": "Polierter Tuffstein entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 4 Polierter Tuffstein.",
     "source": "sonstige",
     "gen": "crafting2",
-    "rating": 750,
-    "tier": 1
+    "rating": 1400,
+    "tier": 2
   },
   {
     "id": 4275,
@@ -47261,7 +47270,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Rohgoldblock.",
+    "funFact": "Rohgoldblock entsteht im Handwerksraster aus 9 Zutaten. Ein Rezept liefert 1 Rohgoldblock.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 2500,
@@ -47467,7 +47476,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Roter Sandstein.",
+    "funFact": "Roter Sandstein entsteht im Handwerksraster aus 4 Zutaten. Ein Rezept liefert 1 Roter Sandstein.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 900,
@@ -47944,8 +47953,8 @@
     "funFact": "Aus vier Stämmen entsteht Holz mit Rinde auf allen Seiten. Ein Rezept liefert 3 Entrindetes Kirschholz.",
     "source": "Holz",
     "gen": "crafting2",
-    "rating": 800,
-    "tier": 1
+    "rating": 1500,
+    "tier": 2
   },
   {
     "id": 4335,
@@ -48074,8 +48083,8 @@
     "funFact": "Aus vier Stämmen entsteht Holz mit Rinde auf allen Seiten. Ein Rezept liefert 3 Entrindetes Mangrovenholz.",
     "source": "Holz",
     "gen": "crafting2",
-    "rating": 900,
-    "tier": 1
+    "rating": 1700,
+    "tier": 2
   },
   {
     "id": 4341,
@@ -48137,8 +48146,8 @@
     "funFact": "Platten sind halbe Blöcke, zwei übereinander ergeben einen vollen Block. Ein Rezept liefert 6 Tuffsteinziegelstufe.",
     "source": "Stufe/Platte",
     "gen": "crafting2",
-    "rating": 950,
-    "tier": 1
+    "rating": 1800,
+    "tier": 2
   },
   {
     "id": 4342,
@@ -49196,7 +49205,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Schlammige Mangrovenwurzeln.",
+    "funFact": "Schlammige Mangrovenwurzeln entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Schlammige Mangrovenwurzeln.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1900,
@@ -49265,7 +49274,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Bambusblock.",
+    "funFact": "Bambusblock entsteht im Handwerksraster aus 9 Zutaten. Ein Rezept liefert 1 Bambusblock.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 3000,
@@ -49313,7 +49322,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Redstone-Truhe.",
+    "funFact": "Redstone-Truhe entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Redstone-Truhe.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1800,
@@ -49631,7 +49640,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Orange Wolle.",
+    "funFact": "Orange Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Orange Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1400,
@@ -49679,7 +49688,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Magenta Wolle.",
+    "funFact": "Magenta Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Magenta Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1300,
@@ -49727,7 +49736,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Hellblaue Wolle.",
+    "funFact": "Hellblaue Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Hellblaue Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1700,
@@ -49775,7 +49784,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Gelbe Wolle.",
+    "funFact": "Gelbe Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Gelbe Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1600,
@@ -49823,7 +49832,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Hellgrüne Wolle.",
+    "funFact": "Hellgrüne Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Hellgrüne Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1700,
@@ -49871,7 +49880,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Rosa Wolle.",
+    "funFact": "Rosa Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Rosa Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 2000,
@@ -49919,7 +49928,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Graue Wolle.",
+    "funFact": "Graue Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Graue Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1900,
@@ -49967,7 +49976,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Hellgraue Wolle.",
+    "funFact": "Hellgraue Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Hellgraue Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1800,
@@ -50015,7 +50024,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Türkise Wolle.",
+    "funFact": "Türkise Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Türkise Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1900,
@@ -50063,7 +50072,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Violette Wolle.",
+    "funFact": "Violette Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Violette Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1800,
@@ -50111,7 +50120,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Blaue Wolle.",
+    "funFact": "Blaue Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Blaue Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 2000,
@@ -50159,7 +50168,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Braune Wolle.",
+    "funFact": "Braune Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Braune Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1800,
@@ -50207,7 +50216,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Grüne Wolle.",
+    "funFact": "Grüne Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Grüne Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1700,
@@ -50255,7 +50264,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Rote Wolle.",
+    "funFact": "Rote Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Rote Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1700,
@@ -50303,7 +50312,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 1 Schwarze Wolle.",
+    "funFact": "Schwarze Wolle entsteht im Handwerksraster aus 2 Zutaten. Ein Rezept liefert 1 Schwarze Wolle.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 1700,
@@ -50732,7 +50741,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 9 Roheisen.",
+    "funFact": "Roheisen entsteht im Handwerksraster aus 1 Zutat. Ein Rezept liefert 9 Roheisen.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 900,
@@ -50777,7 +50786,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 9 Rohgold.",
+    "funFact": "Rohgold entsteht im Handwerksraster aus 1 Zutat. Ein Rezept liefert 9 Rohgold.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 700,
@@ -50822,7 +50831,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 9 Weizen.",
+    "funFact": "Weizen entsteht im Handwerksraster aus 1 Zutat. Ein Rezept liefert 9 Weizen.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 700,
@@ -50867,7 +50876,7 @@
       ]
     },
     "buildable": true,
-    "funFact": "Ein Handwerksrezept aus dem Spiel. Ein Rezept liefert 9 Schleimball.",
+    "funFact": "Schleimball entsteht im Handwerksraster aus 1 Zutat. Ein Rezept liefert 9 Schleimball.",
     "source": "sonstige",
     "gen": "crafting2",
     "rating": 750,
@@ -98568,6 +98577,21 @@
     "acceptedAnswers": [
       "Weißes Bett",
       "Bett",
+      "Schwarzes Bett",
+      "Blaues Bett",
+      "Braunes Bett",
+      "Türkises Bett",
+      "Graues Bett",
+      "Grünes Bett",
+      "Hellblaues Bett",
+      "Hellgraues Bett",
+      "Hellgrünes Bett",
+      "Magenta Bett",
+      "Oranges Bett",
+      "Rosa Bett",
+      "Violettes Bett",
+      "Rotes Bett",
+      "Gelbes Bett",
       "white bed"
     ],
     "category": "Spielmechanik",
@@ -98662,8 +98686,7 @@
     "question": "Welches Item schützt den Spieler beim Fall vor Schaden, wenn man es kurz vor dem Aufprall platziert?",
     "answer": "Wassereimer",
     "acceptedAnswers": [
-      "Wassereimer",
-      "wasser"
+      "Wassereimer"
     ],
     "category": "Spielmechanik",
     "funFact": "Ein Wassereimer fängt den Fall ab.",
@@ -98887,20 +98910,6 @@
     "id": 30096
   },
   {
-    "type": "number",
-    "question": "Wie viele Dorf-Varianten (Biom-Typen) gibt es in Java: Ebene, Wüste, Savanne, Taiga und …?",
-    "answer": 5,
-    "unit": "Varianten",
-    "tolerance": 0,
-    "category": "Strukturen",
-    "funFact": "Dazu kommt das verschneite Dorf.",
-    "rating": 3000,
-    "tier": 3,
-    "gen": "w3_struktur",
-    "source": "Strukturen (Minecraft Wiki, Java 1.21.4)",
-    "id": 30097
-  },
-  {
     "type": "entity",
     "question": "Welcher Mob bewacht die Antike Stadt?",
     "answer": "Wärter",
@@ -99102,8 +99111,8 @@
     "category": "Strukturen",
     "funFact": "Elytren gibt es nur im Endschiff.",
     "choices": [
-      "Endschiff",
-      "Wüstenpyramide"
+      "Wüstenpyramide",
+      "Endschiff"
     ],
     "rating": 1300,
     "tier": 2,
@@ -99124,8 +99133,8 @@
     "category": "Strukturen",
     "funFact": "Das Waldanwesen liegt in der Oberwelt.",
     "choices": [
-      "Bastionsruine",
-      "Waldanwesen"
+      "Waldanwesen",
+      "Bastionsruine"
     ],
     "rating": 1600,
     "tier": 2,
@@ -99143,8 +99152,8 @@
     "category": "Strukturen",
     "funFact": "Der Warden lebt in Antiken Städten.",
     "choices": [
-      "Antiken Stadt",
-      "Festung"
+      "Festung",
+      "Antiken Stadt"
     ],
     "rating": 2300,
     "tier": 3,
@@ -99266,20 +99275,6 @@
     "gen": "w3_weltgene",
     "source": "Weltgenerierung (Minecraft Wiki, Java 1.21.4)",
     "id": 30120
-  },
-  {
-    "type": "number",
-    "question": "Auf welcher Y-Höhe liegt der Lavameer-Spiegel im Nether?",
-    "answer": 31,
-    "unit": "",
-    "tolerance": 0,
-    "category": "Weltgenerierung",
-    "funFact": "Das Lavameer des Nethers liegt bei Y=31.",
-    "rating": 3400,
-    "tier": 4,
-    "gen": "w3_weltgene",
-    "source": "Weltgenerierung (Minecraft Wiki, Java 1.21.4)",
-    "id": 30121
   },
   {
     "type": "number",
@@ -99678,8 +99673,8 @@
     "category": "Weltgenerierung",
     "funFact": "Im Nether gibt es Nethergolderz, aber kein Diamanterz.",
     "choices": [
-      "Diamanterz",
-      "Nethergolderz"
+      "Nethergolderz",
+      "Diamanterz"
     ],
     "rating": 1700,
     "tier": 2,
@@ -99760,10 +99755,11 @@
   {
     "type": "entity",
     "question": "Welche Flüssigkeit lässt sich im Nether nicht platzieren?",
-    "answer": "Wassereimer",
+    "answer": "Wasser",
     "acceptedAnswers": [
+      "Wasser",
       "Wassereimer",
-      "Wasser"
+      "Eimer Wasser"
     ],
     "category": "Dimensionen",
     "funFact": "Wasser verdunstet im Nether sofort.",
@@ -99940,8 +99936,8 @@
     "category": "Dimensionen",
     "funFact": "Betten explodieren in beiden Dimensionen.",
     "choices": [
-      "Nether und Ende",
-      "Nether"
+      "Nether",
+      "Nether und Ende"
     ],
     "rating": 1700,
     "tier": 2,
@@ -99960,8 +99956,8 @@
     "category": "Dimensionen",
     "funFact": "Im Nether verdunstet Wasser.",
     "choices": [
-      "Nether",
-      "Ende"
+      "Ende",
+      "Nether"
     ],
     "rating": 2000,
     "tier": 2,
@@ -99982,8 +99978,8 @@
     "category": "Dimensionen",
     "funFact": "Im Ende und im Nether gibt es keinen Tagesverlauf.",
     "choices": [
-      "Ende",
-      "Oberwelt"
+      "Oberwelt",
+      "Ende"
     ],
     "rating": 1500,
     "tier": 2,
@@ -100002,8 +99998,8 @@
     "category": "Dimensionen",
     "funFact": "Im Nether dreht sich der Kompass wild.",
     "choices": [
-      "Nether",
-      "Oberwelt"
+      "Oberwelt",
+      "Nether"
     ],
     "rating": 2300,
     "tier": 3,
@@ -100040,8 +100036,8 @@
     "category": "Dimensionen",
     "funFact": "Netherrack gibt es im Nether.",
     "choices": [
-      "Netherrack",
-      "Endstein"
+      "Endstein",
+      "Netherrack"
     ],
     "rating": 2800,
     "tier": 3,
@@ -100522,8 +100518,8 @@
     "category": "Spielmechanik",
     "funFact": "Der Zombie brennt bei Tageslicht, der Creeper nicht.",
     "choices": [
-      "Zombie",
-      "Creeper"
+      "Creeper",
+      "Zombie"
     ],
     "rating": 1000,
     "tier": 1,
@@ -100542,8 +100538,8 @@
     "category": "Spielmechanik",
     "funFact": "Die Lohe ist feuerfest.",
     "choices": [
-      "Hexe",
-      "Lohe"
+      "Lohe",
+      "Hexe"
     ],
     "rating": 1900,
     "tier": 2,
@@ -100562,8 +100558,8 @@
     "category": "Spielmechanik",
     "funFact": "Endermen nehmen in Wasser Schaden.",
     "choices": [
-      "Skelett",
-      "Enderman"
+      "Enderman",
+      "Skelett"
     ],
     "rating": 1600,
     "tier": 2,
@@ -100608,6 +100604,8 @@
     "answer": "Fackel",
     "acceptedAnswers": [
       "Fackel",
+      "Seelenfackel",
+      "Laterne",
       "torch"
     ],
     "category": "Spielmechanik",
@@ -100982,8 +100980,8 @@
     "category": "Dimensionen",
     "funFact": "Piglins leben im Nether.",
     "choices": [
-      "Nether",
-      "Ende"
+      "Ende",
+      "Nether"
     ],
     "rating": 750,
     "tier": 1,
@@ -101004,8 +101002,8 @@
     "category": "Dimensionen",
     "funFact": "Im Ende gibt es besonders viele Endermen.",
     "choices": [
-      "Nether",
-      "Ende"
+      "Ende",
+      "Nether"
     ],
     "rating": 950,
     "tier": 1,
@@ -101024,8 +101022,8 @@
     "category": "Dimensionen",
     "funFact": "Antike Städte liegen tief unter der Oberwelt.",
     "choices": [
-      "Nether",
-      "Oberwelt"
+      "Oberwelt",
+      "Nether"
     ],
     "rating": 1300,
     "tier": 2,
@@ -101046,8 +101044,8 @@
     "category": "Dimensionen",
     "funFact": "Der Enderdrache lebt im Ende.",
     "choices": [
-      "Ende",
-      "Nether"
+      "Nether",
+      "Ende"
     ],
     "rating": 1700,
     "tier": 2,
@@ -101066,14 +101064,28 @@
     "category": "Dimensionen",
     "funFact": "Ghasts leben im Nether.",
     "choices": [
-      "Nether",
-      "Oberwelt"
+      "Oberwelt",
+      "Nether"
     ],
     "rating": 1600,
     "tier": 2,
     "gen": "w3_dimensio",
     "source": "Dimensionen (Minecraft Wiki, Java 1.21.4)",
     "id": 30233
+  },
+  {
+    "type": "number",
+    "question": "Auf welcher Y-Höhe liegt der Lavameer-Spiegel im Nether (ein Block genau reicht nicht, ±1 gilt)?",
+    "answer": 32,
+    "unit": "",
+    "tolerance": 1,
+    "category": "Weltgenerierung",
+    "funFact": "Das Lavameer des Nethers liegt bei Y=32.",
+    "rating": 3500,
+    "tier": 4,
+    "gen": "w3_weltgene",
+    "source": "Weltgenerierung (Minecraft Wiki, Java 1.21.4)",
+    "id": 30234
   },
   {
     "id": 3001,
