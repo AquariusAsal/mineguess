@@ -66,8 +66,11 @@ a { color:var(--green); }
   font-family:var(--font-px); font-weight:700; font-size:1.05rem; min-height:44px; }
 .mg-logo img { width:30px; height:30px; object-fit:contain; border-radius:7px; margin-right:10px; }
 .mg-logo span { color:var(--green); }
-.mg-logo img.mg-banner, img.mg-banner { width:auto; height:38px; margin:0; border-radius:7px; display:block; flex-shrink:0; }
-header h1 img.mg-banner { width:auto !important; height:38px !important; border-radius:7px; }
+.mg-logo img.mg-banner, img.mg-banner { width:auto; height:40px; margin:0; border-radius:0; background:none; display:block; flex-shrink:0; }
+header h1 img.mg-banner { width:auto !important; height:40px !important; border-radius:0; }
+img.mg-banner.mgb-light, header h1 img.mg-banner.mgb-light { display:none !important; }
+[data-theme="light"] img.mg-banner.mgb-dark, [data-theme="light"] header h1 img.mg-banner.mgb-dark { display:none !important; }
+[data-theme="light"] img.mg-banner.mgb-light, [data-theme="light"] header h1 img.mg-banner.mgb-light { display:block !important; }
 @media (max-width:640px) { .mg-logo img.mg-banner, img.mg-banner { height:30px; } header h1 img.mg-banner { height:30px !important; } }
 .mgl-light .mgl-skip { color:#10192e; text-shadow:none; opacity:1; animation:none; }
 .mg-nav-links { display:flex; align-items:center; gap:4px; flex-wrap:wrap; justify-content:flex-end; }

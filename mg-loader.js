@@ -16,7 +16,7 @@
   function ls(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   var reduced = (global.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || ls('mg_reduce_motion') === '1';
   var firstTime = !ss('mg_loader_seen');
-  var minShow = (reduced || ls('mg_loader_short') === '1') ? 600 : (firstTime ? 2200 : 800);
+  var minShow = (reduced || ls('mg_loader_short') === '1') ? 600 : (firstTime ? 3000 : 1500);
   ss('mg_loader_seen', '1');
   var tasks = [], doneCount = 0, finished = false, failed = false, started = Date.now(), timer = 0, shown = 0, raf = 0, skipped = false, allDoneAt = 0;
 
@@ -31,6 +31,7 @@
     '<div class="mgl-xp"><div class="mgl-status" id="mgl-status">Loading</div>' +
     '<div class="mgl-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Ladefortschritt">' + segs + '</div></div>' +
     '<button type="button" class="mgl-skip" id="mgl-skip" aria-label="Lade-Bildschirm überspringen">tap to skip</button>';
+  var gifEl = root.querySelector('.mgl-gif'); if (gifEl && !still) gifEl.addEventListener('load', function () { if (!finished) started = Date.now(); });   // ein GIF-Durchlauf (3 s) ab dem Laden des GIFs
   var bar = root.querySelector('.mgl-bar'), segEls = bar.children, status = root.querySelector('#mgl-status'), tip = root.querySelector('#mgl-tip'), errBox = root.querySelector('#mgl-err');
   root.querySelector('#mgl-reload').addEventListener('click', function () { location.reload(); });
   document.body.setAttribute('aria-busy', 'true');
