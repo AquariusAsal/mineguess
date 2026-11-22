@@ -84,8 +84,8 @@
     var path = resultIcon(q), n = q.resultCount > 1 ? q.resultCount : 0;
     out.innerHTML = img(path, 64, 'craft-big', q.answer) + (n ? '<span class="craft-count">' + n + '</span>' : '');
     out.classList.add('pop');
-    out.setAttribute('aria-label', 'Ergebnis: ' + (n ? n + ' mal ' : '') + (q.answer || ''));
-    if (name) name.textContent = (n ? n + 'x ' : '') + (q.answer || '');
+    out.setAttribute('aria-label', 'Ergebnis: ' + (n ? n + ' mal ' : '') + ((global.MGQ && MGQ.ans(q)) || q.answer || ''));
+    if (name) name.textContent = (n ? n + 'x ' : '') + ((global.MGQ && MGQ.ans(q)) || q.answer || '');
     host.classList.add('revealed');
   }
   function clear(host) { if (host) { host.innerHTML = ''; host.classList.remove('revealed'); host.className = host.className.replace(/\bcraft-host\b/, '').trim(); } }

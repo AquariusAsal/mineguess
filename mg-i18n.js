@@ -26,7 +26,7 @@
   if (lang !== 'en') return;
 
   var dict = null, exact = {}, tmpl = [];
-  var SKIP = /^(SCRIPT|STYLE|TEXTAREA|CODE|PRE|NOSCRIPT|OPTION)$/;
+  var SKIP = /^(SCRIPT|STYLE|TEXTAREA|CODE|PRE|NOSCRIPT)$/;
   var ATTRS = ['aria-label', 'title', 'placeholder', 'alt'];
   var NUM = /\d+(?:[.,]\d+)*/g;
 
@@ -98,6 +98,7 @@
   });
   function start() { obs.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTRS }); }
   start();
+  api.flush = function () { walk(document.documentElement); };   // Pruefung/Debug: sofort alles uebersetzen
   api.t = function (s) { var o = tr(s); return o == null ? s : o; };
   fetch('i18n-en.json').then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (d) {
     build(d); walk(document.documentElement); document.addEventListener('DOMContentLoaded', function () { walk(document.documentElement); });

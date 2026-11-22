@@ -175,15 +175,17 @@
       row = document.createElement('div'); row.id = 'mp2-buildrow'; row.className = 'hs-row';
       row.innerHTML = '<span class="form-label" id="mp2-bl">Bau-Runden (alle bauen gleichzeitig)</span><div class="toggle-row" role="group" aria-labelledby="mp2-bl" data-g="build"><button type="button" class="toggle-opt" data-v="off">Aus</button><button type="button" class="toggle-opt" data-v="mix">Gemischt</button><button type="button" class="toggle-opt" data-v="only">Nur bauen</button></div>' +
         '<span class="form-label" id="mp2-tl">Wahr oder Mythos</span><div class="toggle-row" role="group" aria-labelledby="mp2-tl" data-g="tf"><button type="button" class="toggle-opt" data-v="off">Aus</button><button type="button" class="toggle-opt" data-v="mix">Gemischt</button><button type="button" class="toggle-opt" data-v="only">Nur Wahr/Mythos</button></div>' +
-        '<span class="form-label" id="mp2-bt">Bauzeit</span><div class="toggle-row" role="group" aria-labelledby="mp2-bt" data-g="buildSeconds"><button type="button" class="toggle-opt" data-v="45">45 s</button><button type="button" class="toggle-opt" data-v="60">60 s</button></div>';
+        '<span class="form-label" id="mp2-bt">Bauzeit</span><div class="toggle-row" role="group" aria-labelledby="mp2-bt" data-g="buildSeconds"><button type="button" class="toggle-opt" data-v="45">45 s</button><button type="button" class="toggle-opt" data-v="60">60 s</button></div>' +
+        '<span class="form-label" id="mp2-el">Emotes</span><div class="toggle-row" role="group" aria-labelledby="mp2-el" data-g="emotes"><button type="button" class="toggle-opt" data-v="on">An</button><button type="button" class="toggle-opt" data-v="off">Aus</button></div>' +
+        '<span class="form-label" id="mp2-fl">Ich-Ansicht</span><div class="toggle-row" role="group" aria-labelledby="mp2-fl" data-g="fpv"><button type="button" class="toggle-opt" data-v="off">Aus</button><button type="button" class="toggle-opt" data-v="allowed">Erlaubt</button><button type="button" class="toggle-opt" data-v="all">Für alle</button></div>';
       hs.appendChild(row);
       row.addEventListener('click', function (e) {
-        var b = e.target.closest('.toggle-opt'); if (!b) return; var g = b.parentNode.getAttribute('data-g'), v = b.getAttribute('data-v'), o = {}; o[g] = (g === 'build' || g === 'tf') ? v : parseInt(v, 10);
+        var b = e.target.closest('.toggle-opt'); if (!b) return; var g = b.parentNode.getAttribute('data-g'), v = b.getAttribute('data-v'), o = {}; o[g] = (g === 'build' || g === 'tf' || g === 'emotes' || g === 'fpv') ? v : parseInt(v, 10);
         socket.emit('update_settings', o);
       });
     }
     var s = S.settings || {};
-    [].forEach.call(row.querySelectorAll('.toggle-opt'), function (b) { var g = b.parentNode.getAttribute('data-g'), on = String(s[g] == null ? (g === 'build' ? 'off' : (g === 'tf' ? 'mix' : '60')) : s[g]) === b.getAttribute('data-v'); b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    [].forEach.call(row.querySelectorAll('.toggle-opt'), function (b) { var g = b.parentNode.getAttribute('data-g'), on = String(s[g] == null ? (g === 'build' ? 'off' : (g === 'tf' ? 'mix' : (g === 'emotes' ? 'on' : (g === 'fpv' ? 'off' : '60')))) : s[g]) === b.getAttribute('data-v'); b.classList.toggle('selected', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
   }
 
   // ── Bau-Runde: Spiel ──

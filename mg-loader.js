@@ -91,7 +91,7 @@
     }), true);
   } else {
     add('Fragen', fetch('questions.json').then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); }).then(function (qs) {
-      try { var f = qs.filter(function (q) { return q.funFact && q.funFact.length > 30 && q.funFact.length < 150 && !/https?:/.test(q.funFact); }); if (f.length) tip.textContent = 'Wusstest du? ' + f[Math.floor(Math.random() * f.length)].funFact; } catch (e) {}
+            /* Tipp-Element ist ausgeblendet; keine deutschen Fun Facts mehr noetig */
     }));
   }
   if (global.MGQ && MGQ.en) add('Englisch', MGQ.ready, true);   // englische Fragen vor dem Start abwarten (weich: bei Fehler Deutsch)

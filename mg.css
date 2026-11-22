@@ -895,3 +895,96 @@ img.mg-banner, .mg-logo img.mg-banner, header h1 img.mg-banner { max-width:none;
 #nav-gear, #settings-slot { display:flex; flex-wrap:nowrap; align-items:center; gap:6px; }
 .mg-lang + .mg-gear { margin-left:0; }
 @media (max-width:400px) { .mg-nav { gap:6px; padding-left:10px; padding-right:10px; } .mg-chip.mg-lang { min-width:40px; padding:4px 4px; } #nav-gear, #settings-slot { gap:4px; } .mg-nav .mg-nav-links { gap:2px; } }
+
+/* Emote-Rad (mg-emote.js) */
+.mge { position:fixed; inset:0; z-index:1800; display:grid; place-items:center; background:rgba(0,0,0,.55); }
+.mge[hidden] { display:none; }
+.mge-ring { position:relative; width:min(86vw,320px); height:min(86vw,320px); }
+.mge-seg { position:absolute; left:50%; top:50%; width:74px; height:74px; margin:-37px 0 0 -37px; transform:translate(var(--x),var(--y)); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:4px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:50%; font:600 .62rem/1.1 var(--font); cursor:pointer; text-align:center; }
+.mge-seg:hover, .mge-seg:focus-visible { background:var(--bg2); border-color:var(--green); outline:3px solid var(--blue); outline-offset:2px; }
+.mge-lbl { display:block; max-width:64px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mge-mid { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:center; gap:8px; color:var(--text); }
+.mge-pg { display:grid; text-align:center; min-width:64px; font:700 .8rem var(--font-px); }
+.mge-pg span { font:600 .62rem var(--font); color:var(--muted); max-width:90px; }
+.mge-nav { width:44px; height:44px; border-radius:50%; background:var(--bg1); color:var(--text); border:2px solid var(--border2); font:700 1.4rem/1 var(--font); cursor:pointer; }
+.mge-x { position:absolute; top:12px; right:12px; width:44px; height:44px; border-radius:50%; background:var(--bg1); color:var(--text); border:2px solid var(--border2); font:700 1.4rem/1 var(--font); cursor:pointer; }
+.mge-fab { position:fixed; right:14px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:1700; width:52px; height:52px; border-radius:50%; background:var(--bg1); color:var(--text); border:2px solid var(--border2); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 3px 12px rgba(0,0,0,.4); padding:0; }
+.mge-fab[hidden] { display:none; }
+.mge-fab-t { font:700 .5rem var(--font); }
+.mge-toast { position:fixed; left:50%; bottom:80px; transform:translateX(-50%); z-index:2100; max-width:min(92vw,360px); padding:8px 14px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font-size:.85rem; }
+.mge-toast[hidden] { display:none; }
+.mg-bubble .mge-ico { display:block; width:26px; height:26px; }
+@media (max-width:380px) { .mge-seg { width:68px; height:68px; margin:-34px 0 0 -34px; } .mge-ring { width:min(92vw,300px); height:min(92vw,300px); } }
+.emo-mute { min-width:36px; min-height:36px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+.emo-mute.on { opacity:.55; border-style:dashed; }
+
+/* Ich-Ansicht (mg-fpv.js) */
+.fpv-btn { position:fixed; left:6px; top:46%; z-index:1700; min-width:48px; min-height:48px; padding:6px 10px; display:inline-flex; align-items:center; gap:6px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font:700 .8rem var(--font); cursor:pointer; box-shadow:0 3px 12px rgba(0,0,0,.4); }
+.fpv-btn[hidden] { display:none; }
+.fpv-btn span { display:inline; }
+@media (max-width:560px) { .fpv-btn span { display:none; } }
+.fpv-toast { position:fixed; left:50%; top:16px; transform:translateX(-50%); z-index:2200; max-width:min(92vw,380px); padding:8px 14px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font-size:.9rem; }
+.fpv-toast[hidden] { display:none; }
+
+/* Ich-Ansicht im Multiplayer */
+.fpv-offer { position:fixed; inset:0; z-index:2300; display:grid; place-items:center; background:rgba(0,0,0,.6); }
+.fpv-offer-box { background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); padding:18px; max-width:min(92vw,380px); text-align:center; }
+.fpv-offer-row { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
+.fpv-offer-row .btn { min-height:48px; }
+
+/* Ich-Ansicht Solo: Feinschliff (Ergebnis kompakt, HUD, Melden-Knopf, kleine Bildschirme) */
+.fpv-hand-anchor { position:fixed; pointer-events:none; visibility:hidden; z-index:-1; }
+
+/* Ich-Ansicht: Wahr/Mythos- und Optionsbuttons ohne Wortbruch, Tastenchip/Symbol raus */
+.fpv-tag { display:inline-flex; align-items:center; margin-left:6px; color:var(--green); vertical-align:middle; }
+
+/* ===== Ich-Ansicht: EIN gemeinsames Layout fuer Solo und Multiplayer (Klassen setzt mg-fpv.js: fpv-scene, fpv-map, fpv-timer, fpv-att, fpv-side, fpv-sidel, fpv-hist) ===== */
+body.fpv-on { overflow:hidden; }
+body.fpv-on .mg-footer, body.fpv-on footer, body.fpv-on .mg-bubble, body.fpv-on #game-wrapper > header, body.fpv-on header.mg-nav, body.fpv-on .session-score, body.fpv-on .live-scores, body.fpv-on .q-head, body.fpv-on #comp-streak-badge, body.fpv-on #report-btn { display:none !important; }
+body.fpv-on .fpv-scene { position:fixed; inset:0; width:100vw; height:100vh; height:100dvh; max-width:none !important; max-height:none !important; min-height:0 !important; margin:0; z-index:0; touch-action:none; cursor:grab; border:0; border-radius:0; aspect-ratio:auto; background:#6aa3e8; }
+body.fpv-on .fpv-map { position:fixed !important; left:0; right:0; bottom:78px; margin:0 auto !important; width:clamp(260px,34vw,420px); max-width:94vw; padding:8px 10px; max-height:40vh; overflow:hidden; z-index:30; display:flex; flex-direction:column; gap:6px; background:#e6d5a8; border:5px solid #8a6a32; border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.55), inset 0 0 0 2px #b89850; --text:#1b1206; --muted:#4a3a1c; --bg:#f3e8c4; --bg1:#f3e8c4; --bg2:#e6d5a8; --bg3:#d9c58f; --border:#8a6a32; --border2:#6b4f22; color:#1b1206; scrollbar-width:none; }
+body.fpv-on .fpv-map::-webkit-scrollbar { display:none; }
+@media (max-width:700px) { body.fpv-on .fpv-map { width:70vw; bottom:70px; } }
+body.fpv-on .fpv-map:has(#result-panel.show), body.fpv-on #result-panel.fpv-map { max-height:46vh; overflow:auto; }
+body.fpv-on .fpv-map > div:not([id]):not([class]) { display:none !important; }
+body.fpv-on .fpv-map #question-text { background:transparent; color:#1b1206; border:2px solid #8a6a32; height:auto; min-height:0; max-height:13vh; overflow:hidden; opacity:1 !important; padding:6px 8px; line-height:1.25; margin:0; font-size:.95rem; transform:perspective(700px) rotateX(5deg) !important; transform-origin:50% 100%; }
+body.fpv-on .fpv-map #input-area { transform:perspective(700px) rotateX(5deg); transform-origin:50% 0; }
+/* Buttons auf dem Pergament: hell mit dunklem Text (Kontrast >= 7:1), nie schwarz */
+body.fpv-on .fpv-map .choice-btn, body.fpv-on .fpv-map .entity-opt, body.fpv-on .fpv-map .toggle-opt { background:#f6edcf; color:#1b1206; border:2px solid #6b4f22; border-radius:6px; min-height:38px; padding:4px 8px; font-size:.82rem; font-weight:700; text-shadow:none; }
+body.fpv-on .fpv-map .choice-btn:hover, body.fpv-on .fpv-map .entity-opt:hover { background:#fff7dc; }
+body.fpv-on .fpv-map input, body.fpv-on .fpv-map .form-input { background:#fffbe9; color:#1b1206; border:2px solid #6b4f22; min-height:38px; padding:4px 8px; font-size:.9rem; }
+body.fpv-on .fpv-map input::placeholder { color:#5a4825; opacity:1; }
+body.fpv-on .fpv-map .btn-ok, body.fpv-on .fpv-map #btn-submit-guess, body.fpv-on .fpv-map .btn-submit { min-height:38px; padding:4px 10px; font-size:.85rem; }
+body.fpv-on .fpv-map .choice-btn { gap:6px; flex-wrap:nowrap; }
+body.fpv-on .fpv-map .choice-btn kbd, body.fpv-on .fpv-map .choice-btn .tf-sym { display:none; }
+body.fpv-on .fpv-map .choice-btn .choice-name, body.fpv-on .fpv-map .entity-opt { white-space:normal; word-break:keep-all; overflow-wrap:normal; hyphens:none; line-height:1.15; }
+body.fpv-on .fpv-map .choice-btn.tf-btn .choice-name { white-space:nowrap; }
+body.fpv-on .fpv-map .choice-btn img, body.fpv-on .fpv-map .entity-opt img { width:22px; height:22px; flex:0 0 auto; }
+body.fpv-on .fpv-map .entity-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:none; }
+body.fpv-on .fpv-map .entity-opt { display:inline-flex; align-items:center; gap:6px; text-align:left; justify-content:flex-start; }
+body.fpv-on .fpv-map .num-row { display:flex; gap:6px; margin:0 !important; }
+body.fpv-on .fpv-map .num-row input { flex:1; min-width:0; }
+body.fpv-on .fpv-map .buzz-status { font-size:.78rem; line-height:1.2; padding:5px 8px; margin:2px 0; font-weight:700; background:#f6edcf; color:#1b1206; border-color:#6b4f22; white-space:normal; }
+body.fpv-on .fpv-map .buzzer-btn { min-height:48px; height:48px; font-size:1.05rem; }
+body.fpv-on .fpv-map .buzzer-hint, body.fpv-on .fpv-map .keyboard-hint, body.fpv-on .fpv-map #totem-row { display:none; }
+body.fpv-on .fpv-map #buzzer-area { margin:2px 0; }
+body.fpv-on .fpv-map #feedback-box:empty { display:none; }
+/* Ergebnis kompakt */
+body.fpv-on .fpv-map:has(#result-panel.show) #question-text, body.fpv-on .fpv-map:has(#result-panel.show) #input-area { display:none; }
+body.fpv-on .fpv-map .result-title { font-size:.95rem; margin:0 0 2px; }
+body.fpv-on .fpv-map .pts-earned { font-size:1rem; margin:0; }
+body.fpv-on .fpv-map .funfact-label { display:none; }
+body.fpv-on .fpv-map .funfact-box { margin:4px 0; padding:6px 8px; font-size:.78rem; }
+body.fpv-on .fpv-map .result-panel .btn, body.fpv-on .fpv-map #result-panel button { min-height:34px; padding:3px 8px; font-size:.78rem; }
+/* HUD: Timer links oben, Versuche darunter, Hinweise/Joker rechts, Verlauf links */
+body.fpv-on .fpv-timer { position:fixed !important; top:12px; left:12px; transform:none; z-index:40; margin:0; width:auto; max-width:min(60vw,360px); padding:4px 8px; background:rgba(0,0,0,.6); color:#f4efe0; border-radius:8px; --text:#f4efe0; --muted:#d8cfb8; }
+body.fpv-on .fpv-att { position:fixed !important; left:12px; transform:none; z-index:40; margin:0; }
+body.fpv-on #attempts-bar.fpv-att { top:72px; width:110px; }
+body.fpv-on .attempt-label.fpv-att { top:86px; background:rgba(0,0,0,.6); color:#fff; }
+body.fpv-on .fpv-side { position:fixed !important; right:8px !important; top:96px !important; z-index:40; width:min(210px,38vw); max-height:44vh; overflow:auto; scrollbar-width:none; padding:8px; background:rgba(0,0,0,.6); border-radius:8px; --text:#f4efe0; --muted:#d8cfb8; --bg1:rgba(255,255,255,.12); --bg2:rgba(255,255,255,.18); --border:rgba(255,255,255,.35); color:#f4efe0; font-size:.78rem; flex-direction:column; }
+body.fpv-on .fpv-sidel { position:fixed !important; left:8px; top:118px; z-index:40; max-width:min(260px,44vw); }
+body.fpv-on .fpv-hist { position:fixed !important; z-index:40; left:8px; top:118px; width:min(200px,36vw); max-height:22vh; overflow:auto; scrollbar-width:none; padding:8px; background:rgba(0,0,0,.6); border-radius:8px; --text:#f4efe0; color:#f4efe0; font-size:.78rem; }
+body.fpv-on .fpv-hist:empty { display:none; }
+@media (max-width:700px) { body.fpv-on .fpv-side { top:12px !important; width:128px; font-size:.7rem; } body.fpv-on .fpv-hist { display:none; } body.fpv-on .fpv-sidel { top:96px; } }
+@media (prefers-reduced-motion: reduce) { body.fpv-on .fpv-map #question-text, body.fpv-on .fpv-map #input-area { transform:none !important; } }
+body.fpv-on #result-panel.fpv-map:not(.show) { display:none !important; }

@@ -128,6 +128,7 @@
   }
   function apply(img) {
     var label = img.getAttribute('data-iso-label'); if (!label || img.__isoDone === label) return;
+    var sz = parseInt(img.getAttribute('width') || img.width || 0, 10); if (sz && sz < 32) return;   // winzige Chips (Hand, Verlauf, Suche) bleiben flach
     img.__isoDone = label;
     url(label).then(function (u) { if (u && img.getAttribute('data-iso-label') === label) { img.src = u; img.style.imageRendering = 'pixelated'; } });
   }

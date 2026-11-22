@@ -69,3 +69,18 @@ test('EN: Ranked und Multiplayer liefern englischen Anzeigetext, nehmen englisch
     assert.strictEqual(r.body.en.answer, EN[hit.q.id].answer);
   } finally { S.stop(); }
 });
+
+test('EN: alle Crafting-Raetsel tragen den offiziellen englischen Ergebnisnamen (Bau-Titel, Overlay, Rundenuebersicht) und answers.en.json kennt ihn', () => {
+  const enPath = path.join(__dirname, '..', '..', 'mineguess-cache', 'en_us.json');
+  if (!fs.existsSync(enPath)) return;           // Cache (minecraft-data) liegt ausserhalb des Repos
+  const en = JSON.parse(fs.readFileSync(enPath, 'utf8'));
+  const ae = require('../assets/mc/answers.en.json');
+  const craft = qs.filter(q => q.type === 'crafting'); assert.ok(craft.length >= 430);
+  for (const q of craft) {
+    const name = en['item.minecraft.' + q.resultKey] || en['block.minecraft.' + q.resultKey];
+    assert.ok(EN[q.id] && EN[q.id].answer === name, 'Crafting-EN ' + q.id + ' ' + q.resultKey);
+    assert.ok(EN[q.id].acceptedAnswers.includes(name));
+    assert.strictEqual(ae.toEn[q.answer], name, 'answers.en.json ' + q.answer);
+    assert.ok(MGAnswer.check(Object.assign({}, q, { en: EN[q.id] }), name).correct);
+  }
+});

@@ -280,7 +280,7 @@ console.log('questions.en.json geschrieben,', (fs.statSync(path.join(root, 'ques
 {
   const ans = JSON.parse(fs.readFileSync(path.join(root, 'assets', 'mc', 'answers.json'), 'utf8'));
   const fromQ = new Map();      // deutsche Antwort -> englische Antwort (aus den Fragen)
-  qs.forEach(q => { const e = result[q.id]; if (e && e.answer && q.type !== 'number' && typeof q.answer === 'string' && !fromQ.has(q.answer)) fromQ.set(q.answer, e.answer); });
+  qs.slice().sort((x, y) => (y.type === 'crafting') - (x.type === 'crafting')).forEach(q => { const e = result[q.id]; if (e && e.answer && q.type !== 'number' && typeof q.answer === 'string' && !fromQ.has(q.answer)) fromQ.set(q.answer, e.answer); });
   const STATIC = { Oberwelt: 'Overworld', Ende: 'The End', Nether: 'Nether', Ja: 'Yes', Nein: 'No', Positiv: 'Positive', Negativ: 'Negative', Wahr: 'True', Mythos: 'Myth', Spitzhacke: 'Pickaxe', Axt: 'Axe', Schaufel: 'Shovel', Hacke: 'Hoe' };
   const toEn = {}, aliases = {};
   let unmapped = 0;

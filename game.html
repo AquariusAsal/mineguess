@@ -1284,6 +1284,9 @@ header h1 { flex-shrink:0; }
   <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
   <script src="mg-png.js"></script>
   <script src="mg-skin.js"></script>
+<script src="mg-emote.js"></script>
+<script src="fpv-rules.js"></script>
+<script src="mg-fpv.js"></script>
 <script src="mg-scene.js"></script>
   <script src="mg-craft.js"></script>
   <script src="craft-check.js"></script>
@@ -2150,7 +2153,7 @@ function buildInput() {
   }
   if (_buildActive) {
     const ch = document.getElementById('craft-host');
-    document.getElementById('question-text').textContent = 'Baue dieses Rezept: ' + question.answer;
+    document.getElementById('question-text').textContent = 'Baue dieses Rezept: ' + MGQ.ans(question);
     window._build = MGCraftBuild.mount(ch, question, { onCheck: submitBuild, onHint: () => useHint() });
     if (window.MGHand) MGHand.show(ch.querySelector('.craft-panel'));
     // Raster (und Ergebnis) vollstaendig ins Bild holen, falls es unter dem Falz liegt
@@ -4077,6 +4080,8 @@ if ('serviceWorker' in navigator) {
 // ── Solo-Reporter-Szene (dekorativ, aria-hidden): Spieler links, Reporter gegenüber, keine Glocke ──
 (function () {
   var scene = null, repChar = null;
+  window.__getSoloScene = function () { return scene; };
+  if (window.MGFpv) MGFpv.init({ getScene: function () { return scene; }, id: 'player' });   // Ich-Ansicht (Taste V)
   function pickReporter() {
     var pc = (window.MGSkin && MGSkin.getCharacter()) || 'steve', hasSkin = !!(window.MGSkin && MGSkin.get());
     var c = Math.random() < 0.5 ? 'steve' : 'alex';
@@ -4095,6 +4100,7 @@ if ('serviceWorker' in navigator) {
     if (!host || !window.MGScene) return null;
     repChar = pickReporter();
     try { scene = MGScene.create(host, { solo: true }); scene.setPlayers(players()); } catch (e) { scene = null; }
+    if (scene && window.MGEmote) MGEmote.init({ getScene: () => scene, selfId: () => 'player', solo: true });   // Emote-Rad (Taste B): nur die eigene Figur
     window.addEventListener('mg-skin-change', function () { if (scene) scene.setPlayers(players()); });
     return scene;
   }

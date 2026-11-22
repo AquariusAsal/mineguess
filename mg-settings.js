@@ -73,6 +73,10 @@
         '<div class="mg-set-row"><label for="mg-set-sound">Ton</label><input type="checkbox" id="mg-set-sound" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-vol">Lautstärke Effekte</label><input type="range" id="mg-set-vol" min="0" max="100" step="5"></div>' +
         '<div class="mg-set-row"><span>Musik</span><button type="button" class="btn" id="mg-set-music">Spotify öffnen</button></div>' +
+        '<div class="mg-set-row"><label for="mg-set-view">Ansicht</label><select id="mg-set-view" class="form-input" style="max-width:150px"><option value="normal">Normal</option><option value="fpv">Ich-Ansicht</option></select></div>' +
+        '<div class="mg-set-row"><label for="mg-set-gfx">Ich-Ansicht Grafik</label><select id="mg-set-gfx" class="form-input" style="max-width:150px"><option value="auto">Automatisch</option><option value="high">Hoch</option><option value="mid">Mittel</option><option value="low">Niedrig</option></select></div>' +
+        '<div class="mg-set-row"><label for="mg-set-lock">Maus fangen (Ich-Ansicht)</label><input type="checkbox" id="mg-set-lock" class="mg-switch"></div>' +
+        '<div class="mg-set-row"><label for="mg-set-emotes">Emotes anzeigen</label><input type="checkbox" id="mg-set-emotes" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-theme">Helles Design</label><input type="checkbox" id="mg-set-theme" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-motion">Animationen reduzieren</label><input type="checkbox" id="mg-set-motion" class="mg-switch"></div>' +
         '<div class="mg-set-row"><label for="mg-set-lang">Sprache / Language</label><select id="mg-set-lang" class="form-input" style="max-width:140px"><option value="de">Deutsch</option><option value="en">English</option></select></div>' +
@@ -113,6 +117,10 @@
       else if (isIos()) alert('Zum Installieren: Teilen-Symbol tippen und "Zum Home-Bildschirm" wählen.');
     });
     $('mg-set-report').addEventListener('click', function () { close(); if (global.MGReport) MGReport.open(); });
+    $('mg-set-view').addEventListener('change', function (e) { ls('mg_view', e.target.value); if (global.MGFpv) { if (e.target.value === 'fpv') MGFpv.enter(false); else MGFpv.exit(); } });
+    $('mg-set-gfx').addEventListener('change', function (e) { ls('mg_fpv_gfx', e.target.value); });
+    $('mg-set-lock').addEventListener('change', function (e) { ls('mg_fpv_lock', e.target.checked ? '1' : '0'); });
+    $('mg-set-emotes').addEventListener('change', function (e) { if (global.MGEmote) MGEmote.setShown(e.target.checked); });
     $('mg-set-theme').addEventListener('change', function (e) { applyTheme(e.target.checked ? 'light' : 'dark'); });
     $('mg-set-motion').addEventListener('change', function (e) { applyMotion(e.target.checked); });
     $('mg-set-lang').addEventListener('change', function (e) { if (global.MGI18n) MGI18n.set(e.target.value); });
@@ -149,6 +157,8 @@
     lastFocus = document.activeElement;
     panel.querySelector('#mg-set-sound').checked = !global.MGAudio || MGAudio.isOn();
     panel.querySelector('#mg-set-vol').value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100);
+    panel.querySelector('#mg-set-view').value = ls('mg_view') === 'fpv' ? 'fpv' : 'normal'; panel.querySelector('#mg-set-lock').checked = ls('mg_fpv_lock') === '1'; panel.querySelector('#mg-set-gfx').value = ls('mg_fpv_gfx') || 'auto';
+    panel.querySelector('#mg-set-emotes').checked = !global.MGEmote || MGEmote.isShown();
     panel.querySelector('#mg-set-theme').checked = document.documentElement.getAttribute('data-theme') === 'light';
     panel.querySelector('#mg-set-motion').checked = document.documentElement.getAttribute('data-motion') === 'reduce';
     panel.querySelector('#mg-set-lang').value = (global.MGI18n && MGI18n.lang) || 'de';

@@ -35,6 +35,9 @@
 <script src="mg-report.js"></script>
   <script src="spotify-config.js"></script>
   <script src="mg-spotify.js"></script>
+  <script src="mg-emote.js"></script>
+  <script src="fpv-rules.js"></script>
+  <script src="mg-fpv.js"></script>
   <script src="mg-scene.js"></script>
   <script src="mg-craft.js"></script>
   <link rel="preload" href="fonts/inter-400-800-latin.woff2" as="font" type="font/woff2" crossorigin>
@@ -652,7 +655,9 @@ function joinPrivateRoom() {
 }
 
 let myReady    = false;
+const TT = (t) => (window.MGI18n && MGI18n.t) ? MGI18n.t(t) : t;   // Text in der gewaehlten Sprache (Woerterbuch i18n-en.json)
 let selectedCats = new Set();
+MGQ.ready.then(() => { if (MGQ.en && selectedCats.size === 0 && typeof buildCatChips === 'function') { try { buildCatChips(); } catch (e) {} } });   // Kategorienamen EN, sobald geladen
 
 const ALL_CATEGORIES = [
   'Mobs','Blöcke','Items','Crafting','Redstone','Verzauberungen',
@@ -682,7 +687,7 @@ function buildCatChips() {
     chip.type = 'button';
     chip.className = 'chip';
     chip.dataset.cat = cat;
-    chip.textContent = cat;
+    chip.textContent = MGQ.cat(cat);
     chip.setAttribute('aria-pressed', 'false');
     chip.addEventListener('click', () => {
       if (selectedCats.has(cat)) selectedCats.delete(cat); else selectedCats.add(cat);
@@ -763,10 +768,10 @@ socket.on('joined', ({ playerId, roomId, displayName, playerName, isPublic, toke
   (players || []).forEach(p => { roster[p.id] = p; });
   syncRoster(); sceneInit(); sceneSync();
   if (token) saveSession(roomId, token);
-  el('room-status').textContent = (isPublic ? 'Öffentlich: ' : 'Privat: ') + displayName;
+  el('room-status').textContent = TT(isPublic ? 'Öffentlich:' : 'Privat:') + ' ' + displayName;
   el('lobby-code').textContent  = roomId;
   hide('join-screen'); show('lobby-screen');
-  showToast(rejoined ? 'Wieder verbunden' : `„${displayName}“ beigetreten als ${playerName}`);
+  showToast(rejoined ? TT('Wieder verbunden') : TT(`„${displayName}“ beigetreten als ${playerName}`));
 });
 
 socket.on('join_error', ({ message }) => showToast(message, 4000));
@@ -812,10 +817,17 @@ socket.on('room_state', ({ players, phase, lockedOut, currentBuzzer, readyCount,
     row.dataset.pid = p.id;
     row.style.animationDelay = Math.min(i, 6) * 40 + 'ms';
     row.innerHTML = `${head(p)}
-      <span class="player-name">${esc(p.name)}${p.id === myId ? '<span class="you-tag">du</span>' : ''}</span>
+      <span class="player-name">${esc(p.name)}${p.id === myId ? '<span class="you-tag">' + TT('du') + '</span>' : ''}</span>
       <span class="ready-mark ${p.ready ? 'on' : ''}">${p.connected === false ? 'getrennt' : (p.ready ? 'bereit' : 'wartet')}</span>
       <span class="player-score">${esc(p.score)} Pkt.</span>`;
+    if ((window.__fpvOn || []).includes(p.id)) { const t = document.createElement('span'); t.className = 'fpv-tag'; t.title = TT('Ich-Ansicht an'); t.setAttribute('aria-label', TT('Ich-Ansicht an')); t.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'; const pn = row.querySelector('.player-name'); if (pn) pn.appendChild(t); }
     if (p.id === hostId) { const hb = document.createElement('span'); hb.className = 'ready-mark on'; hb.textContent = 'Host'; row.insertBefore(hb, row.querySelector('.ready-mark')); }
+    if (p.id !== myId && window.MGEmote) {
+      const mb = document.createElement('button'); mb.type = 'button'; mb.className = 'emo-mute'; mb.innerHTML = MGEmote.svg('heart', 16);
+      const setMb = () => { const on = MGEmote.isMuted(p.id); mb.setAttribute('aria-pressed', on ? 'true' : 'false'); mb.classList.toggle('on', on); mb.setAttribute('aria-label', TT(on ? 'Emotes dieses Spielers wieder anzeigen' : 'Emotes dieses Spielers ausblenden')); mb.title = mb.getAttribute('aria-label'); };
+      setMb(); mb.addEventListener('click', () => { MGEmote.mute(p.id, !MGEmote.isMuted(p.id)); setMb(); });
+      row.appendChild(mb);
+    }
     if (p.id !== myId) {
       if (hostId === myId) {
         const kb = document.createElement('button'); kb.type = 'button'; kb.className = 'kick-btn'; kb.textContent = 'Entfernen';
@@ -1230,7 +1242,7 @@ function buildCeremony(scores) {
     slot.style.animationDelay = ((3 - rank) * 0.25) + 's';
     slot.innerHTML = `${window.MGIcon ? MGIcon.html('podium.' + rank, 32, 'Platz ' + rank) : ''}
       ${head(pl, 'lg')}
-      <div class="podium-name" style="color:${isMe ? 'var(--green)' : 'var(--text)'}">${esc(p.name)}${isMe ? ' (du)' : ''}</div>
+      <div class="podium-name" style="color:${isMe ? 'var(--green)' : 'var(--text)'}">${esc(p.name)}${isMe ? ' (' + TT('du') + ')' : ''}</div>
       <div class="podium-score">${esc(p.score)} Pkt.</div>
       <div class="podium-bar ${podiumClass[i]}">${rank}</div>`;
     podium.appendChild(slot);
@@ -1269,6 +1281,8 @@ let scene = null, sceneSig = '', lastTyping = 0, lastGiven = {}, lastBuzz = { id
 function sceneInit() {
   if (scene || !window.MGScene || !el('mp-scene')) return;
   try { scene = MGScene.create(el('mp-scene'), { myId }); } catch (e) { scene = null; }
+  if (scene && window.MGEmote) MGEmote.init({ getScene: () => scene, selfId: () => myId, send: (id) => socket.emit('emote', { id }), enabled: () => !mpSettings || mpSettings.emotes !== 'off', solo: false });
+  if (scene && window.MGFpv) MGFpv.init({ mode: 'mp', sceneId: 'mp-scene', getScene: () => scene, id: () => myId, canUse: () => !!mpSettings && (mpSettings.fpv === 'allowed' || mpSettings.fpv === 'all'), onChange: (on) => socket.emit('fpv_respond', { accept: !!on }), sendPose: (y, p) => socket.emit('pose', { yaw: y, pitch: p }) });
 }
 function sceneSync() {
   if (!scene) return;
@@ -1533,7 +1547,7 @@ function renderHostUI() {
   const cats = el('hs-cats');
   if (cats && !cats.children.length) {
     ALL_CATEGORIES.forEach(cat => {
-      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = cat; chip.setAttribute('aria-pressed', 'false');
+      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'chip'; chip.textContent = MGQ.cat(cat); chip.setAttribute('aria-pressed', 'false');
       chip.addEventListener('click', () => { chip.classList.toggle('on'); chip.setAttribute('aria-pressed', chip.classList.contains('on') ? 'true' : 'false'); pushSettings({ categories: [...cats.querySelectorAll('.chip.on')].map(c => c.textContent) }); });
       cats.appendChild(chip);
     });
@@ -1558,6 +1572,11 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'hs-pw') pushSettings({ password: e.target.value.trim() });
 });
 socket.on('settings_updated', (st) => applySettings(st));
+socket.on('fpv_offer', (d) => { if (window.MGFpv) MGFpv.offer(d && d.by); });
+socket.on('fpv_state', (d) => { window.__fpvOn = (d && d.on) || []; document.querySelectorAll('.player-row[data-pid]').forEach((r) => { const pid = r.dataset.pid, has = !!r.querySelector('.fpv-tag'), want = window.__fpvOn.includes(pid); if (has && !want) r.querySelector('.fpv-tag').remove(); else if (!has && want) { const t = document.createElement('span'); t.className = 'fpv-tag'; t.title = TT('Ich-Ansicht an'); t.setAttribute('aria-label', TT('Ich-Ansicht an')); t.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>'; const pn = r.querySelector('.player-name'); if (pn) pn.appendChild(t); } }); });
+socket.on('pose', (d) => { if (scene && d && scene.setLook) scene.setLook(d.pid, d.yaw, d.pitch); });
+socket.on('emote', (d) => { if (d && window.MGEmote) MGEmote.receive(d.pid, d.id); });
+socket.on('emote_denied', (d) => { if (window.MGEmote) MGEmote.denied(d && d.reason); });
 socket.on('settings_denied', ({ reason }) => showToast('Einstellung nicht möglich' + (reason === 'phase' ? ' (Spiel läuft schon)' : reason === 'host' ? ' (nur der Host)' : ''), 2800));
 socket.on('host_changed', ({ hostId: hid, name }) => { hostId = hid; renderHostUI(); showToast((hid === myId ? 'Du bist' : name + ' ist') + ' jetzt Host', 2800); });
 socket.on('kicked', ({ reason }) => {

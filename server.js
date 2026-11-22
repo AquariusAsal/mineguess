@@ -418,6 +418,10 @@ const DEFAULT_ROUNDS = 10;
 const ROUND_CHOICES  = FAST_TEST ? [2, 10, 25, 50, 100] : [10, 25, 50, 100];
 const ANSWER_CHOICES = [8, 10, 15];
 const BUILD_CHOICES = ['off', 'mix', 'only'];
+const EMOTE_IDS = new Set(JSON.parse(fs.readFileSync(path.join(__dirname, 'emotes.json'), 'utf8')).emotes.map(e => e.id));      // feste Emote-IDs aus emotes.json (Quelle: docs/team/EMOTES.md), kein Freitext
+const EMOTE_CHOICES = ['on', 'off'];
+const FPV_CHOICES = ['off', 'allowed', 'all'];
+const tokenBucket = (obj, key, burst, refillMs) => { const now = Date.now(); const b = obj[key] || (obj[key] = { t: burst, ts: now }); b.t = Math.min(burst, b.t + (now - b.ts) / refillMs); b.ts = now; if (b.t < 1) return false; b.t -= 1; return true; };
 const TF_CHOICES = ['mix', 'only', 'off'];      // Wahr oder Mythos im Raum: mix (Standard) | only (nur tf) | off (keine tf)
 const BUILD_SECONDS = [45, 60];
 const BUILD_FACTORS = [1, 0.8, 0.65, 0.5, 0.4, 0.3, 0.25, 0.2];     // Punkte nach Zeitrang der richtigen Loesung
@@ -528,6 +532,8 @@ function makeRoom({ id, displayName, isPublic, password, categories, permanent, 
     teamCarry:     {},          // Punkte ausgeschiedener Spieler je Team
     build:         'off',       // Bau-Runden: off | mix | only
     tf:            'mix',       // Wahr oder Mythos: mix | only | off
+    emotes:        'on',        // Emotes im Raum: on | off (Klassenraum: off)
+    fpv:           'off',       // Ich-Ansicht: off | allowed | all (Einverstaendnis je Spieler)
     buildSeconds:  60,
     buildRound:    false,
     builds:        null,        // Map playerId -> { attempts, done, ms, order, timeLeft }
@@ -628,6 +634,21 @@ function classExport(room) {
   return { ok: true, rounds: rep2.rounds, avgHitPct: Math.round(rep2.totals.avgHitRate * 1000) / 10, students, questions, csv };
 }
 
+// ── Emotes und Ich-Ansicht (FPV): feste IDs, Rate-Limit, nichts wird gespeichert ──
+function blockedBetween(a, b) {          // a, b = Sockets; geblockte Profil-Nutzer sehen/senden untereinander nichts
+  try {
+    const pa = a.data.pid, pb = b.data.pid; if (!pa || !pb || !profilesApi) return false;
+    const P = profilesApi.profiles(); const A = P[pa], B = P[pb];
+    return !!((A && Array.isArray(A.blocked) && A.blocked.includes(pb)) || (B && Array.isArray(B.blocked) && B.blocked.includes(pa)));
+  } catch (e) { return false; }
+}
+function fpvState(room) { return Object.values(room.players).filter(p => p.fpv).map(p => p.id); }
+function setFpvMode(room, mode) {
+  const before = room.fpv; room.fpv = mode;
+  if (mode === 'off') { Object.values(room.players).forEach(p => { p.fpv = false; }); io.to(room.id).emit('fpv_state', { mode, on: [] }); return; }
+  if (mode === 'all' && before !== 'all') Object.values(room.players).forEach(p => { if (p.connected && !p.fpv && p.id !== room.hostId) io.to(p.id).emit('fpv_offer', { mode, by: (room.players[room.hostId] || {}).name || 'Host' }); });
+  io.to(room.id).emit('fpv_state', { mode, on: fpvState(room) });
+}
 function connectedIds(room) { return Object.values(room.players).filter(p => p.connected).map(p => p.id); }
 function playerCount(room)  { return Object.keys(room.players).length; }
 
@@ -677,7 +698,7 @@ function broadcastPublicRooms() {
 
 function settingsOf(room) {
   return { rounds: room.rounds, answerTime: room.answerTime, categories: room.categories, difficulty: room.difficulty,
-           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password, teams: teamsOf(room), build: room.build, buildSeconds: room.buildSeconds, tf: room.tf, isClass: !!room.isClass };
+           maxPlayers: room.maxPlayers, isPublic: room.isPublic, hasPassword: !!room.password, teams: teamsOf(room), build: room.build, buildSeconds: room.buildSeconds, tf: room.tf, emotes: room.emotes, fpv: room.fpv, isClass: !!room.isClass };
 }
 
 // ── Teams ─────────────────────────────────────────────────────────────────────
@@ -1405,6 +1426,7 @@ io.on('connection', (socket) => {
       players: Object.values(room.players).map(fullPlayer),
     });
     if (!rejoinPlayer) socket.to(room.id).emit('player_joined', { player: fullPlayer(p) });
+    if (room.fpv === 'all' && p.id !== room.hostId) socket.emit('fpv_offer', { mode: 'all', by: (room.players[room.hostId] || {}).name || 'Host' });
     sendSnapshot(socket, room);
     maybeAutoStart(room);
   }
@@ -1526,7 +1548,7 @@ io.on('connection', (socket) => {
     const cats = Array.isArray(d.categories) ? d.categories.filter((c) => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30) : [];
     const room = makeRoom({ rounds: ROUND_CHOICES.includes(d.rounds) ? d.rounds : DEFAULT_ROUNDS, id: code.toLowerCase(), displayName: 'Klasse ' + code, isPublic: false, password: null, categories: cats,
       answerTime: d.answerTime, difficulty: d.difficulty, maxPlayers: MAX_PLAYERS, hostId: socket.id });
-    room.isClass = true; room.maxPlayers = CLASS_MAX; room.teacherToken = crypto.randomBytes(16).toString('hex'); room.lastActivity = now;
+    room.isClass = true; room.emotes = 'off'; room.maxPlayers = CLASS_MAX; room.teacherToken = crypto.randomBytes(16).toString('hex'); room.lastActivity = now;
     if (TF_CHOICES.includes(d.tf)) room.tf = d.tf;
     if (BUILD_CHOICES.includes(d.build)) room.build = d.build;
     room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf));
@@ -1744,12 +1766,16 @@ io.on('connection', (socket) => {
     if (d.build !== undefined && !BUILD_CHOICES.includes(d.build)) return deny('build');
     if (d.buildSeconds !== undefined && !BUILD_SECONDS.includes(d.buildSeconds)) return deny('buildSeconds');
     if (d.tf !== undefined && !TF_CHOICES.includes(d.tf)) return deny('tf');
+    if (d.emotes !== undefined && !EMOTE_CHOICES.includes(d.emotes)) return deny('emotes');
+    if (d.fpv !== undefined && !FPV_CHOICES.includes(d.fpv)) return deny('fpv');
     if (d.rounds !== undefined) room.rounds = d.rounds;
     if (d.answerTime !== undefined) room.answerTime = d.answerTime;
     if (d.difficulty !== undefined) room.difficulty = d.difficulty;
     if (d.maxPlayers !== undefined) room.maxPlayers = d.maxPlayers;
     if (d.build !== undefined) room.build = d.build;
     if (d.tf !== undefined) room.tf = d.tf;
+    if (d.emotes !== undefined) room.emotes = d.emotes;
+    if (d.fpv !== undefined) setFpvMode(room, d.fpv);
     if (d.buildSeconds !== undefined) room.buildSeconds = d.buildSeconds;
     if (d.categories !== undefined) {
       const cats = d.categories.filter(c => typeof c === 'string' && KNOWN_CATEGORIES.has(c)).slice(0, 30);
@@ -1760,6 +1786,39 @@ io.on('connection', (socket) => {
     room.questionOrder = shuffle(buildPool(room.categories, room.difficulty, room.build, room.tf)); room.currentIndex = 0;
     io.to(room.id).emit('settings_updated', settingsOf(room));
     broadcastLobby(room);
+  });
+
+  // Emotes: feste ID-Liste, Rate-Limit 1 je 1,5 s (Burst 3), Host-Schalter, geblockte Profile ohne Emotes untereinander
+  on('emote', (d) => {
+    const room = getRoom(); if (!room) return;
+    const p = room.players[socket.id]; if (!p || !p.connected) return;
+    if (room.emotes !== 'on') return socket.emit('emote_denied', { reason: 'off' });
+    const id = d && typeof d.id === 'string' ? d.id : '';
+    if (!EMOTE_IDS.has(id)) return socket.emit('emote_denied', { reason: 'id' });
+    if (!tokenBucket(p, 'emoteB', 3, 1500)) return socket.emit('emote_denied', { reason: 'rate' });
+    Object.values(room.players).forEach(t => {
+      if (!t.connected) return;
+      const ts = io.sockets.sockets.get(t.id); if (!ts) return;
+      if (t.id !== socket.id && blockedBetween(socket, ts)) return;
+      ts.emit('emote', { pid: socket.id, id });
+    });
+    if (room.hostId && room.isClass) { const hs = io.sockets.sockets.get(room.hostId); if (hs) hs.emit('emote', { pid: socket.id, id }); }
+  });
+  // Ich-Ansicht (FPV): Einverstaendnis je Spieler, Kopfrichtung 10 Hz
+  on('fpv_respond', (d) => {
+    const room = getRoom(); if (!room) return;
+    const p = room.players[socket.id]; if (!p) return;
+    if (room.fpv === 'off') return socket.emit('fpv_denied', { reason: 'off' });
+    p.fpv = !!(d && d.accept === true);
+    io.to(room.id).emit('fpv_state', { mode: room.fpv, on: fpvState(room) });
+  });
+  on('pose', (d) => {
+    const room = getRoom(); if (!room) return;
+    const p = room.players[socket.id]; if (!p || !p.connected || !p.fpv || room.fpv === 'off') return;
+    if (!d || typeof d.yaw !== 'number' || typeof d.pitch !== 'number' || !isFinite(d.yaw) || !isFinite(d.pitch)) return;
+    if (d.yaw < -180 || d.yaw > 180 || d.pitch < -90 || d.pitch > 90) return;
+    if (!tokenBucket(p, 'poseB', 3, 80)) return;            // etwa 10 Hz (Burst 3), Rest wird still verworfen
+    socket.to(room.id).volatile.emit('pose', { pid: socket.id, yaw: Math.round(d.yaw * 10) / 10, pitch: Math.round(d.pitch * 10) / 10 });
   });
 
   // Host entfernt direkt ──────────────────────────────────────────────────────────

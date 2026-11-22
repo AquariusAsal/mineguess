@@ -41,8 +41,11 @@
     if (it && it.icon) return it.icon;
     return /^(item|block)\//.test(key) ? String(key).replace(/\.png$/, '') : 'item/' + key;
   }
-  function nameOf(key) { return byKey[key] ? byKey[key].de : String(key).replace(/^(item|block)\//, '').replace(/_/g, ' '); }
-  function img(key, cls, size) { return imgP(iconOf(key), cls, size, nameOf(key)); }
+  function en() { return !!(global.MGQ && MGQ.en); }
+  function deOf(key) { return byKey[key] ? byKey[key].de : String(key).replace(/^(item|block)[/]/, '').replace(/_/g, ' '); }   // Icon-Label bleibt deutsch
+  function nameOf(key) { var it = byKey[key]; return (en() && it && it.en) ? it.en : deOf(key); }   // Anzeige in der gewaehlten Sprache
+  function dispName(it) { return (en() && it.en) ? it.en : it.de; }
+  function img(key, cls, size) { return imgP(iconOf(key), cls, size, deOf(key)); }
   function imgP(p, cls, size, label) {
     var alt = p.indexOf('item/') === 0 ? 'block/' + p.slice(5) : (p.indexOf('block/') === 0 ? 'item/' + p.slice(6) : '');
     return '<img class="' + cls + '"' + (label ? ' data-iso-label="' + esc(label) + '"' : '') + ' src="' + BASE + esc(p) + '.png" width="' + size + '" height="' + size + '" alt="" draggable="false" data-alt="' + esc(alt) + '" onerror="MGCraftBuild._ie(this)">';
@@ -96,7 +99,7 @@
             }).join('') +
           '</div>' +
           '<div class="craft-arrow" aria-hidden="true"></div>' +
-          '<div class="craft-out"><div class="craft-slot out full" id="cb-out" role="img" aria-label="Ergebnis: ' + esc((count ? count + ' mal ' : '') + (q.answer || '')) + '">' +
+          '<div class="craft-out"><div class="craft-slot out full" id="cb-out" role="img" aria-label="Ergebnis: ' + esc((count ? count + ' mal ' : '') + ((global.MGQ && MGQ.ans(q)) || q.answer || '')) + '">' +
             (global.MGIcon && MGIcon.forLabel && !MGIcon.__ok ? '' : imgP(resPath(), 'craft-big', 64, q.answer)) + (count ? '<span class="craft-count">' + count + '</span>' : '') + '</div></div>' +
         '</div>' +
         '<div class="cb-hand" aria-live="polite"></div>' +
@@ -192,7 +195,7 @@
       results = list; activeOpt = list.length ? 0 : -1;
       resEl.hidden = !list.length && !qEl.value.trim();
       resEl.innerHTML = list.map(function (it, i) {
-        return '<button type="button" role="option" class="cb-opt' + (i === 0 ? ' on' : '') + '" id="cb-o' + i + '" data-k="' + esc(it.key) + '" aria-selected="' + (i === 0) + '">' + img(it.key, 'cb-mini', 28) + '<span>' + esc(it.de) + '</span></button>';
+        return '<button type="button" role="option" class="cb-opt' + (i === 0 ? ' on' : '') + '" id="cb-o' + i + '" data-k="' + esc(it.key) + '" aria-selected="' + (i === 0) + '">' + img(it.key, 'cb-mini', 28) + '<span>' + esc(dispName(it)) + '</span></button>';
       }).join('') || (qEl.value.trim() ? '<div class="cb-none">Keine Zutat gefunden</div>' : '');
       resEl.hidden = !resEl.innerHTML;
       qEl.setAttribute('aria-expanded', String(!resEl.hidden));
