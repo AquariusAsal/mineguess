@@ -1075,5 +1075,9 @@
  "Ich-Ansicht Grafik": "First-person graphics",
  "Automatisch": "Automatic",
  "Hoch": "High",
- "Niedrig": "Low"
+ "Niedrig": "Low",
+ "Ich-Ansicht (Alpha-Phase)": "First-person view (alpha)",
+ "Die Ich-Ansicht ist noch in der Alpha-Phase. Es kann zu Fehlern kommen. Möchtest du trotzdem wechseln?": "The first-person view is still in alpha. Bugs may occur. Do you want to switch anyway?",
+ "Trotzdem wechseln": "Switch anyway",
+ "Hinweis: Die Ich-Ansicht ist noch in der Alpha-Phase.": "Note: The first-person view is still in alpha."
 }

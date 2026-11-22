@@ -103,14 +103,25 @@
   function offer(by) {
     var old = document.getElementById('fpv-offer'); if (old) old.remove();
     var d = document.createElement('div'); d.id = 'fpv-offer'; d.className = 'fpv-offer'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'fpv-offer-t');
-    d.innerHTML = '<div class="fpv-offer-box"><p id="fpv-offer-t">' + tr('Der Host möchte die Ich-Ansicht aktivieren.') + '</p><div class="fpv-offer-row"><button type="button" class="btn btn-primary" data-a="1">' + tr('Mitmachen') + '</button><button type="button" class="btn" data-a="0">' + tr('Normale Ansicht') + '</button></div></div>';
+    d.innerHTML = '<div class="fpv-offer-box"><p id="fpv-offer-t">' + tr('Der Host möchte die Ich-Ansicht aktivieren.') + '<br><small>' + tr('Hinweis: Die Ich-Ansicht ist noch in der Alpha-Phase.') + '</small></p><div class="fpv-offer-row"><button type="button" class="btn btn-primary" data-a="1">' + tr('Mitmachen') + '</button><button type="button" class="btn" data-a="0">' + tr('Normale Ansicht') + '</button></div></div>';
     document.body.appendChild(d);
     var fin = function (yes) { clearTimeout(t); d.remove(); if (yes) { enter(true); } else { if (cfg.onChange) cfg.onChange(false); } };
     var t = setTimeout(function () { fin(false); }, 15000);
     d.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) fin(b.getAttribute('data-a') === '1'); });
     var nb = d.querySelector('[data-a="0"]'); if (nb) nb.focus();
   }
-  function toggle(gesture) { if (on) exit(); else enter(gesture); }
+  // Alpha-Hinweis: Wechsel in die Ich-Ansicht braucht eine Bestaetigung (einmal je Browser-Sitzung)
+  function alphaOk() { try { return sessionStorage.getItem('mg_fpv_alpha') === '1'; } catch (e) { return false; } }
+  function askAlpha(go) {
+    var old = document.getElementById('fpv-alpha'); if (old) old.remove();
+    var d = document.createElement('div'); d.id = 'fpv-alpha'; d.className = 'fpv-offer'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'fpv-alpha-t');
+    d.innerHTML = '<div class="fpv-offer-box"><p id="fpv-alpha-t"><b>' + tr('Ich-Ansicht (Alpha-Phase)') + '</b><br>' + tr('Die Ich-Ansicht ist noch in der Alpha-Phase. Es kann zu Fehlern kommen. Möchtest du trotzdem wechseln?') + '</p><div class="fpv-offer-row"><button type="button" class="btn btn-primary" data-a="1">' + tr('Trotzdem wechseln') + '</button><button type="button" class="btn" data-a="0">' + tr('Abbrechen') + '</button></div></div>';
+    document.body.appendChild(d);
+    d.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; d.remove(); if (b.getAttribute('data-a') === '1') { try { sessionStorage.setItem('mg_fpv_alpha', '1'); } catch (er) {} go(); } });
+    d.addEventListener('keydown', function (e) { if (e.key === 'Escape') { e.stopPropagation(); d.remove(); } });
+    var nb = d.querySelector('[data-a="1"]'); if (nb) nb.focus();
+  }
+  function toggle(gesture) { if (on) { exit(); return; } if (alphaOk()) { enter(gesture); return; } askAlpha(function () { enter(true); }); }
 
   // ── Umsehen ──
   var drag = null, K = 0.004;
