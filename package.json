@@ -7,7 +7,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-force-exit tests/unit.test.js tests/questions.test.js tests/craft.test.js tests/pairs.test.js tests/modes.test.js tests/challenge.test.js tests/clientip.test.js tests/icons.test.js tests/privacy.test.js tests/reports.test.js tests/ranked-build.test.js tests/profiles.test.js tests/multiplayer2.test.js tests/store.test.js tests/social.test.js tests/social2.test.js tests/social3.test.js tests/idtoken.test.js tests/server.test.js tests/admin.test.js tests/pages.test.js tests/security.test.js tests/tf.test.js tests/hunter.test.js tests/class.test.js tests/data2.test.js"
+    "test": "node --test --test-force-exit tests/unit.test.js tests/questions.test.js tests/craft.test.js tests/pairs.test.js tests/modes.test.js tests/challenge.test.js tests/clientip.test.js tests/icons.test.js tests/privacy.test.js tests/reports.test.js tests/ranked-build.test.js tests/profiles.test.js tests/multiplayer2.test.js tests/store.test.js tests/social.test.js tests/social2.test.js tests/social3.test.js tests/idtoken.test.js tests/server.test.js tests/admin.test.js tests/pages.test.js tests/security.test.js tests/tf.test.js tests/hunter.test.js tests/class.test.js tests/data2.test.js tests/en.test.js"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -21,9 +21,11 @@ test('Hardcore: Schwierigkeit (Rating/Tier) steigt mit der Serie', () => {
 });
 
 test('Hardcore: kein Wiederholen, alle fuenf Formate (inkl. ODER, Crafting erraten/bauen), Diversitaet', () => {
-  const rnd = lcg(21), st = H.newState(), ids = new Set(), formats = new Set();
+  const rnd = lcg(21), formats = new Set();
+  let st = H.newState(), ids = new Set();
   let lastTpl = '', tplRun = 0, maxRun = 0, fmtRun = 0, lastFmt = '', maxFmt = 0;
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 300; i++) {
+    if (i % 25 === 0) { st = H.newState(); ids = new Set(); lastTpl = ''; lastFmt = ''; tplRun = 0; fmtRun = 0; }      // viele kurze Laeufe (Kategorie-Obergrenze gilt je Lauf)
     const n = H.next(qs, st, rnd);
     assert.ok(!ids.has(n.question.id), 'Wiederholung ' + n.question.id); ids.add(n.question.id);
     formats.add(n.format);

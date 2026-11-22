@@ -80,13 +80,21 @@
     var n = normText(input);
     if (!n) return { valid: false, correct: false, dir: 'wrong', close: false };
     var list = (q.acceptedAnswers && q.acceptedAnswers.length ? q.acceptedAnswers : [q.answer]).concat([q.answer]);
+    if (q.en) list = list.concat(q.en.acceptedAnswers || [], q.en.answer ? [q.en.answer] : []);      // englische UND deutsche Schreibweise gelten (q.en aus questions.en.json)
     for (var j = 0; j < list.length; j++) {
       if (normText(list[j]) === n) return { valid: true, correct: true, dir: 'ok', close: true };
     }
     return { valid: true, correct: false, dir: 'wrong', close: false };
   }
 
-  var api = { normText: normText, parseNumbers: parseNumbers, check: check, tolerance: tolerance };
+  // Ist raw eine der beiden Optionen (deutsch oder englisch)? Fuer ODER- und Wahr/Mythos-Fragen.
+  function choiceOk(q, raw) {
+    var n = normText(raw), list = (q && q.choices ? q.choices : []).concat(q && q.en && q.en.choices ? q.en.choices : []);
+    for (var i = 0; i < list.length; i++) if (normText(list[i]) === n) return true;
+    return false;
+  }
+
+  var api = { normText: normText, parseNumbers: parseNumbers, check: check, tolerance: tolerance, choiceOk: choiceOk };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.MGAnswer = api;
 })(typeof window !== 'undefined' ? window : this);

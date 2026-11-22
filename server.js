@@ -99,6 +99,7 @@ app.use((req, res, next) => {
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
   if (/[\\\0%]|\/\/|(^|\/)\.{1,2}(\/|$)/.test(p) || path.posix.normalize(p) !== p) return res.status(404).end();   // nicht kanonisch
   if (p === '/' || p === '/health' || p === '/premium.html' || p.startsWith('/api/') || p.startsWith('/socket.io/')) return next();
+  if (p === '/questions.en.json') return next();                  // englische Fragen (Schluessel = Frage-ID)
   if (ROOT_FILE.test(p) && !ROOT_DENY.test(p)) return next();
   if (ALLOWED_DIRS.test(p) && !/(^|\/)\./.test(p)) return next();
   return res.status(404).end();
@@ -384,6 +385,14 @@ try {
 } catch (e) { console.error('Fragen laden fehlgeschlagen:', e.message); }
 if (!allQuestions.length) { console.error('Keine Fragen – Abbruch.'); process.exit(1); }
 const KNOWN_CATEGORIES = new Set(allQuestions.map(q => q.category));
+// Englische Fassung (questions.en.json): haengt q.en an jede Frage (null/fehlend = keine englische Fassung); Antwortpruefung nimmt englische UND deutsche Schreibweise
+const EN_NAME = new Map();      // deutscher Antworttext -> englischer Antworttext (fuer Optionslisten im Multiplayer)
+try {
+  const enFile = JSON.parse(fs.readFileSync(path.join(__dirname, 'questions.en.json'), 'utf8'));
+  let nEn = 0;
+  allQuestions.forEach(q => { const e = enFile.q && enFile.q[q.id]; q.en = e || null; if (e) { nEn++; if (q.type !== 'number' && q.answer && e.answer) EN_NAME.set(q.answer, e.answer); } });
+  log('info', 'questions_en_loaded', { withEn: nEn });
+} catch (e) { log('warn', 'questions_en_missing', {}); }
 
 function shuffle(arr) {
   const a = [...arr];
@@ -767,15 +776,21 @@ function buildOptions(q) {
   return shuffle([q.answer, ...picks]);
 }
 
+// englischer Text einer Antwortoption (index-gleich zu den deutschen Optionen)
+function enOption(q, de) {
+  if (Array.isArray(q.choices) && q.en && Array.isArray(q.en.choices)) { const i = q.choices.indexOf(de); if (i >= 0) return q.en.choices[i]; }
+  return EN_NAME.get(de) || de;
+}
 function questionPayload(room) {
   const q = room.question;
   if (room.buildRound) {                      // Bau-Runde: Ergebnisname ja, Raster/Loesung nie
     return { id: q.id, type: 'crafting', mode: 'build', question: q.question, category: q.category, answer: q.answer, resultKey: q.resultKey, resultCount: q.resultCount || 1,
-             buildSeconds: room.buildSeconds, checks: BUILD_CHECKS, roundNum: room.roundNum, maxRounds: room.rounds };
+             buildSeconds: room.buildSeconds, checks: BUILD_CHECKS, roundNum: room.roundNum, maxRounds: room.rounds, ...(q.en ? { en: { question: q.en.question, answer: q.en.answer } } : {}) };
   }
   return {
     id: q.id, type: q.type, question: q.question, category: q.category,
     unit: q.unit || null, options: room.options || null, ...(q.fmt === 'tf' ? { fmt: 'tf' } : {}),
+    ...(q.en ? { en: { question: q.en.question, unit: q.en.unit || null, options: room.options ? room.options.map(o => enOption(q, o)) : null } } : {}),
     ...(q.type === 'crafting' ? { grid: q.grid, shapeless: !!q.shapeless } : {}),
     choiceOnly: !!(Array.isArray(q.choices) && q.choices.length === 2),   // nur diese zwei Optionen, kein freies Tippen
     roundNum: room.roundNum,
@@ -1128,7 +1143,7 @@ function revealResult(room, winnerId) {
 
   const q      = room.question;
   const answer = q.type === 'number' ? `${q.answer}${q.unit ? ' ' + q.unit : ''}` : q.answer;
-  room.lastResult = { answer, ...(q.type === 'crafting' ? { resultCount: q.resultCount || 1, grid: q.grid, shapeless: !!q.shapeless } : {}), funFact: q.funFact, winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
+  room.lastResult = { answer, ...(q.type === 'crafting' ? { resultCount: q.resultCount || 1, grid: q.grid, shapeless: !!q.shapeless } : {}), funFact: q.funFact, ...(q.en ? { en: { answer: q.type === 'number' ? `${q.answer}${q.en.unit ? ' ' + q.en.unit : ''}` : q.en.answer, funFact: q.en.funFact || '' } } : {}), winnerId, scores: scoreList(room), nextIn: RESULT_TIME,
     mode: room.skippedRound ? 'skipped' : (room.lastReveal ? room.lastReveal.mode : 'none'), skipped: !!room.skippedRound,
     answers: room.lastReveal ? room.lastReveal.answers : [] };
   room.lastResult.teamScores = teamScoresOf(room);
@@ -1660,7 +1675,7 @@ io.on('connection', (socket) => {
     if (!player || !player.connected || room.answers.has(socket.id)) return;
     const raw = d && (typeof d.answer === 'string' || typeof d.answer === 'number') ? String(d.answer).slice(0, MAX_ANSWER_LEN) : '';
     const q = room.question;
-    if (Array.isArray(q.choices) && q.choices.length === 2 && !q.choices.some(c => MGAnswer.normText(c) === MGAnswer.normText(raw))) {
+    if (Array.isArray(q.choices) && q.choices.length === 2 && !MGAnswer.choiceOk(q, raw)) {
       socket.emit('answer_invalid', { message: 'Bitte eine der beiden Optionen wählen.' });   // nur die zwei Optionen gelten
       return;
     }

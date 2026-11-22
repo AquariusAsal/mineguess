@@ -6,6 +6,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="mg-i18n.js"></script>
+<script src="mg-qen.js"></script>
 <meta name="theme-color" content="#15171a">
 <meta name="description" content="MineGuess Multiplayer: Räume bis 8 Spieler, Glocke, Teams und Bau-Runden. Inoffizielles Minecraft-Quiz.">
 <meta property="og:type" content="website">
@@ -28,6 +29,7 @@
 <script src="mg-iso.js"></script>
   <script src="mg-audio.js"></script>
   <script src="mg-badges.js"></script>
+  <script src="mg-lang.js"></script>
   <script src="mg-settings.js"></script>
 <script src="mg-tutorial.js"></script>
 <script src="mg-report.js"></script>
@@ -902,8 +904,8 @@ socket.on('question', (q) => {
     if (rc) rc.style.display = '';
     if (rn) rn.textContent = q.roundNum;
 
-    el('q-category').textContent    = q.category;
-    el('question-text').textContent = q.mode === 'build' ? 'Baue: ' + q.answer : q.question;
+    el('q-category').textContent    = MGQ.cat(q.category);
+    el('question-text').textContent = q.mode === 'build' ? 'Baue: ' + MGQ.ans(q) : MGQ.q(q);
     if (window.MGCraft && q.mode !== 'build') { if (q.type === 'crafting') MGCraft.render(el('craft-host'), q); else MGCraft.clear(el('craft-host')); }
 
     // Reset UI
@@ -1028,10 +1030,10 @@ function buildAnswerInput(q) {
     el('num-input').addEventListener('input', sendTyping);
   } else if (Array.isArray(q.choices || q.options) && (q.choices || q.options).length === 2 && window.MGIcon && MGIcon.choiceButtons) {
     // ODER-Frage: genau zwei gleichwertige Buttons, kein Hinweis auf die richtige Seite
-    const names = (q.choices || q.options).slice(0, 2);
+    const names = (q.choices || q.options).slice(0, 2), deOpts = (q.choices || q.options);
     const host = document.createElement('div'); host.id = 'choice-host';
     inner.appendChild(host);
-    let btns; btns = MGIcon.choiceButtons(host, names, (n) => { submitAnswer(n); if (btns && btns.lock) btns.lock('Antwort abgegeben: ' + n); }, { tf: q.fmt === 'tf' });
+    let btns; btns = MGIcon.choiceButtons(host, names, (n) => { submitAnswer(n); if (btns && btns.lock) btns.lock('Antwort abgegeben: ' + n); }, { tf: q.fmt === 'tf', label: (n) => MGQ.optEn(q.en && (q.en.options || q.en.choices), deOpts, n) });
     choiceKeys = (e) => {
       if (myPhase !== 'answering') return;
       const t = e.target && e.target.tagName; if (t === 'INPUT' || t === 'TEXTAREA') return;
@@ -1055,7 +1057,7 @@ function buildAnswerInput(q) {
       im.src = (window.MGIcon ? MGIcon.base + MGIcon.forLabel(opt, '') : 'assets/mc/item/barrier') + '.png';
       im.onerror = function () { this.onerror = null; this.src = 'assets/mc/item/barrier.png'; };
       btn.appendChild(im);
-      btn.appendChild(document.createTextNode(opt));
+      btn.appendChild(document.createTextNode(MGQ.optEn(q.en && q.en.options, opts, opt)));
       btn.style.display = 'inline-flex'; btn.style.alignItems = 'center'; btn.style.gap = '8px';
       btn.dataset.opt = opt;
       btn.onclick = () => submitAnswer(opt);
@@ -1097,7 +1099,8 @@ socket.on('answer_broadcast', ({ playerId, playerName, correct, submitted, score
 
 // ── Result ────────────────────────────────────────────────────────────────────
 let nextInterval = null;
-socket.on('result', ({ answer, funFact, scores, nextIn, winnerId, resultCount }) => {
+socket.on('result', ({ answer, funFact, scores, nextIn, winnerId, resultCount, en: resEn }) => {
+  if (MGQ.en && resEn) { if (resEn.answer) answer = resEn.answer; if (resEn.funFact) funFact = resEn.funFact; }   // englische Aufloesung
   if (window.MGCraft && currentQ && currentQ.type === 'crafting') MGCraft.reveal(el('craft-host'), Object.assign({}, currentQ, { answer: answer }, resultCount ? { resultCount: resultCount } : {}));
   ensureGameScreen();
   el('result-panel').classList.add('show');
@@ -1434,7 +1437,7 @@ socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId,
     if (typeof a.delta === 'number' && a.delta !== 0) deltas[a.playerId] = a.delta;
     else if (typeof a.points === 'number' && a.points) deltas[a.playerId] = a.points;
     const dev = (typeof a.deviationPct === 'number' && mode !== 'exact') ? ' (\u00b1' + Math.round(a.deviationPct) + ' %)' : '';
-    const un = (currentQ && currentQ.unit && /^[-\d.,]+$/.test(String(a.text == null ? '' : a.text).trim())) ? ' ' + currentQ.unit : '';
+    const un = (currentQ && MGQ.unit(currentQ) && /^[-\d.,]+$/.test(String(a.text == null ? '' : a.text).trim())) ? ' ' + MGQ.unit(currentQ) : '';
     if (scene) {
       scene.say(a.playerId, a.skipped ? 'Totem eingesetzt' : a.noAnswer ? 'Keine Antwort' : 'Die Antwort ist ' + String(a.text == null ? '' : a.text).slice(0, 30) + un + '!' + dev + (a.firstBuzzer && a.points > 0 ? ' \u00b7 +50 Glocke' : ''), a.winner ? 'correct' : (a.correct ? 'correct' : 'neutral'));
       if (a.winner) scene.react(a.playerId, 'correct');

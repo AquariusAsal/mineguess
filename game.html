@@ -6,6 +6,7 @@
 <link rel="icon" type="image/png" sizes="16x16" href="assets/brand/favicon-16.png">
 <link rel="manifest" href="manifest.webmanifest">
 <script src="mg-i18n.js"></script>
+<script src="mg-qen.js"></script>
 <meta name="theme-color" content="#15171a">
 <meta name="description" content="MineGuess spielen: Endlos, Blitz, täglich, Hardcore, Höher oder Tiefer, Crafting-Rätsel und Ranked. Inoffizielles Minecraft-Quiz.">
 <meta property="og:type" content="website">
@@ -1294,6 +1295,7 @@ header h1 { flex-shrink:0; }
 <script src="mg-panorama.js"></script>
   <script src="mg-video.js"></script>
   <script src="mg-ranklist.js"></script>
+  <script src="mg-lang.js"></script>
   <script src="mg-settings.js"></script>
 <script src="mg-tutorial.js"></script>
 <script src="mg-report.js"></script>
@@ -1947,8 +1949,8 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   sessTotal++;
   try {
     const _c = (window.MGReportContext && MGReportContext()) || {};
-    const _ans = question.type === 'number' ? (question.answer + (question.unit ? ' ' + question.unit : '')) : String(question.answer);
-    MGRounds.add({ n: sessTotal, id: Number(question.id) || 0, q: question.question, format: _c.format || '', mode: _c.mode || 'other', answer: _ans, guesses: (window.__roundGuesses || []).slice(), correct: !!won,
+    const _ans = question.type === 'number' ? (question.answer + (MGQ.unit(question) ? ' ' + MGQ.unit(question) : '')) : String(MGQ.ans(question));
+    MGRounds.add({ n: sessTotal, id: Number(question.id) || 0, q: MGQ.q(question), format: _c.format || '', mode: _c.mode || 'other', answer: _ans, guesses: (window.__roundGuesses || []).slice(), correct: !!won,
       pts: Math.round(ptsThisQuestion || 0), mmr: (gameMode === 'competition' && window.lastRanked && typeof lastRanked.delta === 'number') ? lastRanked.delta : undefined });
   } catch (e) {}
   if (won) sessCorrect++;
@@ -1977,10 +1979,10 @@ function showResult(won, ptsThisQuestion, speedBonus) {
 
   let answerStr;
   if (question.type === 'number') {
-    answerStr = `${question.answer}${question.unit ? ' ' + question.unit : ''}`;
+    answerStr = `${question.answer}${MGQ.unit(question) ? ' ' + MGQ.unit(question) : ''}`;
   } else {
-    const enName = getEnglishName(question.answer);
-    answerStr = question.answer + (enName ? ` <span style="opacity:.65;font-size:.88em">(${enName})</span>` : '');
+    const enName = MGQ.en ? null : getEnglishName(question.answer);
+    answerStr = MGQ.ans(question) + (enName ? ` <span style="opacity:.65;font-size:.88em">(${enName})</span>` : '');
   }
 
   // Show answer icon in result for entity/block questions
@@ -2001,12 +2003,12 @@ function showResult(won, ptsThisQuestion, speedBonus) {
   }
 
   const raEl = document.getElementById('result-answer');
-  raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : question.answer) + (question.type !== 'number' && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
+  raEl.innerHTML = (won ? 'Antwort: ' : 'Richtige Antwort: ') + resultIconHtml + '<strong>' + (question.type === 'number' ? answerStr : MGQ.ans(question)) + (question.type !== 'number' && !MGQ.en && getEnglishName(question.answer) ? ' <span style="opacity:.65;font-size:.88em">(' + getEnglishName(question.answer) + ')</span>' : '') + '</strong>';
 
   if (window._build) window._build.finish(won, question);
   else if (window.MGCraft && question && question.type === 'crafting') { MGCraft.reveal(document.getElementById('craft-host'), question); if (window.MGHand) MGHand.reveal(document.querySelector('#craft-host .craft-slot.out')); }
-  document.getElementById('funfact-text').textContent = question.funFact || '';
-  { const fb = document.getElementById('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (question.funFact && String(question.funFact).trim()) ? '' : 'none'; }
+  document.getElementById('funfact-text').textContent = MGQ.ff(question) || '';
+  { const fb = document.getElementById('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (MGQ.ff(question) && String(MGQ.ff(question)).trim()) ? '' : 'none'; }
   document.getElementById('input-area').style.visibility = 'hidden'; // Höhe behalten, kein Layout-Sprung
   document.getElementById('hint-btn').disabled = true;
 
@@ -2172,7 +2174,7 @@ function buildInput() {
       submitGuess();
       if (!finished) { b.disabled = true; b.classList.add('tried'); }   // falsche Wahl: nur die andere Option bleibt waehlbar
       else if (btns && btns.lock) btns.lock('Antwort abgegeben: ' + n);
-    }, { tf: question.fmt === 'tf' });
+    }, { tf: question.fmt === 'tf', label: (n) => MGQ.opt(question, n) });
     area.onkeydown = null;   // Tasten (W/M, 1/2) belegt MGIcon.choiceButtons
   } else if (question.type === 'number') {
     const inp = document.createElement('input');
@@ -2181,15 +2183,15 @@ function buildInput() {
     inp.inputMode   = 'decimal';
     inp.id          = 'answer-input';
     inp.className   = 'answer-input number-input';
-    inp.placeholder = `Zahl eingeben${question.unit ? ' (' + question.unit + ')' : ''}…`;
+    inp.placeholder = `Zahl eingeben${MGQ.unit(question) ? ' (' + MGQ.unit(question) + ')' : ''}…`;
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') submitGuess(); });
-    if (question.unit) {
+    if (MGQ.unit(question)) {
       const wrap = document.createElement('div');
       wrap.className = 'number-wrap';
       wrap.appendChild(inp);
       const unit = document.createElement('span');
       unit.className = 'number-unit';
-      unit.textContent = question.unit;
+      unit.textContent = MGQ.unit(question);
       wrap.appendChild(unit);
       area.appendChild(wrap);
     } else {
@@ -2327,7 +2329,7 @@ async function submitGuess() {
   _buildFb = null;
   if (fb.invalid) { showToast(fb.text); return; }
   clearInterval(timerInterval);
-  addGuessRow(val, question.type === 'number' ? question.unit : '', fb);
+  addGuessRow(val, question.type === 'number' ? MGQ.unit(question) : '', fb);
   markDot(attempts, fb.correct ? 'correct' : 'used');
   attempts++;
   inp.value = '';
@@ -2409,6 +2411,7 @@ async function init() {
     return;
   }
   // Shuffle questions for this session
+  try { MGQ.attach(questions); MGQ.ready.then(() => MGQ.attach(allQuestions)); } catch (e) {}   // EN-Fassungen: nie warten; bis sie da sind (oder bei null) wird Deutsch gezeigt
   allQuestions = questions;
   questionOrder = freshOrder([...Array(questions.length).keys()]);
   currentIndex = 0;
@@ -2465,6 +2468,7 @@ async function init() {
         aj.names.filter(n => !isRecipe(n)).forEach(n => ENTITIES.push(n));
         window.CRAFTING_ENTITIES = aj.names.filter(isRecipe);
         window.ANSWER_ALIASES = aj.aliases || {};
+        if (MGQ.names()) { ENTITIES.length = 0; MGQ.names().filter(n => !isRecipe(n)).forEach(n => ENTITIES.push(n)); window.ANSWER_ALIASES = Object.assign({}, window.ANSWER_ALIASES, MGQ.aliases() || {}); }   // EN: englische Namen im Dropdown
       }
     }
   } catch (e) { console.warn('answers.json:', e); }
@@ -2557,7 +2561,7 @@ async function loadNextQuestion() {
   seenAdd(question.id);
 
   document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
-  document.getElementById('category-pill').textContent = question.category;
+  document.getElementById('category-pill').textContent = MGQ.cat(question.category);
 
   // Animate question in
   const qEl = document.getElementById('question-text');
@@ -2572,10 +2576,10 @@ async function loadNextQuestion() {
   // Show category emoji as small decoration
     const catPill = document.getElementById('category-pill');
   if (catPill && question.category) {
-    catPill.innerHTML = MGIcon.category(question.category, 16) + ' ' + escHtml(question.category);
+    catPill.innerHTML = MGIcon.category(question.category, 16) + ' ' + escHtml(MGQ.cat(question.category));
   }
 
-  qEl.textContent = question.question;
+  qEl.textContent = MGQ.q(question);
   qEl.style.opacity = '';
   qEl.style.transform = '';
   qEl.classList.remove('anim-in');
@@ -2842,7 +2846,7 @@ const MAX_HINTS = 2;
 function getHintText(q, level) {
   if (q.type === 'number') {
     const ans = q.answer, margin = Math.max(Math.round(Math.abs(ans||1) * (level===1?0.3:0.12)), 3);
-    return `Tipp ${level}: Die Antwort liegt zwischen <strong>${ans - margin}</strong> und <strong>${ans + margin}</strong>${q.unit?' '+q.unit:''}.`;
+    return `Tipp ${level}: Die Antwort liegt zwischen <strong>${ans - margin}</strong> und <strong>${ans + margin}</strong>${MGQ.unit(q)?' '+MGQ.unit(q):''}.`;
   } else {
     const ans = q.answer;
     if (level === 1) return `Tipp 1: Die Antwort beginnt mit <strong>"${ans[0].toUpperCase()}"</strong>.`;
@@ -3399,6 +3403,7 @@ async function rankedSrvAnswer(val, timeout, grid) {
     rankedSrv.final = j;
     question.answer = j.answer;
     question.funFact = j.funFact || '';
+    if (j.en) question.en = Object.assign({}, question.en || {}, j.en);   // englische Aufloesung (Ranked)
     question.acceptedAnswers = j.acceptedAnswers || [];
     if (j.solutionGrid) question.solution = { shapeless: false, grid: j.solutionGrid.map(row => row.map(k => k ? [k] : null)) };   // fuer die Aufloesungsanzeige
   }
@@ -3572,7 +3577,7 @@ function buildSoloCatChips() {
   SOLO_ALL_CATEGORIES.forEach(cat => {
     const chip = document.createElement('div');
     chip.className = 'cat-chip' + (soloSelectedCats.has(cat) ? ' selected' : '');
-    chip.textContent = cat;
+    chip.textContent = MGQ.cat(cat);
     chip.addEventListener('click', () => {
       if (soloSelectedCats.has(cat)) { soloSelectedCats.delete(cat); chip.classList.remove('selected'); }
       else { soloSelectedCats.add(cat); chip.classList.add('selected'); }
@@ -4106,7 +4111,7 @@ if ('serviceWorker' in navigator) {
     if (host0) host0.style.display = '';
     try {
       var s = ensure();
-      if (s && typeof question !== 'undefined' && question) { s.resetRound(); s.say('reporter', question.question, 'ask'); }
+      if (s && typeof question !== 'undefined' && question) { s.resetRound(); s.say('reporter', MGQ.q(question), 'ask'); }
     } catch (e) {}
     return r;
   };

@@ -94,6 +94,7 @@
       try { var f = qs.filter(function (q) { return q.funFact && q.funFact.length > 30 && q.funFact.length < 150 && !/https?:/.test(q.funFact); }); if (f.length) tip.textContent = 'Wusstest du? ' + f[Math.floor(Math.random() * f.length)].funFact; } catch (e) {}
     }));
   }
+  if (global.MGQ && MGQ.en) add('Englisch', MGQ.ready, true);   // englische Fragen vor dem Start abwarten (weich: bei Fehler Deutsch)
   add('Icons', new Promise(function (res) { var t0 = Date.now(), iv = setInterval(function () { if (global.MGIcon && global.MGIcon.ready) { clearInterval(iv); global.MGIcon.ready.then(res, res); } else if (Date.now() - t0 > 4000) { clearInterval(iv); res(); } }, 50); }), true);
   timer = setTimeout(function () { var p = tasks.filter(function (t) { return !t.done; })[0]; if (p && !p.soft) fail('Das Laden dauert ungewöhnlich lange.'); else tasks.forEach(function (t) { if (!t.done) { t.done = true; doneCount++; } }); }, MAX_WAIT);
   raf = requestAnimationFrame(tick);

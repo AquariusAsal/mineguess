@@ -282,6 +282,7 @@ C(D, 2, 'Wo liegt der Enderdrache: im „Ende“ oder im „Nether“?', 'Ende',
 C(D, 2, 'Wo findet man Ghasts: im „Nether“ oder in der „Oberwelt“?', 'Nether', 'Oberwelt', 'Ghasts leben im Nether.', sD);
 
 // ───────── Ausgabe ─────────
+function main(opts) {
 const out = [];
 const seen = new Set(base.map(q => norm(q.question)));
 rows.forEach((r, i) => {
@@ -298,17 +299,22 @@ rows.forEach((r, i) => {
   seen.add(norm(o.question));
   const h = hash('w3|' + norm(q));
   o.rating = band(r.tier, h); o.tier = o.rating < 1200 ? 1 : o.rating < 2200 ? 2 : o.rating < 3200 ? 3 : 4;
-  o.gen = 'w3_' + norm(cat).slice(0, 8); o.source = r.src; o.__key = norm(q);
+  o.gen = 'w3_' + norm(cat).slice(0, 8); o.source = r.src; o.__key = norm(q); o.__row = i;
   out.push(o);
 });
 const idsPath = path.join(__dirname, 'wiki3-ids.json');
 const ids = fs.existsSync(idsPath) ? JSON.parse(fs.readFileSync(idsPath, 'utf8')) : {};
 let next = Math.max(30000, ...Object.values(ids)) + 1;
-out.forEach(q => { if (!ids[q.__key]) ids[q.__key] = next++; q.id = ids[q.__key]; delete q.__key; });
+out.forEach(q => { if (!ids[q.__key]) ids[q.__key] = next++; q.id = ids[q.__key]; q.__idKey = q.__key; delete q.__key; });
 out.sort((a, b) => a.id - b.id);
 const c = {}, t = {}, f = {}; out.forEach(q => { c[q.category] = (c[q.category] || 0) + 1; t[q.tier] = (t[q.tier] || 0) + 1; const k = q.choices ? 'choice' : q.type; f[k] = (f[k] || 0) + 1; });
-console.log('Wiki-Fakten:', out.length, JSON.stringify(c), JSON.stringify(t), JSON.stringify(f), missing.length ? 'FEHLENDE NAMEN: ' + [...new Set(missing)].join(', ') : '');
-if (dry) process.exit(0);
+if (!(opts && opts.noWrite)) console.log('Wiki-Fakten:', out.length, JSON.stringify(c), JSON.stringify(t), JSON.stringify(f), missing.length ? 'FEHLENDE NAMEN: ' + [...new Set(missing)].join(', ') : '');
+if (dry || (opts && opts.noWrite)) return out;
 fs.writeFileSync(idsPath, JSON.stringify(ids));
-fs.writeFileSync(qPath, JSON.stringify(base.concat(out), null, 2));
+fs.writeFileSync(qPath, JSON.stringify(base.concat(out.map(q => { const c = Object.assign({}, q); delete c.__row; delete c.__idKey; return c; })), null, 2));
 console.log('questions.json:', base.length + out.length, 'Fragen');
+
+  return out;
+}
+module.exports = { rows, main };
+if (require.main === module) main();

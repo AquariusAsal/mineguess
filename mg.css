@@ -884,3 +884,14 @@ html[data-contrast="high"] .btn, html[data-contrast="high"] .card, html[data-con
 [data-theme="light"] .mg-nav, [data-theme="light"] header { background:var(--bg); }
 .mg-logo, header h1, header h1 a { flex-shrink:0; min-width:0; }
 img.mg-banner, .mg-logo img.mg-banner, header h1 img.mg-banner { max-width:none; }
+
+/* Sprachflagge in der Kopfzeile */
+.mg-chip.mg-lang { min-width:44px; min-height:44px; padding:4px 8px; gap:6px; justify-content:center; font-family:var(--font-px); font-size:.7rem; letter-spacing:.04em; }
+.mg-chip.mg-lang .mg-flag { display:block; width:24px; height:16px; border:1px solid rgba(0,0,0,.45); box-sizing:content-box; flex-shrink:0; }
+[data-theme="light"] .mg-chip.mg-lang .mg-flag { border-color:rgba(0,0,0,.6); }
+@media (max-width:480px) { .mg-chip.mg-lang { padding:4px 6px; min-width:44px; } .mg-chip.mg-lang .mg-lang-code { display:none; } }
+.mg-lang-note { position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:2100; max-width:min(92vw,420px); padding:10px 14px; background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font-size:.9rem; box-shadow:0 4px 18px rgba(0,0,0,.35); }
+.mg-lang-note[hidden] { display:none; }
+#nav-gear, #settings-slot { display:flex; flex-wrap:nowrap; align-items:center; gap:6px; }
+.mg-lang + .mg-gear { margin-left:0; }
+@media (max-width:400px) { .mg-nav { gap:6px; padding-left:10px; padding-right:10px; } .mg-chip.mg-lang { min-width:40px; padding:4px 4px; } #nav-gear, #settings-slot { gap:4px; } .mg-nav .mg-nav-links { gap:2px; } }

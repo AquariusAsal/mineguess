@@ -33,7 +33,7 @@ test('Datenschutz: reports.json und qstats.json enthalten nur erlaubte Felder; T
     await new Promise(r => setTimeout(r, 2600));
     const reports = JSON.parse(fs.readFileSync(S.dataDir + '/reports.json', 'utf8'));
     assert.strictEqual(reports.length, 1);
-    const allowed = new Set(['category', 'reason', 'mode', 'format', 'questionId', 'round', 'text', 'ts', 'count', 'ctx', 'errors', 'room', 'player', 'contact', 'id', 'status', 'rk', 'rewarded']);
+    const allowed = new Set(['category', 'reason', 'mode', 'format', 'questionId', 'round', 'text', 'ts', 'count', 'ctx', 'errors', 'room', 'player', 'contact', 'id', 'status', 'rk', 'rewarded', 'lang']);
     Object.keys(reports[0]).forEach(k => assert.ok(allowed.has(k), 'unerwartetes Feld ' + k));   // keine IP, keine Nutzer-ID, kein Name (id = Meldungs-ID, rk nur mit Profil-Token bis zur Pruefung)
     assert.strictEqual(reports[0].category, 'frage'); assert.strictEqual(reports[0].questionId, qs[0].id);
     assert.ok(reports[0].text.length <= 300);

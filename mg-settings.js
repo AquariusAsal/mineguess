@@ -177,6 +177,7 @@
     btn.setAttribute('aria-label', 'Einstellungen öffnen'); btn.setAttribute('aria-haspopup', 'dialog'); btn.setAttribute('aria-expanded', 'false');
     btn.innerHTML = (global.MGIcon ? global.MGIcon.html('px.gear', 22) : 'Einstellungen');
     btn.addEventListener('click', open);
+    if (global.MGLang) MGLang.mount(container);   // Sprachflagge links neben dem Zahnrad
     container.appendChild(btn);
     return btn;
   }
@@ -218,5 +219,5 @@
       setTimeout(function () { location.href = h; }, 140);
     });
   })();
-  global.MGSettings = { mount: mount, open: open, close: close };
+  global.MGSettings = { mount: mount, open: open, close: close, isBusy: isBusy };
 })(window);

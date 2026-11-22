@@ -117,6 +117,7 @@
         elapsed: Date.now() - opened, website: dlg.querySelector('#mgr-website').value,
         context: { app: app, device: (global.matchMedia && matchMedia('(pointer: coarse)').matches) ? 'mobil' : 'desktop', errors: errors.slice(), ts: Date.now() }
       };
+      try { body.lang = (global.MGI18n && MGI18n.lang === 'en') ? 'en' : 'de'; } catch (e) {}
       if (picked.reason) body.reason = picked.reason;
       try { var pt = localStorage.getItem('mg_pt'); if (pt && dlg.querySelector('#mgr-link').checked) body.pt = pt; } catch (e) {}
       if (ctx.format) body.format = ctx.format;
