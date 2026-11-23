@@ -32,3 +32,21 @@ test('alle echten Fragen: Crafting nie erlaubt, andere Formate erlaubt', () => {
   }
   assert.ok(c > 0 && a > 0);
 });
+
+// Tipp-Button: Matrix Modus x Format
+const { hintAllowed } = require('../fpv-rules.js');
+test('Tipp nur bei Zahl und Entity ausserhalb von Hardcore, Challenge, Ranked', () => {
+  for (const mode of ['endless', 'blitz', 'daily', 'joker', 'categories', 'tf']) {
+    assert.strictEqual(hintAllowed(mode, 'number'), true, mode + ' number');
+    assert.strictEqual(hintAllowed(mode, 'entity'), true, mode + ' entity');
+    assert.strictEqual(hintAllowed(mode, 'choice'), false, mode + ' choice');
+    assert.strictEqual(hintAllowed(mode, 'tf'), false, mode + ' tf');
+    assert.strictEqual(hintAllowed(mode, 'crafting'), false, mode + ' crafting');
+  }
+  for (const mode of ['competition', 'ranked', 'hardcore', 'challenge', 'hl', 'crafting']) {
+    for (const f of ['number', 'entity', 'choice', 'tf', 'crafting']) assert.strictEqual(hintAllowed(mode, f), false, mode + ' ' + f);
+  }
+  assert.strictEqual(hintAllowed('endless', { type: 'number', answer: 3 }), true);
+  assert.strictEqual(hintAllowed('endless', { type: 'entity', choices: ['A', 'B'] }), false);
+  assert.strictEqual(hintAllowed('endless', null), false);
+});

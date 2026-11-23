@@ -51,9 +51,9 @@
     var r = panel.getBoundingClientRect(), x, y;
     {
       if (!anchorBox) { anchorBox = document.createElement('div'); anchorBox.className = 'fpv-hand-anchor'; document.body.appendChild(anchorBox); }
-      anchorBox.style.left = (r.left - 22) + 'px'; anchorBox.style.top = r.top + 'px'; anchorBox.style.width = (r.width + 44) + 'px'; anchorBox.style.height = (r.height + 40) + 'px';
+      anchorBox.style.left = (r.left - 44) + 'px'; anchorBox.style.top = r.top + 'px'; anchorBox.style.width = (r.width + 88) + 'px'; anchorBox.style.height = (r.height + 40) + 'px';
       if (global.MGHand && MGHand.setAnchor) { try { MGHand.setAnchor(anchorBox); } catch (e) {} }
-      x = r.left - 16; y = r.bottom - 30;
+      x = r.left - 30; y = r.bottom - 30;
     }
     if (!leftHand) { leftHand = src.cloneNode(true); leftHand.classList.add('mgh-left'); var it = leftHand.querySelector('.mgh-item'); if (it) it.hidden = true; document.body.appendChild(leftHand); }
     var pos = leftHand.querySelector('.mgh-pos');
@@ -75,7 +75,8 @@
     document.body.classList.toggle('fpv-mp', cfg.mode === 'mp'); ls('mg_view', 'fpv'); update();
     if (cfg.onChange) cfg.onChange(true);
     if (cfg.sendPose) { clearInterval(poseIv); poseIv = setInterval(sendPose, 100); }
-    if (gesture) fullscreen();
+    var fsAuto = true; try { fsAuto = ls('mg_fpv_fs') !== '0'; } catch (e) {}
+    if (gesture && fsAuto) fullscreen();
     try { global.dispatchEvent(new Event('resize')); } catch (e) {}
   }
   function exit(keepPref) {

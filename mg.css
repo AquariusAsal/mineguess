@@ -988,3 +988,49 @@ body.fpv-on .fpv-hist:empty { display:none; }
 @media (max-width:700px) { body.fpv-on .fpv-side { top:12px !important; width:128px; font-size:.7rem; } body.fpv-on .fpv-hist { display:none; } body.fpv-on .fpv-sidel { top:96px; } }
 @media (prefers-reduced-motion: reduce) { body.fpv-on .fpv-map #question-text, body.fpv-on .fpv-map #input-area { transform:none !important; } }
 body.fpv-on #result-panel.fpv-map:not(.show) { display:none !important; }
+/* Ich-Ansicht Feinschliff: Optionsraster kompakt, Frage nie gequetscht, Kartenhoehe nach Inhalt */
+body.fpv-on .fpv-map > * { flex-shrink:0; }
+body.fpv-on .fpv-map:has(.entity-grid) { max-height:48vh; }
+body.fpv-on .fpv-map .entity-grid { gap:4px; }
+body.fpv-on .fpv-map .entity-opt { min-height:32px; padding:3px 6px; font-size:.74rem; }
+body.fpv-on .fpv-map .entity-opt img { width:18px; height:18px; }
+body.fpv-on .fpv-map #question-text { font-size:.88rem; max-height:12vh; }
+body.fpv-on .fpv-map .buzz-status { font-size:.72rem; padding:4px 6px; }
+body.fpv-on .fpv-map .num-row { margin-top:2px !important; }
+body.fpv-on .fpv-map .num-row { flex-wrap:nowrap; }
+body.fpv-on .fpv-map .num-row .btn-ok { flex:0 0 auto; padding:4px 8px; }
+
+/* ===== Einstellungen neu (mg-settings.js): Modal mit Seitenleiste, Suche, Kategorien ===== */
+#mg-settings { background:rgba(0,0,0,.6); display:none; }
+#mg-settings.open { display:grid; place-items:center; padding:16px; }
+#mg-settings .mgs { position:relative; display:grid; grid-template-columns:260px minmax(0,1fr); width:min(980px,100%); height:min(640px,calc(100vh - 32px)); background:var(--bg1); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); box-shadow:0 12px 40px rgba(0,0,0,.55); overflow:hidden; }
+.mgs-side { display:flex; flex-direction:column; gap:10px; padding:14px; background:var(--bg2); border-right:2px solid var(--border); overflow:auto; }
+.mgs-h { font-family:var(--font-px); font-size:1.05rem; margin:2px 4px 0; }
+.mgs-search input { width:100%; min-height:42px; padding:6px 10px; background:var(--bg); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font:500 .9rem var(--font); }
+.mgs-nav { display:flex; flex-direction:column; gap:4px; }
+.mgs-cat { display:flex; align-items:center; gap:10px; min-height:44px; padding:6px 10px; background:transparent; color:var(--text); border:2px solid transparent; border-radius:var(--r); font:600 .9rem var(--font); text-align:left; cursor:pointer; }
+.mgs-cat:hover { background:var(--bg3); }
+.mgs-cat.on { background:var(--bg1); border-color:var(--green); }
+.mgs-main { display:flex; flex-direction:column; min-width:0; min-height:0; }
+.mgs-top { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:2px solid var(--border); }
+.mgs-top h3 { flex:1; font-family:var(--font-px); font-size:1rem; margin:0; }
+.mgs-back { display:none; min-width:44px; min-height:44px; background:transparent; color:var(--text); border:2px solid var(--border2); border-radius:var(--r); font:700 1.4rem/1 var(--font); cursor:pointer; }
+.mgs-body { flex:1; overflow:auto; padding:6px 16px 16px; overscroll-behavior:contain; }
+#mg-settings .mg-set-row { border-top:2px solid var(--border); }
+#mg-settings .mg-set-row:first-child { border-top:0; }
+.mg-set-note { color:var(--muted); font-size:.82rem; margin:10px 0; }
+.mgs-none { color:var(--muted); padding:16px 0; }
+@media (max-width:700px) {
+  #mg-settings.open { padding:0; }
+  #mg-settings .mgs { grid-template-columns:1fr; width:100vw; height:100vh; height:100dvh; border:0; border-radius:0; }
+  .mgs-side, .mgs-main { grid-area:1/1; border:0; }
+  .mgs[data-view="list"] .mgs-main { display:none; }
+  .mgs[data-view="cat"] .mgs-side { display:none; }
+  .mgs[data-view="cat"] .mgs-back { display:inline-flex; align-items:center; justify-content:center; }
+  .mgs-cat { min-height:52px; font-size:1rem; }
+}
+html[data-contrast="high"] .mgs-cat.on { outline:3px solid currentColor; }
+.mgs-sidehead { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.mgs-sidehead .mg-close { display:none; }
+@media (max-width:700px) { .mgs-sidehead .mg-close { display:inline-block; } }
+#mg-settings select.form-input { background:var(--bg); color:var(--text); border:2px solid var(--border2); border-radius:var(--r); min-height:38px; padding:2px 8px; font:600 .85rem var(--font); }

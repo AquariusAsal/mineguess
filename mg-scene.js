@@ -184,9 +184,9 @@
   }
 
   // ───────────────────────── WebGL ─────────────────────────
-  var VS = 'attribute vec3 aPos;attribute vec2 aUV;attribute vec3 aNor;uniform mat4 uVP;uniform mat4 uM;' +
+  var VS = 'attribute vec3 aPos;attribute vec2 aUV;attribute vec3 aNor;uniform mat4 uVP;uniform mat4 uM;uniform float uWind;uniform float uTime;' +
     'varying vec2 vUV;varying float vL;varying vec3 vN;varying vec3 vW;' +
-    'void main(){vec4 w=uM*vec4(aPos,1.0);gl_Position=uVP*w;vUV=aUV;vW=w.xyz;' +
+    'void main(){vec4 w=uM*vec4(aPos,1.0);if(uWind>0.0){float k=1.0-aUV.y;w.x+=sin(uTime*1.8+w.z*0.17+w.x*0.11)*uWind*k;w.z+=cos(uTime*1.4+w.x*0.13)*uWind*0.6*k;}gl_Position=uVP*w;vUV=aUV;vW=w.xyz;' +
     'vec3 n=normalize(mat3(uM[0].xyz,uM[1].xyz,uM[2].xyz)*aNor);vN=n;' +
     'vL=0.58+0.42*clamp(dot(n,normalize(vec3(0.25,0.9,0.5))),0.0,1.0);}';
   var FS = 'precision mediump float;varying vec2 vUV;varying float vL;varying vec3 vN;varying vec3 vW;' +
@@ -219,7 +219,7 @@
       pos: gl.getAttribLocation(p, 'aPos'), uv: gl.getAttribLocation(p, 'aUV'), nor: gl.getAttribLocation(p, 'aNor'),
       vp: gl.getUniformLocation(p, 'uVP'), m: gl.getUniformLocation(p, 'uM'),
       tex: gl.getUniformLocation(p, 'uTex'), tint: gl.getUniformLocation(p, 'uTint'),
-      eye: gl.getUniformLocation(p, 'uEye'), gloss: gl.getUniformLocation(p, 'uGloss'), fogOn: gl.getUniformLocation(p, 'uFogOn'), fogC: gl.getUniformLocation(p, 'uFogC'), fogR: gl.getUniformLocation(p, 'uFogR')
+      eye: gl.getUniformLocation(p, 'uEye'), gloss: gl.getUniformLocation(p, 'uGloss'), fogOn: gl.getUniformLocation(p, 'uFogOn'), wind: gl.getUniformLocation(p, 'uWind'), time: gl.getUniformLocation(p, 'uTime'), fogC: gl.getUniformLocation(p, 'uFogC'), fogR: gl.getUniformLocation(p, 'uFogR')
     };
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -254,6 +254,7 @@
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     return t;
   };
+  Renderer.prototype.wind = function (amp, t) { var gl = this.gl, L = this.loc; gl.uniform1f(L.wind, amp || 0); if (amp) gl.uniform1f(L.time, t || 0); };
   Renderer.prototype.fog = function (on, c, r) { var gl = this.gl, L = this.loc; gl.uniform1f(L.fogOn, on || 0); if (on) { gl.uniform3f(L.fogC, c[0], c[1], c[2]); gl.uniform2f(L.fogR, r[0], r[1]); } };
   Renderer.prototype.buffer = function (data, noCull) {
     var gl = this.gl, b = gl.createBuffer();
@@ -316,7 +317,7 @@
   function reporterPose(f, t, now) {
     var p = newPose(), w = REDUCED ? 0 : 1, ph = f.phase;
     p.armRx = -1.25 + Math.sin(now * 1.1 + ph) * 0.03 * w; p.armLx = p.armRx;
-    p.armRz = -0.42; p.armLz = 0.42;
+    p.armRz = -0.37; p.armLz = 0.42;
     p.headX = 0.1; p.headY = Math.sin(now * 0.5 + ph) * 0.1 * w;
     if (f.state === 'cheer') { p.headX = 0.1 + Math.sin(t * 10) * 0.28 * Math.max(0, 1 - t / 1.0) * w; }
     else if (f.state === 'wrong') { p.headY = Math.sin(t * 14) * 0.45 * Math.max(0, 1 - t / 0.9) * w; }
@@ -474,7 +475,7 @@
     });
     return new Float32Array(out);
   }
-  Scene.prototype.setBiome = function (name) { if (!BIOMES[name]) name = 'plains'; if (this.biomeName !== name) { this.biomeName = name; this.env = null; } };
+  Scene.prototype.setBiome = function (name) { if (!name) { this.biomeName = null; this.env = null; return; } if (!BIOMES[name]) name = 'plains'; if (this.biomeName !== name) { this.biomeName = name; this.env = null; } };
   Scene.prototype.setGfx = function (q) { var m = { high: 0, mid: 1, low: 2 }; if (m[q] != null) { this._gfxFix = m[q]; } else { this._gfxFix = null; this._gfxAuto = null; } this.env = null; };
   Scene.prototype.gfxLevel = function () {
     if (this._gfxFix != null) return this._gfxFix;
@@ -486,7 +487,8 @@
   Scene.prototype.ensureEnv = function () {
     if (this.env || !this.R || this.preview) return;
     var R = this.R, self = this, q = this.gfxLevel(), qf = [1, 0.6, 0.3][q];
-    var name = this.biomeName || ['plains', 'forest', 'plains', 'mountains', 'forest', 'snow', 'desert'][Math.floor(Math.random() * 7)], cfg = BIOMES[name] || BIOMES.plains;
+    var pref = ''; try { pref = localStorage.getItem('mg_fpv_biome') || ''; } catch (x) {}
+    var name = this.biomeName || (BIOMES[pref] ? pref : '') || ['plains', 'forest', 'plains', 'mountains', 'forest', 'snow', 'desert'][Math.floor(Math.random() * 7)], cfg = BIOMES[name] || BIOMES.plains;
     this.biomeName = name; this._envQ = q;
     var E = { cfg: cfg, tex: {}, g: {}, clouds: [], trees: {}, q: q }, rnd = rng(name.length * 7919 + (this.biomeSeed || 12345));
     var i, a, r;
@@ -498,18 +500,18 @@
     cfg.trees.forEach(function (t) { byType[t] = { trunk: [], crown: [] }; });
     for (i = 0; i < nTrees; i++) {
       var tp = cfg.trees[Math.floor(rnd() * cfg.trees.length)], T = byType[tp];
-      a = rnd() * Math.PI * 2; r = 115 + rnd() * 105; var x = Math.sin(a) * r, z = -Math.cos(a) * r, th = 48 + Math.floor(rnd() * 3) * 16;
+      a = rnd() * Math.PI * 2; r = 140 + rnd() * 90; var x = Math.sin(a) * r, z = -Math.cos(a) * r, th = 32 + Math.floor(rnd() * 3) * 16;
       if (tp === 'cactus') { T.trunk.push({ x: x, y: th / 3, z: z, w: 16, h: th * 2 / 3, d: 16, rx: 1, ry: th / 48 }); continue; }
       T.trunk.push({ x: x, y: th / 2, z: z, w: 16, h: th, d: 16, rx: 1, ry: th / 16 });
-      var cs = (tp === "darkoak" ? 64 : tp === "spruce" ? 48 : 48) + (rnd() < 0.4 ? 16 : 0);
+      var cs = (tp === "darkoak" ? 48 : tp === "spruce" ? 40 : 40) + (rnd() < 0.4 ? 16 : 0);
       if (tp === 'spruce') { T.crown.push({ x: x, y: th - 8, z: z, w: cs + 16, h: 24, d: cs + 16, rx: (cs + 16) / 16, ry: 1.5 }, { x: x, y: th + 16, z: z, w: cs, h: 24, d: cs, rx: cs / 16, ry: 1.5 }, { x: x, y: th + 40, z: z, w: cs - 24, h: 24, d: cs - 24, rx: (cs - 24) / 16, ry: 1.5 }); }
       else { T.crown.push({ x: x, y: th + 8, z: z, w: cs, h: 32, d: cs, rx: cs / 16, ry: 2 }, { x: x, y: th + 32, z: z, w: cs - 32, h: 16, d: cs - 32, rx: (cs - 32) / 16, ry: 1 }); }
     }
     Object.keys(byType).forEach(function (t) { var T = byType[t]; E.trees[t] = { trunk: T.trunk.length ? R.buffer(mergeBoxes(T.trunk)) : null, crown: T.crown.length ? R.buffer(mergeBoxes(T.crown)) : null }; });
-    var gL = [], sL = [], nL = [], cols = Math.round(34 * (q === 2 ? 0.6 : 1)), step = Math.PI * 2 / cols, mr = 235;
+    var gL = [], sL = [], nL = [], cols = Math.round(34 * (q === 2 ? 0.6 : 1)), step = Math.PI * 2 / cols, mr = 270;
     for (i = 0; i < cols; i++) {
-      var ph = Math.sin(i * 0.55) * 0.5 + Math.sin(i * 1.3 + 1) * 0.5 + rnd() * 0.5, hh = Math.max(16, Math.round((24 + (ph + 1) * 24 * cfg.mount) / 8) * 8);
-      var an2 = i * step, cx = Math.sin(an2) * mr, cz = -Math.cos(an2) * mr, w = 58;
+      var ph = Math.sin(i * 0.55) * 0.5 + Math.sin(i * 1.3 + 1) * 0.5 + rnd() * 0.5, hh = Math.max(32, Math.round((48 + (ph + 1) * 48 * cfg.mount) / 8) * 8);
+      var an2 = i * step, cx = Math.sin(an2) * mr, cz = -Math.cos(an2) * mr, w = 70;
       var g1 = Math.min(hh, 24), s1 = Math.max(0, Math.min(hh, 56) - 24), n1 = Math.max(0, hh - 56);
       gL.push({ x: cx, y: g1 / 2, z: cz, w: w, h: g1, d: w, rx: w / 16, ry: g1 / 16 });
       if (s1 > 0) sL.push({ x: cx, y: 24 + s1 / 2, z: cz, w: w - 12, h: s1, d: w - 12, rx: (w - 12) / 16, ry: s1 / 16 });
@@ -529,8 +531,11 @@
     var T = E.tex, I = M.t(0, 0, 0);
     R.fog(fk, cfg.sky[1], [190, 440]);
     R.draw(E.g.ground, I, T.ground || white, T.ground ? cfg.gt : [0.45, 0.62, 0.3]);
+    var wamp = REDUCED || (function () { try { return localStorage.getItem('mg_fpv_wind') === '0'; } catch (e) { return false; } })() ? 0 : 1.1;
+    R.wind(wamp, now);
     if (E.g.grass) R.draw(E.g.grass, I, T.grass || white, T.grass ? [0.5, 0.78, 0.28] : [0.4, 0.7, 0.2]);
     if (E.g.flowers) R.draw(E.g.flowers, I, T.flower || white, T.flower ? [1, 1, 1] : [0.95, 0.85, 0.2]);
+    R.wind(0);
     if (E.g.mG) R.draw(E.g.mG, I, T.ground || white, T.ground ? cfg.gt : [0.45, 0.62, 0.3]);
     if (E.g.mS) R.draw(E.g.mS, I, T.stone || white, T.stone ? [1, 1, 1] : [0.5, 0.5, 0.52]);
     if (E.g.mN) R.draw(E.g.mN, I, T.snow || white, T.snow ? [1.05, 1.05, 1.1] : [0.95, 0.97, 1]);
@@ -542,8 +547,8 @@
     R.fog(0);
     var ay = this._camYaw || 0, sa = ay + 0.5, sl = 330, se = 0.2;
     R.draw(E.g.sun, M.mul(M.t(Math.sin(sa) * Math.cos(se) * sl, Math.sin(se) * sl + 36, Math.cos(sa) * Math.cos(se) * sl), M.ry(sa + Math.PI)), white, [2.2, 1.9, 1]);
-    var drift = REDUCED ? 0 : now * 0.01;
-    E.clouds.forEach(function (c) { var an = c.a + drift; R.draw(E.g.cloud, M.mul(M.t(Math.sin(an) * c.r, c.y, Math.cos(an) * c.r), M.mul(M.ry(an), M.s(c.w, c.h, c.d))), white, [1.45, 1.42, 1.4]); });
+    var drift = REDUCED ? 0 : now * 0.01, cl = true; try { cl = localStorage.getItem('mg_fpv_clouds') !== '0'; } catch (x) {}
+    if (cl) E.clouds.forEach(function (c) { var an = c.a + drift; R.draw(E.g.cloud, M.mul(M.t(Math.sin(an) * c.r, c.y, Math.cos(an) * c.r), M.mul(M.ry(an), M.s(c.w, c.h, c.d))), white, [1.45, 1.42, 1.4]); });
   };
   Scene.prototype.updateSky = function (fk, pitchTot, fovRad) {
     var E = this.env, b = this.box; if (!b) return;
@@ -674,8 +679,8 @@
     if (f.emote) { if (f.emote.keys && f.emote.keys.yaw) { f.pose.yaw = 0; if (f.vel) f.vel.yaw = 0; } f.emote = null; }   // Antwort/Glocke/neue Frage bricht ein Emote ab
   };
   // Ich-Ansicht: Kamera auf Augenhoehe der Figur id; Umsehen relativ zur Tischrichtung
-  Scene.prototype.setFpv = function (on, id) { this.fpvOn = !!on; if (id) this.fpvId = id; if (on) { this.fpvYaw = 0; this.fpvPitch = -0.42; } this.needsRender = true; if (this.wake) this.wake(); };
-  Scene.prototype.fpvLook = function (dyaw, dpitch) { this.fpvYaw = Math.max(-1.745, Math.min(1.745, (this.fpvYaw || 0) + dyaw)); this.fpvPitch = Math.max(-1.15, Math.min(0.35, (this.fpvPitch == null ? -0.42 : this.fpvPitch) + dpitch)); this.needsRender = true; if (this.wake) this.wake(); };
+  Scene.prototype.setFpv = function (on, id) { this.fpvOn = !!on; if (id) this.fpvId = id; if (on) { this.fpvYaw = 0; this.fpvPitch = -0.37; } this.needsRender = true; if (this.wake) this.wake(); };
+  Scene.prototype.fpvLook = function (dyaw, dpitch) { this.fpvYaw = Math.max(-1.745, Math.min(1.745, (this.fpvYaw || 0) + dyaw)); this.fpvPitch = Math.max(-1.15, Math.min(0.35, (this.fpvPitch == null ? -0.37 : this.fpvPitch) + dpitch)); this.needsRender = true; if (this.wake) this.wake(); };
   // Fremde Blickrichtung (Multiplayer): yaw/pitch in Grad relativ zum Tisch -> Kopf der Figur (nur Optik)
   Scene.prototype.setLook = function (id, yawDeg, pitchDeg) { var f = this.figs[id]; if (!f) return; f.look = { y: Math.max(-100, Math.min(100, +yawDeg || 0)) * Math.PI / 180, p: Math.max(-66, Math.min(20, +pitchDeg || 0)) * Math.PI / 180, t: performance.now() / 1000 }; this.needsRender = true; if (this.wake) this.wake(); };
   // Emote abspielen (nur Transform); bei reduzierter Bewegung 2 s Symbol-Popup statt Animation
@@ -814,9 +819,9 @@
     var eye = [target[0] + D * Math.cos(el) * Math.sin(vy), target[1] + D * Math.sin(el), target[2] + D * Math.cos(el) * Math.cos(vy)];
     var near = 5, fk = this.preview ? 0 : (this.fpvK || 0), fme = fk > 0 ? this.figs[this.fpvId] : null;
     if (fme) {   // Ich-Ansicht: Augen der eigenen Figur (y=28), Yaw +-100 Grad, Pitch -66..+20 Grad, Weitwinkel
-      var e = fk * fk * (3 - 2 * fk), ay = fme.yaw + (this.fpvYaw || 0), pp = (this.fpvPitch == null ? -0.42 : this.fpvPitch), cp = Math.cos(pp);
+      var e = fk * fk * (3 - 2 * fk), ay = fme.yaw + (this.fpvYaw || 0), pp = (this.fpvPitch == null ? -0.37 : this.fpvPitch), cp = Math.cos(pp);
       var fe = [fme.x - Math.sin(fme.yaw) * 14, 36, fme.z - Math.cos(fme.yaw) * 14], ft = [fe[0] + Math.sin(ay) * cp * 20, fe[1] + Math.sin(pp) * 20, fe[2] + Math.cos(ay) * cp * 20];
-      this._camYaw = ay; var lp = function (a, b) { return a + (b - a) * e; }, ffov = (asp < 1 ? 86 : 82) * Math.PI / 180;
+      this._camYaw = ay; var lp = function (a, b) { return a + (b - a) * e; }, ffov = ((function () { var v = 82; try { v = parseFloat(localStorage.getItem('mg_fpv_fov')) || 82; } catch (x) {} v = Math.max(60, Math.min(100, v)); return asp < 1 ? v + 4 : v; })()) * Math.PI / 180;
       eye = [lp(eye[0], fe[0]), lp(eye[1], fe[1]), lp(eye[2], fe[2])]; target = [lp(target[0], ft[0]), lp(target[1], ft[1]), lp(target[2], ft[2])]; fov = lp(fov, ffov); near = lp(5, 0.5);
     }
     var P = M.persp(fov, asp, near, 400), V = M.look(eye, target, [0, 1, 0]);
@@ -970,7 +975,7 @@
       say: function (id, t, k) { s.say(id, t, k); }, clearBubble: function (id) { s.clearBubble(id); },
       react: function (id, k) { s.react(id, k); }, setLocked: function (ids) { s.setLocked(ids); },
       resetRound: function () { s.resetRound(); }, setMyId: function (id) { s.myId = id; },
-      playEmote: function (id, e) { s.playEmote(id, e); }, setFpv: function (on, id) { s.setFpv(on, id); }, setLook: function (id, y, p) { s.setLook(id, y, p); }, setBiome: function (n) { s.setBiome(n); }, setGfx: function (q) { s.setGfx(q); }, get fps() { return s._fpsAvg || 0; }, get gfx() { return s.gfxLevel(); }, get fpvYaw() { return s.fpvYaw || 0; }, get fpvPitch() { return s.fpvPitch == null ? -0.42 : s.fpvPitch; }, fpvLook: function (a, b) { s.fpvLook(a, b); }, get fpvOn() { return !!s.fpvOn; }, get fpvAmount() { return s.fpvK || 0; }, get figs() { return s.figs; },
+      playEmote: function (id, e) { s.playEmote(id, e); }, setFpv: function (on, id) { s.setFpv(on, id); }, setLook: function (id, y, p) { s.setLook(id, y, p); }, setBiome: function (n) { s.setBiome(n); }, setGfx: function (q) { s.setGfx(q); }, get fps() { return s._fpsAvg || 0; }, get gfx() { return s.gfxLevel(); }, get fpvYaw() { return s.fpvYaw || 0; }, get fpvPitch() { return s.fpvPitch == null ? -0.37 : s.fpvPitch; }, fpvLook: function (a, b) { s.fpvLook(a, b); }, get fpvOn() { return !!s.fpvOn; }, get fpvAmount() { return s.fpvK || 0; }, get figs() { return s.figs; },
       isGL: function () { return !!s.R; }, setViewYaw: function (v) { s.viewYaw = v; s.needsRender = true; s.wake(); }, destroy: function () { s.destroy(); }
     };
   }

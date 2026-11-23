@@ -37,6 +37,7 @@
   <script src="mg-spotify.js"></script>
   <script src="mg-emote.js"></script>
   <script src="fpv-rules.js"></script>
+  <script src="mg-hand.js"></script>
   <script src="mg-fpv.js"></script>
   <script src="mg-scene.js"></script>
   <script src="mg-craft.js"></script>
@@ -1131,7 +1132,7 @@ socket.on('result', ({ answer, funFact, scores, nextIn, winnerId, resultCount, e
     title.className   = 'result-title lost';
   }
 
-  el('result-answer').innerHTML  = `Richtige Antwort: <strong style="color:var(--green)">${esc(answer)}</strong>`;
+  el('result-answer').innerHTML  = `Richtige Antwort: ${(window.MGIcon && MGIcon.imgFor) ? MGIcon.imgFor(answer, 24) : ''}<strong style="color:var(--green)">${esc(answer)}</strong>`;
   el('funfact-text').textContent = funFact || '';
   { const fb = el('funfact-text').closest('.funfact-box'); if (fb) fb.style.display = (funFact && String(funFact).trim()) ? '' : 'none'; }
 

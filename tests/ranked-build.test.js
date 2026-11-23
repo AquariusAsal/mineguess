@@ -23,9 +23,9 @@ test('Ranked-Bau: Server sendet nur den Ergebnisnamen (kein Raster/keine Loesung
     const r = await post(S.url + '/api/ranked/answer', { runId: st.body.runId, grid: bad });
     assert.strictEqual(r.body.valid, false);
   }
-  // Tipp: ein richtiger Slot
+  // Tipps sind in Ranked abgeschaltet (auch beim Bauen): 403 hint_disabled, keine Zustandsaenderung
   const h = await post(S.url + '/api/ranked/hint', { runId: st.body.runId, grid: E() });
-  assert.ok(h.body.ok && h.body.hint && Number.isInteger(h.body.hint.r) && h.body.hint.key);
+  assert.strictEqual(h.status, 403); assert.strictEqual(h.body.error, 'hint_disabled'); assert.ok(!h.body.ok && !h.body.text && !h.body.hint);
   // falsche Pruefung: nur Anzahl und Zellenstatus
   const wrong = E(); wrong[0][0] = 'bedrock';
   const r1 = await post(S.url + '/api/ranked/answer', { runId: st.body.runId, grid: wrong });
@@ -49,4 +49,17 @@ test('Ranked-Bau: ohne Anmeldung (build:true) kommt nie die Bau-Variante; drei F
   let last; for (let k = 0; k < 3; k++) { await wait(300); last = await post(S.url + '/api/ranked/answer', { runId: st2.body.runId, grid: w }); }
   assert.strictEqual(last.body.final, true); assert.strictEqual(last.body.correct, false); assert.ok(last.body.answer);
   assert.ok(nx2.body.question.mode === 'build');
+});
+
+test('Ranked: Tipps sind fuer alle Formate abgeschaltet (403 hint_disabled), ohne MMR-/Lauf-Einfluss', async () => {
+  const st = await post(S.url + '/api/ranked/start', { gid: 'hint_' + Date.now() + 'abcdef', name: 'Tipp' });
+  const nx = await post(S.url + '/api/ranked/next', { runId: st.body.runId }); assert.ok(nx.body.question);
+  for (let i = 0; i < 3; i++) { const h = await post(S.url + '/api/ranked/hint', { runId: st.body.runId, level: i + 1 }); assert.strictEqual(h.status, 403); assert.strictEqual(h.body.error, 'hint_disabled'); }
+  const ohne = await post(S.url + '/api/ranked/hint', { runId: 'gibtsnicht' }); assert.strictEqual(ohne.status, 403);
+  // der Lauf ist unveraendert: Antwort liefert keinen Tipp-Abzug (Ergebnis-Faktor ohne hints)
+  const q = require('../questions.json').find(x => x.id === nx.body.question.id);
+  await wait(400);
+  const right = q.type === 'number' ? String(q.answer) : q.answer;
+  const r = await post(S.url + '/api/ranked/answer', { runId: st.body.runId, answer: right });
+  if (q.type !== 'crafting') { assert.strictEqual(r.body.final, true); assert.strictEqual(r.body.correct, true); }
 });

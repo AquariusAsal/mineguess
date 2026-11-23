@@ -22,6 +22,7 @@
     opt: function (q, n) { if (en && q && q.en && Array.isArray(q.en.choices) && Array.isArray(q.choices)) { var i = q.choices.indexOf(n); if (i >= 0 && q.en.choices[i]) return q.en.choices[i]; } return n; },
     optEn: function (enOpts, deOpts, n) { if (en && Array.isArray(enOpts) && Array.isArray(deOpts)) { var i = deOpts.indexOf(n); if (i >= 0 && enOpts[i]) return enOpts[i]; } return n; },
     deName: function (n) { return en ? (toDe[String(n).toLowerCase()] || n) : n; },
+    byId: function (id) { return (en && EN && id != null) ? (EN[String(id)] || null) : null; },
     names: function () { return en ? names : null; },
     aliases: function () { return en ? aliases : null; }
   };

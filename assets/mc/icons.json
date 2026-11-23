@@ -911,5 +911,6 @@
  "Enderperle": "item/ender_pearl.png",
  "Lohenrute": "item/blaze_rod.png",
  "Endschiff": "block/stone_bricks.png",
- "Ozeanmonument": "block/prismarine_bricks.png"
+ "Ozeanmonument": "block/prismarine_bricks.png",
+ "Steinknopf": "block/stone.png"
 }

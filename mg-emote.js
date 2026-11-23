@@ -173,11 +173,11 @@
   document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (!isOpen()) {
-      if ((e.key === 'b' || e.key === 'B') && !typing(e) && cfg.getScene && cfg.getScene()) { e.preventDefault(); open(); }
+      if (String(e.key).toLowerCase() === (ls('mg_emote_key') || 'b') && !typing(e) && cfg.getScene && cfg.getScene()) { e.preventDefault(); open(); }
       return;
     }
     var k = e.key, segs = wheel.querySelectorAll('.mge-seg');
-    if (k === 'Escape' || k === 'b' || k === 'B') { e.preventDefault(); close(); return; }
+    if (k === 'Escape' || String(k).toLowerCase() === (ls('mg_emote_key') || 'b')) { e.preventDefault(); close(); return; }
     if (k === 'ArrowRight' || k === 'ArrowDown') { e.preventDefault(); sel = (sel + 1) % segs.length; render(); focusSeg(); return; }
     if (k === 'ArrowLeft' || k === 'ArrowUp') { e.preventDefault(); sel = (sel + segs.length - 1) % segs.length; render(); focusSeg(); return; }
     if (k === 'PageDown' || k === '.') { e.preventDefault(); setPage(page + 1); return; }
@@ -196,6 +196,8 @@
   function updateFab() {
     if (!fab) return; var sc = cfg.getScene && cfg.getScene(); fab.hidden = !sc || (cfg.enabled && !cfg.enabled() && !cfg.solo);
     // Multiplayer: Knopf direkt neben den Glockenknopf; Solo: am rechten Rand mittig (ueberdeckt keine Tipp-Zeile)
+    var fm = document.body.classList.contains('fpv-on') && document.querySelector('.fpv-map');
+    if (fm) { var fr = fm.getBoundingClientRect(); if (fr.right + 66 < innerWidth) { fab.style.left = (fr.right + 12) + 'px'; fab.style.top = (fr.bottom - 56) + 'px'; fab.style.right = 'auto'; fab.style.bottom = 'auto'; return; } fab.style.left = 'auto'; fab.style.right = '8px'; fab.style.top = '46%'; fab.style.bottom = 'auto'; return; }
     var bell = !cfg.solo && (document.getElementById('buzzer-btn'));
     if (bell && bell.offsetParent) { var r = bell.getBoundingClientRect(); if (r.right + 62 < innerWidth && r.width > 0) { fab.style.left = (r.right + 10) + 'px'; fab.style.top = (r.top + (r.height - 52) / 2) + 'px'; fab.style.right = 'auto'; fab.style.bottom = 'auto'; return; } }
     fab.style.left = fab.style.top = fab.style.bottom = ''; fab.style.right = cfg.solo ? '6px' : '14px'; if (cfg.solo) { fab.style.top = '46%'; fab.style.bottom = 'auto'; }
@@ -206,5 +208,5 @@
   function mute(pid, on) { if (on) muted[pid] = 1; else delete muted[pid]; }
   function isMuted(pid) { return !!muted[pid]; }
 
-  global.MGEmote = { init: init, receive: receive, denied: denied, trigger: trigger, open: open, close: close, sample: sample, svg: svg, nameOf: nameOf, durOf: durOf, load: load, setShown: setShown, isShown: function () { return shown; }, mute: mute, isMuted: isMuted, reduced: reduced, list: function () { return DATA ? DATA.emotes : fallbackData().emotes; }, toast: toast };
+  global.MGEmote = { init: init, receive: receive, denied: denied, trigger: trigger, open: open, close: close, sample: sample, svg: svg, nameOf: nameOf, durOf: durOf, load: load, setShown: setShown, isShown: function () { return shown; }, mute: mute, isMuted: isMuted, mutedCount: function () { return Object.keys(muted).length; }, mutedInfo: function () { var sc = cfg.getScene && cfg.getScene(), out = []; Object.keys(muted).forEach(function (pid) { var f = sc && sc.figs && sc.figs[pid]; out.push({ pid: pid, name: (f && f.name) || pid.slice(0, 6) }); }); return out; }, reduced: reduced, list: function () { return DATA ? DATA.emotes : fallbackData().emotes; }, toast: toast };
 })(window);

@@ -176,7 +176,7 @@
       dlg.innerHTML =
         '<div class="mg-profile-card">' +
           '<button type="button" class="mg-close mg-close-abs" id="mg-profile-x" aria-label="Schließen"></button>' +
-          '<h2 id="mg-profile-title">Mein Spielerkopf</h2>' +
+          '<h2 id="mg-profile-title">Profil und Figur</h2>' +
           '<p class="mg-profile-intro" id="mg-profile-intro"></p>' +
           '<div class="mg-profile-row">' +
             '<div id="mg-profile-preview" aria-label="Vorschau deiner Figur"></div>' +
@@ -241,7 +241,7 @@
     b.setAttribute('aria-label', 'Profil öffnen');
     function render() {
       var n = getName();
-      b.innerHTML = imgHTML(get(), 'sm') + '<span class="mg-chip-label">' + esc(opts.label || n || 'Mein Spielerkopf') + '</span>';
+      b.innerHTML = imgHTML(get(), 'sm') + '<span class="mg-chip-label">' + esc(opts.label || n || 'Profil') + '</span>';
       if (opts.label) b.title = n ? 'Profil von ' + n : 'Profil';
     }
     b.addEventListener('click', function () { if (typeof opts.onClick === 'function') opts.onClick(); else openProfile(); });

@@ -15,6 +15,13 @@
     return 'other';
   }
   function fpvAllowed(q) { var f = formatOf(q); return f === 'number' || f === 'entity' || f === 'choice' || f === 'tf'; }
-  var api = { formatOf: formatOf, fpvAllowed: fpvAllowed };
+  // Tipp-Button: nur bei Zahl und Entity-Eingabe, nie bei ODER, Wahr/Mythos, Crafting und nie in Hardcore, Challenge, Ranked ('competition')
+  var NO_HINT_MODES = { competition: 1, ranked: 1, hardcore: 1, challenge: 1, hl: 1, crafting: 1 };
+  function hintAllowed(mode, q) {
+    if (NO_HINT_MODES[String(mode || '')]) return false;
+    var f = typeof q === 'string' ? q : formatOf(q);
+    return f === 'number' || f === 'entity';
+  }
+  var api = { formatOf: formatOf, fpvAllowed: fpvAllowed, hintAllowed: hintAllowed };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MGFpvRules = api;
 })(typeof window !== 'undefined' ? window : this);

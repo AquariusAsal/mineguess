@@ -2565,6 +2565,7 @@ async function loadNextQuestion() {
 
   document.getElementById('sess-num').textContent      = '#' + (sessTotal + 1);
   document.getElementById('category-pill').textContent = MGQ.cat(question.category);
+  applyHintUi();
 
   // Animate question in
   const qEl = document.getElementById('question-text');
@@ -2857,6 +2858,13 @@ function getHintText(q, level) {
   }
 }
 
+// Tipp-Button und Joker nur bei Zahl/Entity-Eingabe ausserhalb von Hardcore, Challenge, Ranked (fpv-rules.js hintAllowed)
+function hintUiAllowed() { try { return !!(window.MGFpvRules && question && MGFpvRules.hintAllowed(gameMode, question)); } catch (e) { return true; } }
+function applyHintUi() {
+  const ok = hintUiAllowed(), ha = document.querySelector('.hint-area');
+  if (!ha) return;
+  [ha.querySelector('.joker-row'), document.getElementById('hint-btn'), document.getElementById('hint-box')].forEach(e => { if (e) e.style.display = ok ? '' : 'none'; });
+}
 function resetHints() {
   questionHints = 0;
   const btn = document.getElementById('hint-btn');
@@ -2871,6 +2879,7 @@ function resetHints() {
 
 async function useHint() {
   if (!question || questionHints >= MAX_HINTS || _srvBusy) return;
+  if (!hintUiAllowed() && !(window._build && _buildActive)) return;   // kein Tipp bei ODER, Wahr/Mythos, Hardcore, Challenge, Ranked
   let srvText = null;
   if (rankedSrv && rankedSrv.active && gameMode === 'competition') {
     _srvBusy = true;

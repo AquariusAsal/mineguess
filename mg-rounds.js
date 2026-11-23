@@ -43,7 +43,7 @@
     dlg.querySelector('#mgro-list').innerHTML = log.map(function (e, i) {
       return '<li class="mgro-item ' + (e.correct ? 'ok' : 'bad') + '"><div class="mgro-top"><span class="mgro-n">' + (i + 1) + '</span><span class="mgro-res">' + (e.correct ? '✓ Richtig' : '✕ Falsch') + '</span>' +
         (verified && verified[e.id] ? '<span class="mgro-ok" title="Von uns geprüft">\u2713 Geprüft</span>' : '') + '<span class="mgro-pts">' + (e.pts >= 0 ? '+' : '') + num(e.pts) + ' Pkt.</span>' + (typeof e.mmr === 'number' ? '<span class="mgro-mmr">' + (e.mmr >= 0 ? '+' : '') + e.mmr + ' MMR</span>' : '') + '</div>' +
-        '<p class="mgro-q">' + esc(e.q) + '</p><p class="mgro-a"><span>Deine Antwort: ' + esc((e.guesses && e.guesses.length) ? e.guesses.join(', ') : 'keine') + '</span><span>Richtig: <b>' + esc(e.answer) + '</b></span></p>' +
+        '<p class="mgro-q">' + esc(e.q) + '</p><p class="mgro-a"><span>Deine Antwort: ' + esc((e.guesses && e.guesses.length) ? e.guesses.join(', ') : 'keine') + '</span><span>Richtig: ' + ((global.MGIcon && MGIcon.imgFor) ? MGIcon.imgFor(e.answer, 20) : '') + '<b>' + esc(e.answer) + '</b></span></p>' +
         (e.id ? '<button type="button" class="btn btn-ghost mgro-rep" data-i="' + i + '" aria-label="Frage ' + (i + 1) + ' melden">Frage melden</button>' : '') + '</li>';
     }).join('');
     dlg.classList.add('open'); dlg.querySelector('#mgro-close').focus();

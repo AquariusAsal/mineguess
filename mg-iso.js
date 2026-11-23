@@ -17,13 +17,17 @@
     imgs[path] = new Promise(function (res) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = function () { res(null); }; i.src = BASE + path + '.png'; });
     return imgs[path];
   }
+  function solid(im) {
+    if (!im || !im.width) return im;
+    try { var c = document.createElement('canvas'); c.width = im.width; c.height = im.height; var x = c.getContext('2d'); x.drawImage(im, 0, 0); var d = x.getImageData(0, 0, c.width, c.height), p = d.data; for (var i = 3; i < p.length; i += 4) if (p[i] > 0) p[i] = Math.max(p[i], 215); x.putImageData(d, 0, 0); return c; } catch (e) { return im; }
+  }
   function loadMeta() {
     if (metaP) return metaP;
     var get = function (f) { return fetch(BASE + f).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
     metaP = Promise.all([get('models.json'), get('block-list.json'), get('craft-items.json')]).then(function (r) {
       meta = r[0] || {};
       if (Array.isArray(r[1])) { blocks = {}; r[1].forEach(function (n) { blocks[n] = 1; }); }
-      catIcon = {}; if (Array.isArray(r[2])) r[2].forEach(function (it) { if (it && it.de && it.key) catKey[it.de] = it.key; if (it && it.de && it.icon && /^block[/]/.test(it.icon)) catIcon[it.de] = String(it.icon).replace(/[.]png$/, ''); });
+      catIcon = {}; if (Array.isArray(r[2])) r[2].forEach(function (it) { if (it && it.de && it.key) catKey[it.de] = it.key; if (it && it.en && it.key) catKey[it.en] = it.key; if (it && it.en && it.icon && /^block[/]/.test(it.icon)) catIcon[it.en] = String(it.icon).replace(/[.]png$/, ''); if (it && it.de && it.icon && /^block[/]/.test(it.icon)) catIcon[it.de] = String(it.icon).replace(/[.]png$/, ''); });
       return meta;
     });
     return metaP;
@@ -42,7 +46,7 @@
     cube: [[0, 0, 0, 16, 16, 16]],
     anvil: [[2, 0, 2, 14, 4, 14], [4, 4, 3, 12, 5, 13], [6, 5, 4, 10, 10, 12], [3, 10, 0, 13, 16, 16]]
   };
-  var PATTERNS = [[/zauntor$/i, 'fence_gate'], [/zaun$/i, 'fence'], [/stufe$/i, 'slab_bottom'], [/treppe$/i, 'stairs'], [/mauer$/i, 'wall'], [/falltür$/i, 'trapdoor'], [/druckplatte$/i, 'pressure_plate'], [/knopf$/i, 'button'], [/teppich$/i, 'carpet'], [/amboss$/i, 'anvil']];
+  var PATTERNS = [[/fence gate$/i, 'fence_gate'], [/ fence$/i, 'fence'], [/ slab$/i, 'slab_bottom'], [/ stairs$/i, 'stairs'], [/ wall$/i, 'wall'], [/ trapdoor$/i, 'trapdoor'], [/ pressure plate$/i, 'pressure_plate'], [/ button$/i, 'button'], [/ carpet$/i, 'carpet'], [/^anvil$|^(chipped|damaged) anvil$/i, 'anvil'], [/zauntor$/i, 'fence_gate'], [/zaun$/i, 'fence'], [/stufe$/i, 'slab_bottom'], [/treppe$/i, 'stairs'], [/mauer$/i, 'wall'], [/falltür$/i, 'trapdoor'], [/druckplatte$/i, 'pressure_plate'], [/knopf$/i, 'button'], [/teppich$/i, 'carpet'], [/amboss$/i, 'anvil']];
   // assets/mc/models.json: { items: { <key>: { m, side, top, bottom } } }, Schluessel ueber den Katalog (de -> key)
   function entry(label) { var k = catKey[label]; return (k && meta && meta.items && meta.items[k]) || null; }
   function tp(p) { p = String(p || '').replace(/[.]png$/, ''); return /(^|[/])null$/.test(p) ? '' : p; }
@@ -54,7 +58,7 @@
   }
   var EXTRA = { 'Amboss': 'block/anvil', 'Bruchsteintreppe': 'block/cobblestone', 'Bruchsteinstufe': 'block/cobblestone', 'Bruchsteinmauer': 'block/cobblestone' };
   // Im Spiel flache Sprites: nie 3D (Tueren, Schilder, Boote, Floesse, Laternen, Ketten, Kerzen, Fackeln, Scheiben, Truhe)
-  var FLAT = /(^|[^l])tür$|schild$|boot$|floß$|laterne$|kette$|kerze$|fackel$|scheibe$|^truhe$/i;
+  var FLAT = /(^|[^l])tür$|schild$|boot$|floß$|laterne$|kette$|kerze$|fackel$|scheibe$|^truhe$|(^|[^a-z])(door|sign|boat|raft|lantern|chain|candle|torch|glass pane|chest)$/i;
   function flatPath(label) {
     if (FLAT.test(label)) return '';
     if (meta && meta[label] && meta[label].t) return meta[label].t;
@@ -95,9 +99,14 @@
   function build(label) {
     return Promise.all([loadMeta(), (global.MGIcon && MGIcon.ready) ? MGIcon.ready : Promise.resolve()]).then(function () {
       var e = entry(label), m = modelOf(label), T = flatPath(label); if (!T) return null;
-      if (e && !FLAT.test(label) && !(m === 'cube' && tp(e.top) === tp(e.side))) {
+      if (e && !FLAT.test(label)) {   // models.json: auch schlichte Wuerfel (Bretter, Wolle, Glas, Keramik) als 3D-Block
         var sd = tp(e.side) || T, tpP = tp(e.top) || sd;
-        return Promise.all([loadImg(sd), loadImg(tpP)]).then(function (q) { if (!q[0]) return null; return { boxes: M[m] || [[0, 0, 0, 16, 16, 16]], tex: { top: q[1] || q[0], left: q[0], right: q[0] } }; });
+        var glass = /(^|_)glass$/.test(e.key || '');   // Glasbloecke: Alpha anheben, damit die Farbe (z. B. Orange) auf dunklem Grund erkennbar bleibt
+        return Promise.all([loadImg(sd), loadImg(tpP)]).then(function (q) { if (glass) q = q.map(solid); if (!q[0]) return null; return { boxes: M[m] || [[0, 0, 0, 16, 16, 16]], tex: { top: q[1] || q[0], left: q[0], right: q[0] } }; });
+      }
+      var ck = catKey[label];
+      if (!e && ck && /(^|_)glass$/.test(ck) && T && !FLAT.test(label)) {   // Glasbloecke (nicht in models.json): 3D-Wuerfel mit angehobenem Alpha
+        return loadImg(T).then(function (im) { if (!im) return null; var g = solid(im); return { boxes: [[0, 0, 0, 16, 16, 16]], tex: { top: g, left: g, right: g } }; });
       }
       var base = T.replace(/_(side|front|top|bottom)$/, '');
       var topP = m === 'anvil' ? 'block/anvil_top' : T.replace(/_(side|front|bottom)$/, '_top');
@@ -128,7 +137,6 @@
   }
   function apply(img) {
     var label = img.getAttribute('data-iso-label'); if (!label || img.__isoDone === label) return;
-    var sz = parseInt(img.getAttribute('width') || img.width || 0, 10); if (sz && sz < 32) return;   // winzige Chips (Hand, Verlauf, Suche) bleiben flach
     img.__isoDone = label;
     url(label).then(function (u) { if (u && img.getAttribute('data-iso-label') === label) { img.src = u; img.style.imageRendering = 'pixelated'; } });
   }

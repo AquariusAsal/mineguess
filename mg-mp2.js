@@ -37,6 +37,10 @@
   function openDlg(d) { d.classList.add('open'); var c = d.querySelector('.mp2-close'); if (c) c.focus(); }
 
   // ── Rundenuebersicht ──
+  // EN: Frage und Antwort der Verlaufseintraege aus questions.en.json (Server liefert Deutsch)
+  function enQ(r) { return (window.MGQ && MGQ.en && r.qid) ? MGQ.byId(r.qid) : null; }
+  function qText(r) { var e = enQ(r); return (e && e.question) || r.question || ''; }
+  function aText(r) { var e = enQ(r); if (!e) return r.answer; if (e.answer) return e.answer; var num = String(r.answer).match(/^s*[-d.,]+/); return num ? num[0].trim() + (e.unit ? ' ' + e.unit : '') : r.answer; }
   function renderRounds(history) {
     var d = dialog('mp2-rounds', 'Rundenübersicht'), b = d.querySelector('.mp2-body'), h = history || [];
     var modeL = { exact: 'exakt', closest: 'am nächsten', none: 'niemand', skipped: 'übersprungen', build: 'Bau-Runde' };
@@ -44,7 +48,7 @@
       var rows = (r.answers || []).map(function (a) {
         return '<tr><td>' + E(a.name) + '</td><td>' + E(a.noAnswer ? 'keine' : (a.skipped ? 'Totem' : (a.text == null || a.text === '' ? (r.mode === 'build' ? (a.correct ? 'gebaut' : 'nicht gelöst') : '–') : a.text))) + '</td><td>' + (a.correct ? '✓ richtig' : '✕ falsch') + '</td><td>' + (a.delta >= 0 ? '+' : '') + (a.delta || 0) + '</td><td>' + fmtMs(a.ms) + (a.rank ? ' (Platz ' + a.rank + ')' : '') + '</td></tr>';
       }).join('');
-      return '<section class="mp2-round"><h3>' + r.n + '. ' + E(r.mode === 'build' ? 'Baue: ' + r.answer : (r.question || '')) + '</h3><p class="mp2-sub">Richtig: <b>' + E(r.answer) + '</b> · ' + E(modeL[r.mode] || r.mode) + '</p>' +
+      return '<section class="mp2-round"><h3>' + r.n + '. ' + E(r.mode === 'build' ? 'Baue: ' + aText(r) : qText(r)) + '</h3><p class="mp2-sub">Richtig: <b>' + E(aText(r)) + '</b> · ' + E(modeL[r.mode] || r.mode) + '</p>' +
         '<div class="mp2-scroll"><table class="mp2-table"><thead><tr><th>Spieler</th><th>Antwort</th><th>Ergebnis</th><th>Punkte</th><th>Zeit</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<button type="button" class="btn btn-ghost mp2-rep" data-n="' + r.n + '">Frage melden</button></section>';
     }).join('') : '<p class="mp2-sub">Noch keine abgeschlossene Runde.</p>';

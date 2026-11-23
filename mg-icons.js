@@ -96,6 +96,13 @@
     if (p) return String(p).replace(/.png$/, '');
     return forName(name, enName) || 'item/barrier';
   }
+  /** Item-Bild als HTML (gleiche 3D-/Flach-Regel wie ueberall: data-iso-label -> mg-iso.js); leer, wenn es keine Textur gibt */
+  function imgFor(label, size) {
+    label = String(label == null ? '' : label).trim(); if (!label || /^[-d.,s]+$/.test(label)) return '';
+    var p = forLabel(label, ''); if (!p || p === 'item/barrier') return '';
+    var e = label.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'), z = size || 24;
+    return '<img class="mc-icon" width="' + z + '" height="' + z + '" alt="" data-iso-label="' + e + '" src="' + BASE + p + '.png" style="vertical-align:middle;margin-right:4px" onerror="this.hidden=true">';
+  }
   /** Zwei gleichwertige Auswahlbuttons (ODER-Fragen). onPick(name). Reihenfolge so, wie sie kommt (Server/Client mischt). */
   function choiceButtons(host, names, onPick, opts) {
     var tf = !!(opts && opts.tf), lab = (opts && typeof opts.label === 'function') ? opts.label : null;
@@ -143,5 +150,5 @@
     }
     return btns;
   }
-  global.MGIcon = { choiceButtons: choiceButtons, ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
+  global.MGIcon = { imgFor: imgFor, choiceButtons: choiceButtons, ready: ready, forLabel: forLabel, tex: tex, html: html, category: category, map: MAP, base: BASE, forName: forName };
 })(window);
