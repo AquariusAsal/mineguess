@@ -1469,7 +1469,7 @@ socket.on('answers_revealed', ({ mode, winnerId, winnerIds, firstBuzzerId: fbId,
 });
 socket.on('totem_used', ({ playerId, playerName }) => {
   if (playerId === myId) MGAudio.play('joker');
-  if (scene) scene.say(playerId, 'Totem!', 'neutral');
+  if (scene) { scene.say(playerId, 'Totem!', 'neutral'); scene.react(playerId, 'correct'); }   // wie Jubeln beim Gewinner
   if (roster[playerId]) roster[playerId].totem = false;
   renderTotem();
   showToast((playerName || nameOf(playerId)) + ' setzt das Totem ein', 2500);

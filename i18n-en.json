@@ -1133,5 +1133,7 @@
  "✓ richtig": "✓ correct",
  "Totem": "Totem",
  "Taste belegt: {}": "Key taken: {1}",
- "{n} von {n} Schülern im Raum · Runde {n} von {n}": "{n} of {n} students in the room · round {n} of {n}"
+ "{n} von {n} Schülern im Raum · Runde {n} von {n}": "{n} of {n} students in the room · round {n} of {n}",
+ "Hintergrundbild": "Background image",
+ "Das Hintergrundbild gibt es nur bei Ebene und Wald. Wüste und Schnee haben einen eigenen Himmel.": "The background image is only available for Plains and Forest. Desert and Snow have their own sky."
 }

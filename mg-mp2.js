@@ -346,6 +346,13 @@
     if (!d) return;
     if (CLS.code && CLS.token) { CLS.players = (d.players || []).filter(function (p) { return p.id !== myId; }); CLS.phase = d.phase || CLS.phase; var dl = $('mp2-class'); if (dl && dl.classList.contains('open') && !dl.__student) teacherPanel(); }
   });
+  // Lehrkraft: Punkte der Schueler nach jeder Frage live aktualisieren (result.scores)
+  socket.on('result', function (d) {
+    if (!(CLS.code && CLS.token) || !d || !Array.isArray(d.scores)) return;
+    var m = {}; d.scores.forEach(function (x) { m[x.id] = x.score != null ? x.score : (x.points != null ? x.points : 0); });
+    CLS.players.forEach(function (p) { if (m[p.id] != null) p.score = m[p.id]; });
+    var dl = $('mp2-class'); if (dl && dl.classList.contains('open') && CLS.phase !== 'waiting') teacherPanel();
+  });
   socket.on('question', function (q) { if (CLS.code && CLS.token) { CLS.round = q.roundNum || 0; CLS.rounds = q.maxRounds || CLS.rounds; CLS.q = q.mode === 'build' ? 'Bau-Runde: ' + (q.answer || '') : (q.question || ''); CLS.phase = 'running'; var dl = $('mp2-class'); if (dl && dl.classList.contains('open')) teacherPanel(); } });
   socket.on('game_over', function () { if (CLS.code && CLS.token) { CLS.over = true; CLS.phase = 'waiting'; var dl = $('mp2-class'); if (dl && dl.classList.contains('open')) teacherPanel(); } });
   function csvDownload(csv) {

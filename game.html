@@ -4136,9 +4136,9 @@ if ('serviceWorker' in navigator) {
     try {
       if (scene && fb) {
         var ok = !!fb.correct, txt = String(unit ? value + ' ' + unit : value);
-        scene.say('player', txt, ok ? 'correct' : 'wrong');
-        scene.react('player', ok ? 'correct' : 'wrong');
-        scene.react('reporter', ok ? 'correct' : 'wrong');
+        const tmo = String(value) === 'Zeit abgelaufen';   // gleiche Reaktionen wie im Multiplayer: Sprechblase sofort, Pose nach 350 ms, Timeout-Pose
+        scene.say('player', tmo ? 'Zeit abgelaufen' : txt, ok ? 'correct' : 'wrong');
+        setTimeout(() => { try { scene.react('player', tmo ? 'timeout' : (ok ? 'correct' : 'wrong')); scene.react('reporter', ok ? 'correct' : 'wrong'); } catch (e) {} }, 350);
       }
     } catch (e) {}
     return r;

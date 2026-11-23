@@ -197,7 +197,7 @@
     if (!fab) return; var sc = cfg.getScene && cfg.getScene(); fab.hidden = !sc || (cfg.enabled && !cfg.enabled() && !cfg.solo);
     // Multiplayer: Knopf direkt neben den Glockenknopf; Solo: am rechten Rand mittig (ueberdeckt keine Tipp-Zeile)
     var fm = document.body.classList.contains('fpv-on') && document.querySelector('.fpv-map');
-    if (fm) { var fr = fm.getBoundingClientRect(); if (fr.right + 66 < innerWidth) { fab.style.left = (fr.right + 12) + 'px'; fab.style.top = (fr.bottom - 56) + 'px'; fab.style.right = 'auto'; fab.style.bottom = 'auto'; return; } fab.style.left = 'auto'; fab.style.right = '8px'; fab.style.top = '46%'; fab.style.bottom = 'auto'; return; }
+    if (fm) { var fr = fm.getBoundingClientRect(); if (fr.right + 100 < innerWidth) { fab.style.left = 'auto'; fab.style.right = '12px'; fab.style.top = '40%'; fab.style.bottom = 'auto'; return; } fab.style.left = 'auto'; fab.style.right = '12px'; fab.style.top = '40%'; fab.style.bottom = 'auto'; return; }
     var bell = !cfg.solo && (document.getElementById('buzzer-btn'));
     if (bell && bell.offsetParent) { var r = bell.getBoundingClientRect(); if (r.right + 62 < innerWidth && r.width > 0) { fab.style.left = (r.right + 10) + 'px'; fab.style.top = (r.top + (r.height - 52) / 2) + 'px'; fab.style.right = 'auto'; fab.style.bottom = 'auto'; return; } }
     fab.style.left = fab.style.top = fab.style.bottom = ''; fab.style.right = cfg.solo ? '6px' : '14px'; if (cfg.solo) { fab.style.top = '46%'; fab.style.bottom = 'auto'; }

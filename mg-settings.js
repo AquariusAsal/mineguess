@@ -104,12 +104,14 @@
       fpv:
         R('mg-set-view', 'Ansicht', SEL('mg-set-view', [['normal', 'Normal'], ['fpv', 'Ich-Ansicht']], 150), 'ansicht view first person pov ich') +
         R('mg-set-gfx', 'Ich-Ansicht Grafik', SEL('mg-set-gfx', [['auto', 'Automatisch'], ['high', 'Hoch'], ['mid', 'Mittel'], ['low', 'Niedrig']], 150), 'grafik graphics quality qualitaet') +
-        R('mg-set-biome', 'Biom', SEL('mg-set-biome', [['auto', 'Automatisch'], ['plains', 'Ebene'], ['forest', 'Wald'], ['mountains', 'Berge'], ['desert', 'Wüste'], ['snow', 'Schnee']], 150), 'biom biome umgebung') +
+        R('mg-set-biome', 'Biom', SEL('mg-set-biome', [['auto', 'Automatisch'], ['plains', 'Ebene'], ['forest', 'Wald'], ['desert', 'Wüste'], ['snow', 'Schnee']], 150), 'biom biome umgebung') +
         R('mg-set-fov', 'Sichtfeld', RNG('mg-set-fov', 60, 100, 2), 'sichtfeld fov') +
         R('mg-set-sens', 'Maus-Empfindlichkeit', RNG('mg-set-sens', 0.5, 2, 0.1), 'maus empfindlichkeit sensitivity') +
         R('mg-set-lock', 'Maus fangen (Ich-Ansicht)', SW('mg-set-lock'), 'maus pointer lock fangen') +
         R('mg-set-wind', 'Gras im Wind', SW('mg-set-wind'), 'gras wind grass') +
         R('mg-set-clouds', 'Wolken', SW('mg-set-clouds'), 'wolken clouds') +
+        R('mg-set-bg', 'Hintergrundbild', SW('mg-set-bg'), 'hintergrund bild background berg himmel') +
+        '<p class="mg-set-note">Das Hintergrundbild gibt es nur bei Ebene und Wald. Wüste und Schnee haben einen eigenen Himmel.</p>' +
         R('mg-set-fs', 'Vollbild automatisch', SW('mg-set-fs'), 'vollbild fullscreen'),
       emotes:
         R('mg-set-emotes', 'Emotes anzeigen', SW('mg-set-emotes'), 'emotes anzeigen show') +
@@ -206,6 +208,7 @@
     $('mg-set-lock').addEventListener('change', function (e) { ls('mg_fpv_lock', e.target.checked ? '1' : '0'); });
     $('mg-set-wind').addEventListener('change', function (e) { ls('mg_fpv_wind', e.target.checked ? '1' : '0'); });
     $('mg-set-clouds').addEventListener('change', function (e) { ls('mg_fpv_clouds', e.target.checked ? '1' : '0'); sceneDo(function (sc) { sc.fpvLook(0, 0); }); });
+    $('mg-set-bg').addEventListener('change', function (e) { ls('mg_fpv_bg', e.target.checked ? '1' : '0'); sceneDo(function (sc) { sc.setGfx(ls('mg_fpv_gfx') || 'auto'); }); });
     $('mg-set-fs').addEventListener('change', function (e) { ls('mg_fpv_fs', e.target.checked ? '1' : '0'); });
     $('mg-set-emotes').addEventListener('change', function (e) { if (global.MGEmote) MGEmote.setShown(e.target.checked); });
     (function () {
@@ -278,7 +281,7 @@
     $('mg-set-vol').value = Math.round((global.MGAudio && MGAudio.getVolume ? MGAudio.getVolume() : 1) * 100);
     $('mg-set-view').value = ls('mg_view') === 'fpv' ? 'fpv' : 'normal'; $('mg-set-lock').checked = ls('mg_fpv_lock') === '1'; $('mg-set-gfx').value = ls('mg_fpv_gfx') || 'auto';
     $('mg-set-biome').value = ls('mg_fpv_biome') || 'auto'; $('mg-set-fov').value = ls('mg_fpv_fov') || '82'; $('mg-set-sens').value = ls('mg_fpv_sens') || '1';
-    $('mg-set-wind').checked = ls('mg_fpv_wind') !== '0'; $('mg-set-clouds').checked = ls('mg_fpv_clouds') !== '0'; $('mg-set-fs').checked = ls('mg_fpv_fs') !== '0';
+    $('mg-set-wind').checked = ls('mg_fpv_wind') !== '0'; $('mg-set-clouds').checked = ls('mg_fpv_clouds') !== '0'; $('mg-set-fs').checked = ls('mg_fpv_fs') !== '0'; $('mg-set-bg').checked = ls('mg_fpv_bg') !== '0';
     $('mg-set-emotes').checked = !global.MGEmote || MGEmote.isShown(); $('mg-set-ekey').textContent = String(ls('mg_emote_key') || 'b').toUpperCase(); $('mg-set-ekey-note').textContent = '';
     $('mg-set-theme').checked = document.documentElement.getAttribute('data-theme') === 'light';
     $('mg-set-motion').checked = document.documentElement.getAttribute('data-motion') === 'reduce';
